@@ -1,8 +1,8 @@
-import { apiReference } from "@scalar/hono-api-reference";
-
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
 import type { BaseEnv } from "../../../core/http/env.js";
+
+import { apiReference } from "@scalar/hono-api-reference";
 
 export const openApiDocumentConfig = {
   openapi: "3.0.3" as const,

@@ -16,7 +16,7 @@ describe("EnvSchema production safety", () => {
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      const fields = new Set(result.error.issues.flatMap((issue) => issue.path.map(String)));
+      const fields = new Set(result.error.issues.flatMap(issue => issue.path.map(String)));
       expect(fields.has("STORAGE_DRIVER")).toBe(true);
       expect(fields.has("BETTER_AUTH_SECRET")).toBe(true);
       expect(fields.has("GATEWAY_CLIENT_KEY")).toBe(true);

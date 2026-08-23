@@ -13,6 +13,22 @@ test("committed source conforms to the official toolchain baseline", async () =>
   assert.deepEqual(await collectToolchainBaselineViolations(root, baseline), []);
 });
 
+test("baseline rejects TypeScript versions outside the workspace catalog owner", async () => {
+  const fixtureRoot = await createFixture();
+  const manifestPath = path.join(fixtureRoot, "package.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  manifest.devDependencies.typescript = "6.0.3";
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const workspacePath = path.join(fixtureRoot, "pnpm-workspace.yaml");
+  const workspace = await readFile(workspacePath, "utf8");
+  await writeFile(workspacePath, workspace.replace("  typescript: 6.0.3", "  typescript: 6.0.4"));
+
+  const errors = await collectToolchainBaselineViolations(fixtureRoot, baseline);
+  assert.ok(errors.some(error => error.includes("TypeScript owner must use the workspace catalog")));
+  assert.ok(errors.some(error => error.includes("pnpm catalog must pin typescript@6.0.3")));
+});
+
 test("baseline rejects a silent switch back to Radix primitives", async () => {
   const fixtureRoot = await createFixture();
   const webManifestPath = path.join(fixtureRoot, "apps/web/package.json");

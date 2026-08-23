@@ -1,9 +1,9 @@
 import type { Pool } from "pg";
 
-import { betterAuth } from "better-auth";
-
 import type { Env } from "../../config/env-schema.js";
+
 import type { ControlAuth } from "./contracts.js";
+import { betterAuth } from "better-auth";
 
 export function createBetterAuth(
   pool: Pool,
@@ -23,7 +23,7 @@ export function createBetterAuth(
   });
 
   return {
-    handler: (request) => auth.handler(request),
+    handler: request => auth.handler(request),
     getSession: async (headers) => {
       const session = await auth.api.getSession({ headers });
       if (session === null) {

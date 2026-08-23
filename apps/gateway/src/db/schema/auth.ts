@@ -38,7 +38,7 @@ export const authAccounts = pgTable(
     createdAt: timestamp("createdAt", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updatedAt", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
-  (table) => [uniqueIndex("account_provider_account_unq").on(table.providerId, table.accountId)],
+  table => [uniqueIndex("account_provider_account_unq").on(table.providerId, table.accountId)],
 );
 
 export const authVerifications = pgTable("verification", {

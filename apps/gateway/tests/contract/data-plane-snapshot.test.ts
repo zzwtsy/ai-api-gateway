@@ -1,15 +1,16 @@
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-
-import { describe, expect, it } from "vitest";
-
-import { createApplication } from "../../src/app/create-application.js";
-import { createInMemoryDependencies } from "../../src/app/create-dependencies.js";
-import { MemoryRequestStore } from "../../src/app/adapters/memory-request-store.js";
-import { EnvSchema } from "../../src/config/env-schema.js";
-import { createLogger } from "../../src/core/logging/logger.js";
 import type { Clock } from "../../src/core/time/clock.js";
 import type { TransportRegistry, UpstreamRequest, UpstreamResponse } from "../../src/data-plane/transport/contracts.js";
+
+import { Buffer } from "node:buffer";
+import { readFile } from "node:fs/promises";
+
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import { MemoryRequestStore } from "../../src/app/adapters/memory-request-store.js";
+import { createApplication } from "../../src/app/create-application.js";
+import { createInMemoryDependencies } from "../../src/app/create-dependencies.js";
+import { EnvSchema } from "../../src/config/env-schema.js";
+import { createLogger } from "../../src/core/logging/logger.js";
 
 const fixtureDirectory = fileURLToPath(new URL("../../../../fixtures/protocols/openai-chat/golden-path/", import.meta.url));
 
@@ -75,8 +76,8 @@ describe("keyless Data Plane protocol snapshot", () => {
     const response = await app.request("/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        authorization: `Bearer ${env.GATEWAY_CLIENT_KEY}`,
-        cookie: "control-session=must-not-forward",
+        "authorization": `Bearer ${env.GATEWAY_CLIENT_KEY}`,
+        "cookie": "control-session=must-not-forward",
         "content-type": "application/json",
         "x-api-key": "client-side-key-must-not-forward",
         "x-extra": "preserved",
@@ -86,7 +87,8 @@ describe("keyless Data Plane protocol snapshot", () => {
     const downstreamBody = new Uint8Array(await response.arrayBuffer());
     const requests = await requestStore.listRequests(10);
     const detail = await requestStore.getRequest(requests[0]?.id ?? "");
-    if (transport.lastRequest === null || detail === null) throw new Error("Golden Path did not produce observable state");
+    if (transport.lastRequest === null || detail === null)
+      throw new Error("Golden Path did not produce observable state");
 
     const actual = {
       upstream: {
@@ -121,7 +123,7 @@ describe("keyless Data Plane protocol snapshot", () => {
           observationStatus: detail.observationStatus,
           observedBytes: detail.observedBytes,
         },
-        attempts: detail.attempts.map((attempt) => ({
+        attempts: detail.attempts.map(attempt => ({
           sequence: attempt.sequence,
           connectionId: attempt.connectionId,
           credentialId: attempt.credentialId,

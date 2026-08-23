@@ -1,6 +1,7 @@
-import pino, { type Logger } from "pino";
+import type { Logger } from "pino";
 
 import type { Env } from "../../config/env-schema.js";
+import pino from "pino";
 
 export type AppLogger = Logger;
 

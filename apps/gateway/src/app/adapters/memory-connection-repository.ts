@@ -1,12 +1,12 @@
-import { randomUUID } from "node:crypto";
-
 import type {
   ConnectionRecord,
   ConnectionRepository,
-  CreateConnectionInput
+  CreateConnectionInput,
 } from "../../control-plane/features/connections/contracts.js";
-import { AppError } from "../../core/errors/app-error.js";
+
 import type { Clock } from "../../core/time/clock.js";
+import { randomUUID } from "node:crypto";
+import { AppError } from "../../core/errors/app-error.js";
 
 export class MemoryConnectionRepository implements ConnectionRepository {
   readonly #items = new Map<string, ConnectionRecord>();
@@ -23,8 +23,8 @@ export class MemoryConnectionRepository implements ConnectionRepository {
 
   public async create(input: CreateConnectionInput): Promise<ConnectionRecord> {
     const normalizedBaseUrl = normalizeBaseUrl(input.baseUrl);
-    const hasConflict = [...this.#items.values()].some((item) =>
-      item.name === input.name || (item.protocol === input.protocol && item.baseUrl === normalizedBaseUrl)
+    const hasConflict = [...this.#items.values()].some(item =>
+      item.name === input.name || (item.protocol === input.protocol && item.baseUrl === normalizedBaseUrl),
     );
     if (hasConflict) {
       throw new AppError("CONNECTION_CONFLICT");
@@ -35,7 +35,7 @@ export class MemoryConnectionRepository implements ConnectionRepository {
       ...input,
       baseUrl: normalizedBaseUrl,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
     this.#items.set(record.id, record);
     return record;

@@ -1,5 +1,8 @@
-import { gatewayKeyPrefix, hashGatewayKey, verifyGatewayKey } from "../../core/crypto/gateway-key.js";
+import type { Buffer } from "node:buffer";
+
 import type { GatewayClientAuthenticator, GatewayClientIdentity } from "./contracts.js";
+
+import { gatewayKeyPrefix, hashGatewayKey, verifyGatewayKey } from "../../core/crypto/gateway-key.js";
 
 export class StaticGatewayClientAuthenticator implements GatewayClientAuthenticator {
   readonly #expectedHash: Buffer;

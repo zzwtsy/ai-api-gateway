@@ -15,7 +15,7 @@ services:
       POSTGRES_USER: aigw
       POSTGRES_PASSWORD: aigw
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aigw -d aigw"]
+      test: [CMD-SHELL, pg_isready -U aigw -d aigw]
       interval: 2s
       timeout: 3s
       retries: 30
@@ -27,18 +27,18 @@ services:
     ports:
       - "127.0.0.1:4010:4010"
     working_dir: /workspace
-    command: ["node", "apps/e2e/src/mock-provider.ts"]
+    command: [node, apps/e2e/src/mock-provider.ts]
     environment:
       MOCK_PROVIDER_HOST: 0.0.0.0
       MOCK_PROVIDER_PORT: 4010
     volumes:
       - ./:/workspace:ro
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4010/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:4010/health').then(r=>{if(!r.ok)process.exit(1)})"]
       interval: 2s
       timeout: 3s
       retries: 30
-    profiles: ["demo"]
+    profiles: [demo]
 
   gateway:
     <<: *gateway-base
@@ -55,7 +55,7 @@ services:
       GATEWAY_KEY_PEPPER: ${GATEWAY_KEY_PEPPER:?GATEWAY_KEY_PEPPER must be explicitly configured}
       BOOTSTRAP_PROVIDER_BASE_URL: ${BOOTSTRAP_PROVIDER_BASE_URL:?BOOTSTRAP_PROVIDER_BASE_URL must be explicitly configured}
       BOOTSTRAP_PROVIDER_API_KEY: ${BOOTSTRAP_PROVIDER_API_KEY:?BOOTSTRAP_PROVIDER_API_KEY must be explicitly configured}
-    profiles: ["app"]
+    profiles: [app]
 
   gateway-demo:
     <<: *gateway-base
@@ -78,7 +78,7 @@ services:
         condition: service_healthy
       mock-provider:
         condition: service_healthy
-    profiles: ["demo"]
+    profiles: [demo]
 
 volumes:
   aigw-postgres:

@@ -101,8 +101,11 @@ if (controlPlaneBasePath === undefined) {
     failures.push(`OpenAPI outline does not use source base path ${controlPlaneBasePath}`);
   }
 }
-if (packageManifest.devDependencies?.typescript !== "6.0.3")
-  failures.push("TypeScript must remain exactly 6.0.3");
+if (packageManifest.devDependencies?.typescript !== "catalog:")
+  failures.push("TypeScript must resolve through the workspace catalog");
+const workspace = await readFile(path.join(root, "pnpm-workspace.yaml"), "utf8");
+if (!/(?:^|\n) {2}typescript: 6\.0\.3(?:\n|$)/u.test(workspace))
+  failures.push("TypeScript workspace catalog owner must remain exactly 6.0.3");
 
 const bundleManifest = JSON.parse(await readFile(path.join(root, "docs/spec-bundles.json"), "utf8"));
 const outputs = new Set<string>();

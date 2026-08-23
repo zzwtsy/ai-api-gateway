@@ -1,7 +1,7 @@
-import { Pool } from "undici";
-
 import type { Env } from "../../config/env-schema.js";
+
 import type { TransportRegistry, UpstreamRequest, UpstreamResponse } from "./contracts.js";
+import { Pool } from "undici";
 import { assertUpstreamRequestInvariant } from "./invariant.js";
 
 export class UndiciTransportRegistry implements TransportRegistry {
@@ -27,7 +27,7 @@ export class UndiciTransportRegistry implements TransportRegistry {
   }
 
   public async close(): Promise<void> {
-    await Promise.all([...this.#pools.values()].map(async (pool) => pool.close()));
+    await Promise.all([...this.#pools.values()].map(async pool => pool.close()));
     this.#pools.clear();
   }
 

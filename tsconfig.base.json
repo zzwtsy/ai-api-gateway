@@ -2,15 +2,15 @@
   "compilerOptions": {
     "target": "ES2024",
     "lib": ["ES2024"],
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
     "strict": true,
-    "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
     "useUnknownInCatchVariables": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
   }
 }

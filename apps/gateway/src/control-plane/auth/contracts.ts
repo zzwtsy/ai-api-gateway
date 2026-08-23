@@ -10,11 +10,11 @@ export interface ControlSessionUser {
 }
 
 export interface ControlAuth {
-  handler(request: Request): Promise<Response>;
-  getSession(headers: Headers): Promise<ControlSessionUser | null>;
-  signUpEmail(input: {
+  handler: (request: Request) => Promise<Response>;
+  getSession: (headers: Headers) => Promise<ControlSessionUser | null>;
+  signUpEmail: (input: {
     readonly name: string;
     readonly email: string;
     readonly password: string;
-  }): Promise<void>;
+  }) => Promise<void>;
 }

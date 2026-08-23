@@ -4,7 +4,7 @@ export interface ProviderCredential {
 }
 
 export interface ProviderCredentialResolver {
-  resolve(id: string): Promise<ProviderCredential | null>;
+  resolve: (id: string) => Promise<ProviderCredential | null>;
 }
 
 export class StaticProviderCredentialResolver implements ProviderCredentialResolver {

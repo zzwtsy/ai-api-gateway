@@ -22,5 +22,5 @@ export interface RoutingResolutionInput {
 }
 
 export interface RoutingSnapshotStore {
-  resolve(input: RoutingResolutionInput): RoutingDecision | null;
+  resolve: (input: RoutingResolutionInput) => RoutingDecision | null;
 }

@@ -1,13 +1,13 @@
+import type { AppRouteHandler } from "../../http/context.js";
+
+import type { ConnectionRecord } from "./contracts.js";
 import type {
   CreateConnectionRoute,
   GetConnectionRoute,
   ListConnectionsRoute,
 } from "./routes.js";
-
-import type { AppRouteHandler } from "../../http/context.js";
-import { successResponse } from "../../http/response.js";
-import type { ConnectionRecord } from "./contracts.js";
 import type { ConnectionView } from "./schemas.js";
+import { successResponse } from "../../http/response.js";
 import { ConnectionService } from "./service.js";
 
 export const listConnectionsHandler: AppRouteHandler<ListConnectionsRoute> = async (c) => {

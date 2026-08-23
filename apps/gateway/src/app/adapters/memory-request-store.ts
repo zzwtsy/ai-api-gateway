@@ -67,9 +67,10 @@ export class MemoryRequestStore implements RequestStore {
 
   public async getRequest(id: string): Promise<RequestWithAttempts | null> {
     const request = this.#requests.get(id);
-    if (request === undefined) return null;
+    if (request === undefined)
+      return null;
     const attempts = [...this.#attempts.values()]
-      .filter((attempt) => attempt.requestId === id)
+      .filter(attempt => attempt.requestId === id)
       .sort((left, right) => left.sequence - right.sequence);
     return { ...request, attempts };
   }

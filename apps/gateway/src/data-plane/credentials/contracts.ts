@@ -5,5 +5,5 @@ export interface GatewayClientIdentity {
 }
 
 export interface GatewayClientAuthenticator {
-  authenticate(key: string): Promise<GatewayClientIdentity | null>;
+  authenticate: (key: string) => Promise<GatewayClientIdentity | null>;
 }

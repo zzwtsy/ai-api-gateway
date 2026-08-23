@@ -1,10 +1,10 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-
 import type { operations } from "@/api/schema";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-runtime/client";
 
-export type CreateConnectionInput =
-  operations["createConnection"]["requestBody"]["content"]["application/json"];
+export type CreateConnectionInput
+  = operations["createConnection"]["requestBody"]["content"]["application/json"];
 
 function connectionsQueryOptions() {
   return api.queryOptions("get", "/admin/api/v1/connections");
@@ -13,7 +13,7 @@ function connectionsQueryOptions() {
 export function useConnections() {
   return useQuery({
     ...connectionsQueryOptions(),
-    select: (response) => response.data,
+    select: response => response.data,
   });
 }
 

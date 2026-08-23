@@ -46,5 +46,6 @@ export class RoutingInvariantError extends Error {
 }
 
 function assertNonEmpty(field: string, value: string): void {
-  if (value.trim() === "") throw new RoutingInvariantError(`${field} must not be empty`);
+  if (value.trim() === "")
+    throw new RoutingInvariantError(`${field} must not be empty`);
 }

@@ -1,6 +1,6 @@
-import { createMiddleware } from "hono/factory";
-
 import type { DataEnv } from "../http/env.js";
+
+import { createMiddleware } from "hono/factory";
 import { openAiErrorResponse } from "../http/openai-error.js";
 
 export function requireGatewayClient() {

@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-
 import type {
   CompleteRequestWithAttemptInput,
   StartRequestWithAttemptInput,
 } from "../../core/requests/contracts.js";
+
+import { describe, expect, it } from "vitest";
 import {
   assertCompleteRequestAttemptInvariant,
   assertStartRequestAttemptInvariant,

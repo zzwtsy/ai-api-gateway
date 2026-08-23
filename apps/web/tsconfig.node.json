@@ -5,16 +5,16 @@
     "lib": ["ES2024"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
-    "types": ["node"],
     "paths": {
       "@/*": ["./src/*"]
     },
-    "noEmit": true,
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noEmit": true,
+    "erasableSyntaxOnly": true
   },
   "include": ["vite.config.ts", "vitest.config.ts"]
 }

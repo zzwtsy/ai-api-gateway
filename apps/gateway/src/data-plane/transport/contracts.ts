@@ -14,6 +14,6 @@ export interface UpstreamResponse {
 }
 
 export interface TransportRegistry {
-  request(input: UpstreamRequest): Promise<UpstreamResponse>;
-  close(): Promise<void>;
+  request: (input: UpstreamRequest) => Promise<UpstreamResponse>;
+  close: () => Promise<void>;
 }

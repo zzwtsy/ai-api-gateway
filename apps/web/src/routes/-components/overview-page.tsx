@@ -44,13 +44,13 @@ export function OverviewPage() {
   const connections = useConnections();
   const requests = useRequests();
   const items = requests.data ?? [];
-  const succeeded = items.filter((item) => item.outcome === "succeeded").length;
+  const succeeded = items.filter(item => item.outcome === "succeeded").length;
   const successRate = items.length === 0
     ? null
     : Math.round((succeeded / items.length) * 1000) / 10;
   const averageLatency = averageInteger(
     items
-      .map((item) => item.latencyMs)
+      .map(item => item.latencyMs)
       .filter((value): value is number => value !== null),
   );
 
@@ -159,7 +159,7 @@ function RecentRequests({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {items.slice(0, 6).map((item) => (
+        {items.slice(0, 6).map(item => (
           <TableRow key={item.id}>
             <TableCell>
               <div className="font-medium">{item.requestedModel}</div>

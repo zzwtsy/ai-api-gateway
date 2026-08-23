@@ -1,7 +1,8 @@
-import createFetchClient, { type Middleware } from "openapi-fetch";
-import createReactQueryClient from "openapi-react-query";
-
+import type { Middleware } from "openapi-fetch";
 import type { paths } from "@/api/schema";
+import createFetchClient from "openapi-fetch";
+
+import createReactQueryClient from "openapi-react-query";
 
 const developmentToken = import.meta.env.DEV
   ? (import.meta.env.VITE_DEV_ADMIN_TOKEN ?? "admin_dev_local")

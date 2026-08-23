@@ -1,16 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "lib": [
+      "ES2024"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "types": [
       "node",
       "@playwright/test"
     ],
-    "noEmit": true,
-    "lib": [
-      "ES2024"
-    ]
+    "noEmit": true
   },
   "include": [
     "src/**/*.ts",

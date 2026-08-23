@@ -20,7 +20,7 @@ export interface CreateConnectionInput {
 }
 
 export interface ConnectionRepository {
-  list(): Promise<readonly ConnectionRecord[]>;
-  getById(id: string): Promise<ConnectionRecord | null>;
-  create(input: CreateConnectionInput): Promise<ConnectionRecord>;
+  list: () => Promise<readonly ConnectionRecord[]>;
+  getById: (id: string) => Promise<ConnectionRecord | null>;
+  create: (input: CreateConnectionInput) => Promise<ConnectionRecord>;
 }

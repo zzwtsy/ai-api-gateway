@@ -12,14 +12,14 @@ export default defineConfig({
         "src/data-plane/routing/**/*.ts",
         "src/data-plane/observation/**/*.ts",
         "src/data-plane/credentials/**/*.ts",
-        "src/core/crypto/**/*.ts"
+        "src/core/crypto/**/*.ts",
       ],
       thresholds: {
         lines: 90,
         functions: 90,
         branches: 85,
-        statements: 90
-      }
-    }
-  }
+        statements: 90,
+      },
+    },
+  },
 });

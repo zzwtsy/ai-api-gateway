@@ -1,3 +1,4 @@
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { serve } from "@hono/node-server";
@@ -35,12 +36,16 @@ export async function startApplication(): Promise<void> {
     }
   };
 
-  process.once("SIGINT", () => { void shutdown("SIGINT"); });
-  process.once("SIGTERM", () => { void shutdown("SIGTERM"); });
+  process.once("SIGINT", () => {
+    void shutdown("SIGINT");
+  });
+  process.once("SIGTERM", () => {
+    void shutdown("SIGTERM");
+  });
 }
 
-function closeServer(server: { close(callback: (error?: Error) => void): void }): Promise<void> {
+function closeServer(server: { close: (callback: (error?: Error) => void) => void }): Promise<void> {
   return new Promise((resolve, reject) => {
-    server.close((error) => error === undefined ? resolve() : reject(error));
+    server.close(error => error === undefined ? resolve() : reject(error));
   });
 }

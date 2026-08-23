@@ -4,7 +4,7 @@
   "defaultLanguage": "zh-CN",
   "typescript": {
     "version": "6.0.3",
-    "singleOwner": "package.json"
+    "singleOwner": "pnpm-workspace.yaml"
   },
   "shadcn": {
     "cliVersion": "4.19.0",
@@ -65,7 +65,7 @@
       "tooltip": "a9f7b6823ef80334f2a70ee0e7eb40e01f095d63f7e354be6b7c499e2d2c84aa"
     },
     "hookDigests": {
-      "use-mobile": "0b7587070a25ea48088a46b3dd7d47eef1d16affba607d5cc1de33db8fbb3e46"
+      "use-mobile": "9656ba05cb0f091c2ac25405985437e6664882f98c22c52fdc0d55bb52fd8b8a"
     }
   },
   "eslint": {

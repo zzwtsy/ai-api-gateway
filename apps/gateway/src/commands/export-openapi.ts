@@ -9,7 +9,7 @@ import { openApiDocumentConfig } from "../control-plane/http/openapi/configure-o
 import { createLogger } from "../core/logging/logger.js";
 
 async function main(): Promise<void> {
-  const outputArgument = process.argv.slice(2).find((argument) => argument !== "--");
+  const outputArgument = process.argv.slice(2).find(argument => argument !== "--");
   if (outputArgument === undefined || path.extname(outputArgument).toLowerCase() !== ".json") {
     throw new Error("Usage: pnpm --filter @aigw/gateway openapi:export -- <output.json>");
   }

@@ -1,10 +1,11 @@
 import type { Env } from "../config/env-schema.js";
 import type { AppLogger } from "../core/logging/logger.js";
-import { systemClock } from "../core/time/clock.js";
+import type { ApplicationDependencies } from "./dependencies.js";
 import { createBetterAuth } from "../control-plane/auth/better-auth.js";
 import { unavailableControlAuth } from "../control-plane/auth/development-auth.js";
-import { StaticGatewayClientAuthenticator } from "../data-plane/credentials/static-authenticator.js";
+import { systemClock } from "../core/time/clock.js";
 import { StaticProviderCredentialResolver } from "../data-plane/credentials/provider-credentials.js";
+import { StaticGatewayClientAuthenticator } from "../data-plane/credentials/static-authenticator.js";
 import { StaticRoutingSnapshotStore } from "../data-plane/routing/static-snapshot.js";
 import { UndiciTransportRegistry } from "../data-plane/transport/undici-registry.js";
 import { createDatabase } from "../db/client.js";
@@ -12,11 +13,10 @@ import { MemoryConnectionRepository } from "./adapters/memory-connection-reposit
 import { MemoryRequestStore } from "./adapters/memory-request-store.js";
 import { PostgresConnectionRepository } from "./adapters/postgres-connection-repository.js";
 import { PostgresRequestStore } from "./adapters/postgres-request-store.js";
-import type { ApplicationDependencies } from "./dependencies.js";
 
 export interface RuntimeResources {
   readonly dependencies: ApplicationDependencies;
-  close(): Promise<void>;
+  close: () => Promise<void>;
 }
 
 export function createInMemoryDependencies(env: Env, logger: AppLogger): ApplicationDependencies {

@@ -1,21 +1,21 @@
-import { and, asc, eq, or } from "drizzle-orm";
-import { randomUUID } from "node:crypto";
-
 import type {
+  ConnectionProtocol,
   ConnectionRecord,
   ConnectionRepository,
   CreateConnectionInput,
-  ConnectionProtocol
 } from "../../control-plane/features/connections/contracts.js";
-import { AppError } from "../../core/errors/app-error.js";
 import type { Clock } from "../../core/time/clock.js";
+
 import type { Database } from "../../db/client.js";
+import { randomUUID } from "node:crypto";
+import { and, asc, eq, or } from "drizzle-orm";
+import { AppError } from "../../core/errors/app-error.js";
 import { connections } from "../../db/schema/index.js";
 
 export class PostgresConnectionRepository implements ConnectionRepository {
   public constructor(
     private readonly db: Database,
-    private readonly clock: Clock
+    private readonly clock: Clock,
   ) {}
 
   public async list(): Promise<readonly ConnectionRecord[]> {
@@ -36,7 +36,7 @@ export class PostgresConnectionRepository implements ConnectionRepository {
       .from(connections)
       .where(or(
         eq(connections.name, input.name),
-        and(eq(connections.protocol, input.protocol), eq(connections.baseUrl, baseUrl))
+        and(eq(connections.protocol, input.protocol), eq(connections.baseUrl, baseUrl)),
       ))
       .limit(1);
     if (conflict !== undefined) {
@@ -52,7 +52,7 @@ export class PostgresConnectionRepository implements ConnectionRepository {
         baseUrl,
         enabled: input.enabled,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       })
       .onConflictDoNothing()
       .returning();
@@ -74,6 +74,6 @@ function normalizeBaseUrl(value: string): string {
 function toRecord(row: typeof connections.$inferSelect): ConnectionRecord {
   return {
     ...row,
-    protocol: row.protocol as ConnectionProtocol
+    protocol: row.protocol as ConnectionProtocol,
   };
 }

@@ -1,11 +1,12 @@
+import type { DatabaseHandle } from "../../src/db/client.js";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresConnectionRepository } from "../../src/app/adapters/postgres-connection-repository.js";
 import { PostgresRequestStore } from "../../src/app/adapters/postgres-request-store.js";
 import { createLogger } from "../../src/core/logging/logger.js";
 import { systemClock } from "../../src/core/time/clock.js";
-import { createDatabase, type DatabaseHandle } from "../../src/db/client.js";
+import { createDatabase } from "../../src/db/client.js";
 import { runMigrations } from "../../src/db/run-migrations.js";
 
 let container: Awaited<ReturnType<PostgreSqlContainer["start"]>>;

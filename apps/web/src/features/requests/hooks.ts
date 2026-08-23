@@ -8,7 +8,7 @@ export function useRequests() {
       params: { query: { limit: 50 } },
     }),
     refetchInterval: 5_000,
-    select: (response) => response.data,
+    select: response => response.data,
   });
 }
 
@@ -19,6 +19,6 @@ export function useRequest(id: string | undefined) {
       params: { path: { requestId } },
     }),
     enabled: id !== undefined,
-    select: (response) => response.data,
+    select: response => response.data,
   });
 }

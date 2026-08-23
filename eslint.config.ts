@@ -4,6 +4,7 @@ import boundaries from "eslint-plugin-boundaries";
 const projectTypeScript = ["apps/**/*.{ts,tsx}", "scripts/**/*.ts", "*.config.ts"];
 const gatewaySource = ["apps/gateway/src/**/*.ts"];
 const webSource = ["apps/web/src/**/*.{ts,tsx}"];
+const markdownTypeScript = ["**/*.md/*.ts", "**/*.md/*.tsx"];
 
 export default antfu(
   {
@@ -38,6 +39,16 @@ export default antfu(
       "apps/web/src/routeTree.gen.ts",
       "apps/gateway/drizzle/**",
     ],
+  },
+  {
+    name: "aigw/markdown-typescript-snippets",
+    files: markdownTypeScript,
+    languageOptions: {
+      parserOptions: {
+        project: false,
+        projectService: false,
+      },
+    },
   },
   {
     name: "aigw/typescript-safety",

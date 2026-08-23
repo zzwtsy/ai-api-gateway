@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import type { TransportRegistry, UpstreamRequest } from "../../src/data-plane/transport/contracts.js";
 
+import { describe, expect, it } from "vitest";
+import { MemoryRequestStore } from "../../src/app/adapters/memory-request-store.js";
 import { createApplication } from "../../src/app/create-application.js";
 import { createInMemoryDependencies } from "../../src/app/create-dependencies.js";
-import { MemoryRequestStore } from "../../src/app/adapters/memory-request-store.js";
 import { EnvSchema } from "../../src/config/env-schema.js";
 import { createLogger } from "../../src/core/logging/logger.js";
-import type { TransportRegistry, UpstreamRequest } from "../../src/data-plane/transport/contracts.js";
 
 class FixtureTransport implements TransportRegistry {
   public lastRequest: UpstreamRequest | null = null;
@@ -41,7 +41,7 @@ describe("data-plane Golden Path", () => {
     const response = await app.request("/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        authorization: `Bearer ${env.GATEWAY_CLIENT_KEY}`,
+        "authorization": `Bearer ${env.GATEWAY_CLIENT_KEY}`,
         "content-type": "application/json",
         "x-extra": "preserved",
       },

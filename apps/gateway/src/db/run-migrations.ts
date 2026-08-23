@@ -1,8 +1,8 @@
+import type { Database } from "./client.js";
+
 import { fileURLToPath } from "node:url";
 
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-
-import type { Database } from "./client.js";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 

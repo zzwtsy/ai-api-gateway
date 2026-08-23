@@ -1,4 +1,8 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
+
+import { Buffer } from "node:buffer";
+import { createServer } from "node:http";
+import process from "node:process";
 
 interface CapturedRequest {
   readonly path: string;
@@ -8,7 +12,11 @@ interface CapturedRequest {
 
 let lastRequest: CapturedRequest | null = null;
 
-const server = createServer(async (request, response) => {
+const server = createServer((request, response) => {
+  void handleRequest(request, response);
+});
+
+async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
   if (request.url === "/health") {
     response.writeHead(200, { "content-type": "application/json" });
     response.end(JSON.stringify({ status: "ok" }));
@@ -41,7 +49,7 @@ const server = createServer(async (request, response) => {
     response.writeHead(200, {
       "content-type": "text/event-stream",
       "cache-control": "no-cache",
-      connection: "keep-alive",
+      "connection": "keep-alive",
     });
     response.write(`data: ${JSON.stringify({ id: "chatcmpl-e2e", model: parsed.model, choices: [{ delta: { content: "hello" } }] })}\n\n`);
     setTimeout(() => {
@@ -55,7 +63,7 @@ const server = createServer(async (request, response) => {
     model: parsed.model,
     choices: [{ message: { role: "assistant", content: "hello" } }],
   });
-});
+}
 
 const host = process.env.MOCK_PROVIDER_HOST ?? "127.0.0.1";
 const port = Number.parseInt(process.env.MOCK_PROVIDER_PORT ?? "4010", 10);

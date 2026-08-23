@@ -1,5 +1,5 @@
-import { AppError } from "../../../core/errors/app-error.js";
 import type { RequestStore } from "../../../core/requests/contracts.js";
+import { AppError } from "../../../core/errors/app-error.js";
 
 export class RequestQueryService {
   public constructor(private readonly store: RequestStore) {}

@@ -1,3 +1,4 @@
+import type { Buffer } from "node:buffer";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export function hashGatewayKey(key: string, pepper: string): Buffer {

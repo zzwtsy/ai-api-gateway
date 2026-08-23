@@ -1,8 +1,8 @@
 {
   "name": "@aigw/gateway",
+  "type": "module",
   "version": "0.1.0-alpha.3",
   "private": true,
-  "type": "module",
   "engines": {
     "node": ">=24 <25"
   },
@@ -39,8 +39,8 @@
     "@types/pg": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "drizzle-kit": "catalog:",
+    "fast-check": "catalog:",
     "tsx": "catalog:",
-    "vitest": "catalog:",
-    "fast-check": "catalog:"
+    "vitest": "catalog:"
   }
 }

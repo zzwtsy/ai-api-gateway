@@ -1,6 +1,6 @@
-import { Hono } from "hono";
-
 import type { DataEnv } from "./http/env.js";
+
+import { Hono } from "hono";
 import { requireGatewayClient } from "./credentials/require-gateway-client.js";
 import { handleOpenAiChatCompletions } from "./protocols/openai-chat/handler.js";
 

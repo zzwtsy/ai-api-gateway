@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { createApplication } from "../../src/app/create-application.js";
 import { createInMemoryDependencies } from "../../src/app/create-dependencies.js";
-import { openApiDocumentConfig } from "../../src/control-plane/http/openapi/configure-openapi.js";
 import { EnvSchema } from "../../src/config/env-schema.js";
+import { openApiDocumentConfig } from "../../src/control-plane/http/openapi/configure-openapi.js";
 import { createLogger } from "../../src/core/logging/logger.js";
 
 const env = EnvSchema.parse({ NODE_ENV: "test", STORAGE_DRIVER: "memory", LOG_LEVEL: "silent" });
@@ -11,7 +11,7 @@ const dependencies = createInMemoryDependencies(env, createLogger(env));
 const app = createApplication(dependencies);
 const document = app.getOpenAPIDocument(openApiDocumentConfig);
 
-const operations = Object.values(document.paths ?? {}).flatMap((path) =>
+const operations = Object.values(document.paths ?? {}).flatMap(path =>
   Object.values(path ?? {}).filter((operation): operation is { operationId?: string; description?: string; tags?: string[]; responses?: object } =>
     typeof operation === "object" && operation !== null && "responses" in operation,
   ),
@@ -19,7 +19,7 @@ const operations = Object.values(document.paths ?? {}).flatMap((path) =>
 
 describe("control-plane OpenAPI", () => {
   it("has globally unique SDK-friendly operation IDs", () => {
-    const ids = operations.map((operation) => operation.operationId);
+    const ids = operations.map(operation => operation.operationId);
     expect(ids.every(Boolean)).toBe(true);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -36,5 +36,4 @@ describe("control-plane OpenAPI", () => {
     const response = await app.request("/api/auth/get-session");
     expect(response.status).toBe(503);
   });
-
 });

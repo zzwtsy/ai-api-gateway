@@ -54,5 +54,6 @@ export class RecordingInvariantError extends Error {
 }
 
 function assertNonEmpty(field: string, value: string): void {
-  if (value.trim() === "") throw new RecordingInvariantError(`${field} must not be empty`);
+  if (value.trim() === "")
+    throw new RecordingInvariantError(`${field} must not be empty`);
 }

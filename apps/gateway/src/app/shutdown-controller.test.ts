@@ -8,10 +8,14 @@ describe("ShutdownController", () => {
     let releaseStop: (() => void) | undefined;
     const stopAccepting = vi.fn(async () => {
       order.push("stop:start");
-      await new Promise<void>((resolve) => { releaseStop = resolve; });
+      await new Promise<void>((resolve) => {
+        releaseStop = resolve;
+      });
       order.push("stop:end");
     });
-    const closeResources = vi.fn(async () => { order.push("resources:closed"); });
+    const closeResources = vi.fn(async () => {
+      order.push("resources:closed");
+    });
     const controller = new ShutdownController({ stopAccepting, closeResources });
 
     const first = controller.shutdown();

@@ -19,7 +19,7 @@ export const gatewayRequests = pgTable(
     observationStatus: text("observation_status").notNull(),
     observedBytes: integer("observed_bytes").notNull().default(0),
   },
-  (table) => [index("gateway_requests_started_at_idx").on(table.startedAt)],
+  table => [index("gateway_requests_started_at_idx").on(table.startedAt)],
 );
 
 export const gatewayAttempts = pgTable(
@@ -40,7 +40,7 @@ export const gatewayAttempts = pgTable(
     errorCode: text("error_code"),
     fallbackReason: text("fallback_reason"),
   },
-  (table) => [
+  table => [
     index("gateway_attempts_request_id_idx").on(table.requestId),
     uniqueIndex("gateway_attempts_request_sequence_unq").on(table.requestId, table.sequence),
   ],

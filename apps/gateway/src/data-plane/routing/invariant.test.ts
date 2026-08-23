@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-
 import type { RoutingDecision, RoutingResolutionInput } from "./contracts.js";
+
+import { describe, expect, it } from "vitest";
 import { assertRoutingDecisionInvariant, RoutingInvariantError } from "./invariant.js";
 
 const input: RoutingResolutionInput = {

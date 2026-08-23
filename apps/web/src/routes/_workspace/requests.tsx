@@ -9,10 +9,8 @@ const requestSearchSchema = z.object({
 
 export const Route = createFileRoute("/_workspace/requests")({
   validateSearch: requestSearchSchema,
-  component: RequestsRoute,
+  component: function RequestsRoute() {
+    const { requestId } = Route.useSearch();
+    return <RequestsPage requestId={requestId} />;
+  },
 });
-
-function RequestsRoute() {
-  const { requestId } = Route.useSearch();
-  return <RequestsPage requestId={requestId} />;
-}

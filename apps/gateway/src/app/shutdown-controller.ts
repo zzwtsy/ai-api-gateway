@@ -1,6 +1,6 @@
 export interface ShutdownOperations {
-  stopAccepting(): Promise<void>;
-  closeResources(): Promise<void>;
+  stopAccepting: () => Promise<void>;
+  closeResources: () => Promise<void>;
 }
 
 /**

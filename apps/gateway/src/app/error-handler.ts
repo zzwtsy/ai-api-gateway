@@ -1,8 +1,8 @@
 import type { ErrorHandler } from "hono";
 
 import type { AppEnv } from "./bindings.js";
-import { AppError } from "../core/errors/app-error.js";
 import { errorResponse } from "../control-plane/http/response.js";
+import { AppError } from "../core/errors/app-error.js";
 import { openAiErrorResponse } from "../data-plane/http/openai-error.js";
 
 export const applicationErrorHandler: ErrorHandler<AppEnv> = (error, c) => {

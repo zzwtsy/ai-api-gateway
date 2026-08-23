@@ -5,6 +5,7 @@ import process from "node:process";
 const root = path.resolve(import.meta.dirname, "../..");
 const manifests = await findManifests(root);
 const findings: string[] = [];
+const expectedVersion = "6.0.3";
 
 for (const manifestPath of manifests) {
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
@@ -18,22 +19,28 @@ for (const manifestPath of manifests) {
       const relative = path.relative(root, manifestPath);
       if (relative !== "package.json")
         findings.push(`${relative} declares its own TypeScript version`);
-      if (entries.typescript !== "6.0.3")
-        findings.push(`${relative} must pin TypeScript exactly to 6.0.3`);
+      if (relative === "package.json" && entries.typescript !== "catalog:")
+        findings.push(`${relative} must resolve TypeScript through the workspace catalog`);
     }
   }
 }
 
 const rootManifest = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
-if (rootManifest.devDependencies?.typescript !== "6.0.3") {
-  findings.push("root devDependencies.typescript must be 6.0.3");
+if (rootManifest.devDependencies?.typescript !== "catalog:") {
+  findings.push("root devDependencies.typescript must be catalog:");
+}
+
+const workspace = await readFile(path.join(root, "pnpm-workspace.yaml"), "utf8");
+const typeScriptCatalogEntry = new RegExp(`(?:^|\\n) {2}typescript: ${expectedVersion}(?:\\n|$)`, "u");
+if (!typeScriptCatalogEntry.test(workspace)) {
+  findings.push(`pnpm workspace catalog must pin TypeScript exactly to ${expectedVersion}`);
 }
 
 if (findings.length > 0) {
   process.stderr.write(`${findings.join("\n")}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`typescript-version passed (${manifests.length} manifests, one TypeScript 6.0.3 owner)\n`);
+  process.stdout.write(`typescript-version passed (${manifests.length} manifests, one TypeScript ${expectedVersion} catalog owner)\n`);
 }
 
 async function findManifests(directory: string): Promise<string[]> {

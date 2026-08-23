@@ -122,8 +122,8 @@ function collectProjectIdentityViolations(rootManifest: PackageManifest, baselin
   if (rootManifest.version !== baseline.projectVersion) {
     errors.push(`root version must equal ${baseline.projectVersion}`);
   }
-  if (rootManifest.devDependencies?.typescript !== baseline.typescript.version) {
-    errors.push(`TypeScript owner must pin ${baseline.typescript.version}`);
+  if (rootManifest.devDependencies?.typescript !== "catalog:") {
+    errors.push("TypeScript owner must use the workspace catalog");
   }
   return errors;
 }
@@ -203,7 +203,9 @@ function collectWebDependencyViolations(webManifest: PackageManifest, baseline: 
 function collectRepositoryDependencyViolations(catalog: string, rootManifest: PackageManifest, baseline: ToolchainBaseline): string[] {
   const errors: string[] = [];
   for (const [name, version] of expectedCatalogVersions(baseline)) {
-    if (!catalog.includes(`  '${name}': ${version}`) && !catalog.includes(`  ${name}: ${version}`)) {
+    if (!catalog.includes(`  '${name}': ${version}`)
+      && !catalog.includes(`  "${name}": ${version}`)
+      && !catalog.includes(`  ${name}: ${version}`)) {
       errors.push(`pnpm catalog must pin ${name}@${version}`);
     }
   }
@@ -220,6 +222,7 @@ function collectRepositoryDependencyViolations(catalog: string, rootManifest: Pa
 
 function expectedCatalogVersions(baseline: ToolchainBaseline): [string, string][] {
   return [
+    ["typescript", baseline.typescript.version],
     ["@base-ui/react", "1.7.0"],
     ["tailwind-merge", "3.6.0"],
     ["shadcn", baseline.shadcn.cliVersion],

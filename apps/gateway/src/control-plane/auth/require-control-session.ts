@@ -1,7 +1,7 @@
-import { createMiddleware } from "hono/factory";
+import type { ControlEnv } from "../http/env.js";
 
 import type { ControlUser } from "./contracts.js";
-import type { ControlEnv } from "../http/env.js";
+import { createMiddleware } from "hono/factory";
 import { AppError } from "../../core/errors/app-error.js";
 
 export function requireControlSession() {

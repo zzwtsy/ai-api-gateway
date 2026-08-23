@@ -97,8 +97,8 @@ export interface StartedRequestWithAttempt {
 }
 
 export interface RequestStore {
-  startRequestWithAttempt(input: StartRequestWithAttemptInput): Promise<StartedRequestWithAttempt>;
-  completeRequestWithAttempt(input: CompleteRequestWithAttemptInput): Promise<void>;
-  listRequests(limit: number): Promise<readonly GatewayRequestRecord[]>;
-  getRequest(id: string): Promise<RequestWithAttempts | null>;
+  startRequestWithAttempt: (input: StartRequestWithAttemptInput) => Promise<StartedRequestWithAttempt>;
+  completeRequestWithAttempt: (input: CompleteRequestWithAttemptInput) => Promise<void>;
+  listRequests: (limit: number) => Promise<readonly GatewayRequestRecord[]>;
+  getRequest: (id: string) => Promise<RequestWithAttempts | null>;
 }

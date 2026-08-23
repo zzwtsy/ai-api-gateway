@@ -1,5 +1,3 @@
-import { asc, desc, eq } from "drizzle-orm";
-
 import type {
   CompleteRequestWithAttemptInput,
   GatewayAttemptRecord,
@@ -10,11 +8,13 @@ import type {
   StartedRequestWithAttempt,
   StartRequestWithAttemptInput,
 } from "../../core/requests/contracts.js";
+
+import type { Database } from "../../db/client.js";
+import { asc, desc, eq } from "drizzle-orm";
 import {
   assertCompleteRequestAttemptInvariant,
   assertStartRequestAttemptInvariant,
 } from "../../data-plane/recording/invariant.js";
-import type { Database } from "../../db/client.js";
 import { gatewayAttempts, gatewayRequests } from "../../db/schema/index.js";
 
 export class PostgresRequestStore implements RequestStore {
@@ -35,7 +35,8 @@ export class PostgresRequestStore implements RequestStore {
         observationStatus: "pending",
         observedBytes: 0,
       }).returning();
-      if (request === undefined) throw new Error("request insert returned no row");
+      if (request === undefined)
+        throw new Error("request insert returned no row");
 
       const [attempt] = await transaction.insert(gatewayAttempts).values({
         ...input.attempt,
@@ -45,7 +46,8 @@ export class PostgresRequestStore implements RequestStore {
         errorCode: null,
         fallbackReason: null,
       }).returning();
-      if (attempt === undefined) throw new Error("attempt insert returned no row");
+      if (attempt === undefined)
+        throw new Error("attempt insert returned no row");
       return { request: toRequest(request), attempt: toAttempt(attempt) };
     });
   }
@@ -75,7 +77,8 @@ export class PostgresRequestStore implements RequestStore {
 
   public async getRequest(id: string): Promise<RequestWithAttempts | null> {
     const [request] = await this.db.select().from(gatewayRequests).where(eq(gatewayRequests.id, id)).limit(1);
-    if (request === undefined) return null;
+    if (request === undefined)
+      return null;
     const attempts = await this.db
       .select()
       .from(gatewayAttempts)

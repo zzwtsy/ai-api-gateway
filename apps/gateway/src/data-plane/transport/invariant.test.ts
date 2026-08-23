@@ -1,13 +1,13 @@
-import { describe, expect, it } from "vitest";
-
 import type { UpstreamRequest } from "./contracts.js";
+
+import { describe, expect, it } from "vitest";
 import { assertUpstreamRequestInvariant, TransportInvariantError } from "./invariant.js";
 
 const valid: UpstreamRequest = {
   origin: "https://provider.example",
   path: "/v1/chat/completions",
   method: "POST",
-  headers: { authorization: "Bearer redacted", "content-type": "application/json" },
+  headers: { "authorization": "Bearer redacted", "content-type": "application/json" },
   body: new Uint8Array(),
   signal: new AbortController().signal,
 };
