@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "24"
+  AIGW_GATE_CONCURRENCY: "4"
+
+jobs:
+  activation:
+    name: 仓库激活合同
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: 检查锁文件和生成客户端
+        run: |
+          test -f pnpm-lock.yaml || {
+            echo "缺少 pnpm-lock.yaml，请先完成 docs/checklists/repository-activation.md。"
+            exit 1
+          }
+          ! grep -q "Generated contract placeholder" apps/web/src/api/schema.d.ts || {
+            echo "Web API Contract 仍是 Bootstrap 占位内容，请运行 pnpm api:generate。"
+            exit 1
+          }
+
+  static:
+    name: 静态边界、文档与熵控制
+    needs: activation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:ci:static --report .artifacts/gates/ci-static.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-report-static
+          path: .artifacts/gates/ci-static.json
+          if-no-files-found: ignore
+
+  core:
+    name: 核心逻辑、OpenAPI 与 Web
+    needs: activation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:ci:core --report .artifacts/gates/ci-core.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-report-core
+          path: .artifacts/gates/ci-core.json
+          if-no-files-found: ignore
+
+  protocol:
+    name: 协议、PostgreSQL 与真实组合
+    needs: activation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:ci:protocol --report .artifacts/gates/ci-protocol.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-report-protocol
+          path: .artifacts/gates/ci-protocol.json
+          if-no-files-found: ignore
+
+  artifact:
+    name: 编译产物、浏览器与 Docker
+    needs: activation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: 安装 Playwright Chromium
+        run: pnpm --filter @aigw/e2e exec playwright install --with-deps chromium
+      - run: pnpm check:ci:artifact --report .artifacts/gates/ci-artifact.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-report-artifact
+          path: .artifacts/gates/ci-artifact.json
+          if-no-files-found: ignore

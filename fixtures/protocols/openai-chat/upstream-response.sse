@@ -1,0 +1,3 @@
+data: {"id":"chatcmpl-demo","choices":[{"delta":{"content":"hello"}}]}
+
+data: [DONE]

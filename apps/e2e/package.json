@@ -1,0 +1,20 @@
+{
+  "name": "@aigw/e2e",
+  "version": "0.1.0-alpha.3",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "tsx watch src/mock-provider.ts",
+    "mock-provider": "tsx src/mock-provider.ts",
+    "test": "playwright test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
+    "tsx": "catalog:"
+  }
+}

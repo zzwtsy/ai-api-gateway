@@ -1,0 +1,57 @@
+id: kimi
+name: Kimi
+presetKind: built_in
+modelsDevProviderId: moonshotai
+endpoints:
+  - id: kimi-chat
+    name: OpenAI Chat
+    protocol: openai_chat
+    baseUrl: https://api.moonshot.cn/v1
+    requestPath: /chat/completions
+    modelsPath: /models
+    authScheme: bearer
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 7200000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: documented
+    headers: {}
+    query: {}
+    enabled: true
+  - id: kimi-anthropic
+    name: Anthropic Messages
+    protocol: anthropic_messages
+    baseUrl: https://api.moonshot.cn/anthropic
+    requestPath: /v1/messages
+    modelsPath: null
+    authScheme: bearer
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 7200000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: documented
+    headers: {}
+    query: {}
+    enabled: true
+accounts:
+  - id: kimi-main
+    name: default 项目
+    billingMode: metered
+    billingPlanName: null
+    credentials:
+      - id: kimi-main-key
+        accountId: kimi-main
+        name: Kimi API Key
+        kind: api_key
+        secretRef: env://MOONSHOT_API_KEY
+        status: unverified
+        endpointBindings:
+          - endpointId: kimi-chat
+            priority: 100
+            enabled: true
+          - endpointId: kimi-anthropic
+            priority: 100
+            enabled: true
+enabled: true

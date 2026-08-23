@@ -1,0 +1,166 @@
+{
+  "version": "0.1.0-alpha.3",
+  "pages": [
+    {
+      "id": "overview",
+      "path": "/overview",
+      "navGroup": "监控",
+      "label": "概览",
+      "purpose": "确认系统状态、使用量与待处理问题",
+      "primaryAction": null,
+      "layout": "kpi-strip + trend/attention + compact tables",
+      "requiredStates": [
+        "loading",
+        "first-empty",
+        "partial",
+        "system-error",
+        "unknown-cost"
+      ]
+    },
+    {
+      "id": "requests",
+      "path": "/requests",
+      "navGroup": "监控",
+      "label": "请求",
+      "purpose": "解释一次逻辑请求及其上游 Attempt 链",
+      "primaryAction": "发送测试请求",
+      "layout": "master-detail",
+      "requiredStates": [
+        "loading",
+        "first-empty",
+        "filtered-empty",
+        "partial-inspector",
+        "payload-not-retained",
+        "stream-interrupted"
+      ]
+    },
+    {
+      "id": "analytics",
+      "path": "/analytics",
+      "navGroup": "监控",
+      "label": "分析",
+      "purpose": "比较使用量、稳定性、性能与成本",
+      "primaryAction": "导出 CSV",
+      "layout": "filters + metric switch + chart + breakdown",
+      "requiredStates": [
+        "loading",
+        "empty",
+        "partial",
+        "stale",
+        "unknown-cost"
+      ]
+    },
+    {
+      "id": "connections",
+      "path": "/connections",
+      "navGroup": "配置",
+      "label": "连接",
+      "purpose": "管理 Provider、Endpoint、账号、Credential 与兼容性",
+      "primaryAction": "添加连接",
+      "layout": "provider-directory + durable-detail",
+      "requiredStates": [
+        "loading",
+        "first-empty",
+        "partial-provider",
+        "cooldown",
+        "auth-failed",
+        "unverified"
+      ]
+    },
+    {
+      "id": "models",
+      "path": "/models",
+      "navGroup": "配置",
+      "label": "模型",
+      "purpose": "管理 Endpoint 级模型绑定、能力、上下文与价格来源",
+      "primaryAction": "添加模型绑定",
+      "layout": "dense-table + detail-sheet",
+      "requiredStates": [
+        "loading",
+        "first-empty",
+        "filtered-empty",
+        "syncing",
+        "stale",
+        "unknown-price",
+        "disabled"
+      ]
+    },
+    {
+      "id": "routes",
+      "path": "/routes",
+      "navGroup": "配置",
+      "label": "路由",
+      "purpose": "定义确定性同协议模型映射并解释选择",
+      "primaryAction": "创建路由",
+      "layout": "rules-table + explanation-panel",
+      "requiredStates": [
+        "loading",
+        "first-empty",
+        "filtered-empty",
+        "draft",
+        "shadowed",
+        "invalid-reference"
+      ]
+    },
+    {
+      "id": "route-editor",
+      "path": "/routes/new",
+      "navGroup": "配置",
+      "label": "创建路由",
+      "purpose": "配置、模拟、校验并发布路由",
+      "primaryAction": "保存并发布",
+      "layout": "form-sections + sticky-explanation",
+      "requiredStates": [
+        "pristine",
+        "dirty",
+        "validating",
+        "simulation-success",
+        "simulation-failed",
+        "publish-conflict"
+      ]
+    },
+    {
+      "id": "clients",
+      "path": "/clients",
+      "navGroup": "配置",
+      "label": "客户端",
+      "purpose": "管理 Harness 实例、Gateway Key、路由范围和归因",
+      "primaryAction": "添加客户端",
+      "layout": "dense-table + detail-sheet",
+      "requiredStates": [
+        "loading",
+        "first-empty",
+        "key-created-once",
+        "disabled",
+        "key-rotation"
+      ]
+    },
+    {
+      "id": "settings",
+      "path": "/settings",
+      "navGroup": "系统",
+      "label": "设置",
+      "purpose": "管理隐私、模型元数据、Secret、备份与运行策略",
+      "primaryAction": null,
+      "layout": "local-nav + open-setting-rows",
+      "requiredStates": [
+        "loading",
+        "dirty",
+        "saving",
+        "saved",
+        "restart-required",
+        "validation-error"
+      ]
+    }
+  ],
+  "globalActions": [
+    "command-search",
+    "quick-create",
+    "system-health"
+  ],
+  "quickCreate": [
+    "connection",
+    "route",
+    "client"
+  ]
+}

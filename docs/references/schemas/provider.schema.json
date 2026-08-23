@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProviderConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "endpoints",
+    "accounts"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "presetKind": {
+      "enum": [
+        "built_in",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "modelsDevProviderId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "protocol",
+          "baseUrl",
+          "requestPath",
+          "authScheme"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "protocol": {
+            "enum": [
+              "openai_chat",
+              "openai_responses",
+              "anthropic_messages"
+            ]
+          },
+          "baseUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://"
+          },
+          "requestPath": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "modelsPath": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/"
+          },
+          "authScheme": {
+            "enum": [
+              "bearer",
+              "x_api_key",
+              "custom_headers"
+            ]
+          },
+          "transport": {
+            "enum": [
+              "http_json",
+              "http_sse",
+              "websocket"
+            ],
+            "default": "http_sse"
+          },
+          "supportsStreaming": {
+            "type": "boolean",
+            "default": true
+          },
+          "supportsWebsocket": {
+            "type": "boolean",
+            "default": false
+          },
+          "requestTimeoutMs": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 7200000,
+            "default": 300000
+          },
+          "streamIdleTimeoutMs": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 7200000,
+            "default": 300000
+          },
+          "compatibilityStatus": {
+            "enum": [
+              "verified",
+              "documented",
+              "partial",
+              "unverified",
+              "blocked"
+            ],
+            "default": "unverified"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {}
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {}
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "billingMode",
+          "credentials"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "billingMode": {
+            "enum": [
+              "metered",
+              "subscription",
+              "free",
+              "custom",
+              "unknown"
+            ]
+          },
+          "billingPlanName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "credentials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "accountId",
+                "name",
+                "kind",
+                "secretRef"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "accountId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "enum": [
+                    "api_key",
+                    "bearer_token",
+                    "custom_header_set"
+                  ]
+                },
+                "secretRef": {
+                  "type": "string",
+                  "pattern": "^(env|file|secret)://"
+                },
+                "status": {
+                  "enum": [
+                    "unverified",
+                    "healthy",
+                    "cooldown",
+                    "auth_failed",
+                    "unavailable",
+                    "disabled"
+                  ],
+                  "default": "unverified"
+                },
+                "endpointBindings": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "endpointId"
+                    ],
+                    "properties": {
+                      "endpointId": {
+                        "type": "string"
+                      },
+                      "priority": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 100
+                      },
+                      "enabled": {
+                        "type": "boolean",
+                        "default": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

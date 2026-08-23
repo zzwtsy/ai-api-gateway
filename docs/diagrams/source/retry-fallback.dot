@@ -1,0 +1,27 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad="0.2", nodesep="0.45", ranksep="0.65", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=10.5];
+  edge [color="#64748b", fontname="Noto Sans CJK SC", fontsize=9, arrowsize=0.65];
+  select [label="选择 Credential"];
+  send [label="发送 Attempt", fillcolor="#dbeafe", color="#2563eb"];
+  success [label="成功", fillcolor="#ecfdf5", color="#22c55e"];
+  cooldown [label="429 → cooldown", fillcolor="#fff7ed", color="#f97316"];
+  auth [label="401/403 → auth_failed", fillcolor="#fef2f2", color="#ef4444"];
+  retry [label="连接错误/明确 5xx"];
+  terminal [label="终止失败", fillcolor="#fef2f2", color="#ef4444"];
+  next [label="下一个同协议 Target"];
+  committed [label="已发首字节\n禁止回退", fillcolor="#fff7ed", color="#f97316"];
+  select -> send;
+  send -> success [label="2xx + 正常终态"];
+  send -> cooldown [label="429"];
+  send -> auth [label="401/403"];
+  send -> retry [label="transport/5xx"];
+  send -> terminal [label="参数类 4xx"];
+  send -> committed [label="stream committed"];
+  cooldown -> select [label="同 Endpoint 下一 Key"];
+  auth -> select [label="同 Endpoint 下一 Key"];
+  retry -> next [label="预算允许"];
+  next -> select;
+  next -> terminal [label="无 Target / 预算耗尽"];
+  committed -> terminal;
+}

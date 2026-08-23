@@ -1,0 +1,30 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="transparent", pad="0.2", nodesep="0.35", ranksep="0.45", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=10.5];
+  edge [color="#64748b", fontname="Noto Sans CJK SC", fontsize=9, arrowsize=0.65];
+  start [label="收到请求", fillcolor="#eff6ff", color="#60a5fa"];
+  key [label="Gateway Key → Client / Harness"];
+  proto [label="入口路径 → Protocol"];
+  model [label="读取 requested_model"];
+  match [label="按 scope + matcher + priority\n确定性匹配"];
+  found [label="找到 RouteRule?", shape=diamond, style="filled", fillcolor="#f8fafc"];
+  no [label="gateway_no_route", fillcolor="#fef2f2", color="#ef4444"];
+  target [label="按 sequence 遍历 Target"];
+  valid [label="协议一致?", shape=diamond, style="filled", fillcolor="#f8fafc"];
+  invalid [label="配置不可发布", fillcolor="#fef2f2", color="#ef4444"];
+  cred [label="选择健康 Credential"];
+  send [label="创建 Attempt 并转发", fillcolor="#dbeafe", color="#2563eb"];
+  result [label="可回退?", shape=diamond, style="filled", fillcolor="#f8fafc"];
+  ok [label="返回成功", fillcolor="#ecfdf5", color="#22c55e"];
+  fail [label="返回上游结果/错误", fillcolor="#fff7ed", color="#f97316"];
+  start -> key -> proto -> model -> match -> found;
+  found -> no [label="否"];
+  found -> target [label="是"];
+  target -> valid;
+  valid -> invalid [label="否"];
+  valid -> cred [label="是"];
+  cred -> send -> result;
+  result -> ok [label="成功"];
+  result -> target [label="允许且预算未耗尽"];
+  result -> fail [label="不可重试或已发首字节"];
+}

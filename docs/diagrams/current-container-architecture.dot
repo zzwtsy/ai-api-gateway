@@ -1,0 +1,124 @@
+digraph G {
+  graph [
+    rankdir=TB,
+    newrank=true,
+    bgcolor="#ffffff",
+    pad="0.30",
+    nodesep="0.34",
+    ranksep="0.65",
+    splines=ortho,
+    ratio="compress",
+    size="15,10!",
+    fontname="Noto Sans CJK SC",
+    fontsize=18,
+    label="AI API Gateway 当前实现架构（0.1.0-alpha.3）",
+    labelloc=t,
+    labeljust=l
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fillcolor="#ffffff",
+    color="#d4d4d8",
+    penwidth=1.2,
+    fontname="Noto Sans CJK SC",
+    fontsize=11.5,
+    fontcolor="#18181b",
+    margin="0.17,0.11"
+  ];
+
+  edge [
+    color="#71717a",
+    penwidth=1.15,
+    arrowsize=0.68,
+    fontname="Noto Sans CJK SC",
+    fontsize=9.5,
+    fontcolor="#52525b"
+  ];
+
+  harness [label="AI Harness / SDK\nCodex · Claude Code · Pi", fillcolor="#fafafa"];
+  web [label="React 桌面控制面\n由同一进程提供静态产物", fillcolor="#fafafa"];
+  env [label="启动配置\n环境变量", fillcolor="#fffbeb", color="#fcd34d"];
+  provider [label="Mock Provider /\n上游 AI 厂商", fillcolor="#fafafa"];
+  postgres [label="PostgreSQL", shape=cylinder, fillcolor="#fafafa"];
+
+  subgraph cluster_gateway {
+    label="Node.js 24 + TypeScript 6 模块化单体";
+    color="#a1a1aa";
+    penwidth=1.5;
+    style="rounded";
+    fontname="Noto Sans CJK SC";
+    fontsize=13.5;
+    fontcolor="#27272a";
+    margin=20;
+
+    subgraph cluster_control {
+      label="控制面（Control Plane）";
+      color="#bfdbfe";
+      fillcolor="#f8fbff";
+      style="rounded,filled";
+      penwidth=1.4;
+      fontname="Noto Sans CJK SC";
+      fontsize=12.5;
+      fontcolor="#1e3a8a";
+
+      control_auth [label="Better Auth Session\n开发令牌仅非生产可用"];
+      admin_api [label="Hono + OpenAPI 管理 API\n/admin/api/v1"];
+      connections [label="Connections\n列表 · 详情 · 创建"];
+      requests [label="Requests\nRequest / Attempt 查询"];
+      connection_repo [label="Connection Repository"];
+      request_store [label="Request Store"];
+
+      control_auth -> admin_api;
+      admin_api -> connections;
+      admin_api -> requests;
+      connections -> connection_repo;
+      requests -> request_store;
+    }
+
+    subgraph cluster_data {
+      label="数据面（Data Plane）";
+      color="#bbf7d0";
+      fillcolor="#f8fff9";
+      style="rounded,filled";
+      penwidth=1.4;
+      fontname="Noto Sans CJK SC";
+      fontsize=12.5;
+      fontcolor="#14532d";
+
+      ingress [label="OpenAI Chat 协议入口\n/openai/v1/chat/completions"];
+      client_auth [label="Gateway Client Key 认证"];
+      snapshot [label="Bootstrap RoutingSnapshot\n静态、不可变", fillcolor="#fffbeb", color="#fcd34d"];
+      resolver [label="同协议路由解析"];
+      credential [label="Bootstrap Provider Credential\n静态解析", fillcolor="#fffbeb", color="#fcd34d"];
+      transport [label="Undici Pool\n原始 HTTP / SSE"];
+      writer [label="客户端流写入器\n主路径 · 遵守背压"];
+      observer [label="有界旁路观测\n满载不阻塞主路径"];
+      recorder [label="Request / Attempt 记录器"];
+
+      ingress -> client_auth -> resolver -> transport;
+      snapshot -> resolver [style=dashed, color="#2563eb"];
+      credential -> transport [style=dashed, color="#2563eb"];
+      transport -> writer;
+      transport -> observer [style=dashed];
+      observer -> recorder;
+      recorder -> request_store;
+    }
+  }
+
+  control_auth -> ingress [style=invis, weight=20];
+
+  web -> control_auth;
+  harness -> ingress;
+  writer -> harness [style=dashed, constraint=false];
+  transport -> provider [dir=both];
+  env -> client_auth [style=dashed];
+  env -> snapshot [style=dashed];
+  env -> credential [style=dashed];
+  connection_repo -> postgres;
+  request_store -> postgres;
+
+  {rank=same; web; harness; env;}
+  {rank=same; provider; postgres;}
+}

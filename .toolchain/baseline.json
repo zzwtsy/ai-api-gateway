@@ -1,0 +1,101 @@
+{
+  "formatVersion": 1,
+  "projectVersion": "0.1.0-alpha.3",
+  "defaultLanguage": "zh-CN",
+  "typescript": {
+    "version": "6.0.3",
+    "singleOwner": "package.json"
+  },
+  "shadcn": {
+    "cliVersion": "4.19.0",
+    "framework": "vite",
+    "workspace": "apps/web",
+    "preset": "base-nova",
+    "base": "base",
+    "style": "nova",
+    "iconLibrary": "lucide",
+    "upstreamRepository": "shadcn-ui/ui",
+    "upstreamCommit": "1773ecfeeb4a04366978d353e69b5c7ded78dcb2",
+    "components": [
+      "badge",
+      "button",
+      "card",
+      "empty",
+      "field",
+      "input",
+      "label",
+      "select",
+      "separator",
+      "skeleton",
+      "spinner",
+      "table"
+    ],
+    "localPatches": {
+      "badge": [
+        "success and warning semantic product-status variants"
+      ],
+      "spinner": [
+        "zh-CN accessible label"
+      ]
+    },
+    "componentDigests": {
+      "badge": "1a8bbd6e99073a9db7187fc295ba55099745295c52aee403050dc66a9e87df92",
+      "button": "fc2e0c1417e6f09f6963291a2a48a646dfec5acba95a8c7567810264479aef13",
+      "card": "d008fb8557ce6a939ac41e81ab86e76546f82bff4cab0fa439b55f4a5e897af6",
+      "empty": "4367907e31039f2c69fa2dafc948cd1fac2709e770a70276cc9dcfda550324a6",
+      "field": "4dd7775855722d7b04fa90d687b6223fe6076259b7fd59728a43fe7b9fa961a7",
+      "input": "7a0d18948c3a0731f6df7689b796aeb51b4e1231b5bb7ab2a8c3506e6ef9d3a7",
+      "label": "eebf6f3ad4de87489da1ca9d0f24a8aaf4d77a94f362db130721531e568600f7",
+      "select": "8dd1c7e4d7ff544f5cfc1079def00836e7de78a7648ace063adab05f0bf69056",
+      "separator": "908808b39ed38a1724c656412cfbb270617b0ef628b87dcd9ace669e018a6a9b",
+      "skeleton": "485c6867daf193a560bc4a0c5f8eea424cb823b7eddff0e6f7768ffe79eb552b",
+      "spinner": "a4a9359df61c29fc7add60963fa863c641459aa46d0257c51531d10f3c85a298",
+      "table": "5dc043006b1063e7206b94fe66729c8349dc49b22254363fa1b6a9ee76b5149a"
+    }
+  },
+  "eslint": {
+    "initializer": "@antfu/eslint-config",
+    "version": "9.3.0",
+    "react": true,
+    "jsxA11y": true,
+    "projectRules": [
+      "gateway dependency boundaries",
+      "control-plane feature isolation",
+      "web feature isolation",
+      "complexity and file-size ratchets"
+    ]
+  },
+  "vite": {
+    "template": "react-ts",
+    "typescriptFaces": [
+      "apps/web/tsconfig.app.json",
+      "apps/web/tsconfig.node.json"
+    ],
+    "router": {
+      "mode": "file-based",
+      "routesDirectory": "apps/web/src/routes",
+      "generatedRouteTree": "apps/web/src/routeTree.gen.ts",
+      "plugin": "@tanstack/router-plugin",
+      "pluginVersion": "1.168.23",
+      "autoCodeSplitting": true
+    }
+  },
+  "activation": {
+    "requiresRegistryAccess": true,
+    "requiresNode": "24.x",
+    "requiresPnpm": "11.x",
+    "requiredGeneratedFiles": [
+      "pnpm-lock.yaml",
+      "apps/web/src/api/schema.d.ts",
+      "apps/web/src/routeTree.gen.ts"
+    ]
+  },
+  "openapiClient": {
+    "schema": "apps/web/src/api/schema.d.ts",
+    "typeGenerator": "openapi-typescript",
+    "transport": "openapi-fetch",
+    "queryAdapter": "openapi-react-query",
+    "runtimeDirectory": "apps/web/src/lib/api-runtime",
+    "serverStateOwner": "@tanstack/react-query"
+  }
+}

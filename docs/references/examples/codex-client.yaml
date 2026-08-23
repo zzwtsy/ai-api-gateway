@@ -1,0 +1,13 @@
+id: codex-arch
+name: Codex - Arch
+harnessProfile: codex
+allowedProtocols:
+  - openai_responses
+allowedModelPatterns:
+  - "gpt-*"
+dailyCostLimit: null
+monthlyCostLimit: null
+status: active
+key:
+  secretRef: env://GATEWAY_CODEX_KEY
+  expiresAt: null

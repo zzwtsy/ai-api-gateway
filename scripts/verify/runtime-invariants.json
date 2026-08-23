@@ -1,0 +1,56 @@
+{
+  "owners": [
+    {
+      "name": "routing decision",
+      "source": "apps/gateway/src/data-plane/routing/invariant.ts",
+      "test": "apps/gateway/src/data-plane/routing/invariant.test.ts",
+      "consumers": [
+        "apps/gateway/src/data-plane/protocols/openai-chat/handler.ts"
+      ],
+      "symbol": "assertRoutingDecisionInvariant"
+    },
+    {
+      "name": "upstream transport request",
+      "source": "apps/gateway/src/data-plane/transport/invariant.ts",
+      "test": "apps/gateway/src/data-plane/transport/invariant.test.ts",
+      "consumers": [
+        "apps/gateway/src/data-plane/transport/undici-registry.ts"
+      ],
+      "symbol": "assertUpstreamRequestInvariant"
+    },
+    {
+      "name": "request/attempt recording",
+      "source": "apps/gateway/src/data-plane/recording/invariant.ts",
+      "test": "apps/gateway/src/data-plane/recording/invariant.test.ts",
+      "consumers": [
+        "apps/gateway/src/app/adapters/memory-request-store.ts",
+        "apps/gateway/src/app/adapters/postgres-request-store.ts"
+      ],
+      "symbols": [
+        "assertStartRequestAttemptInvariant",
+        "assertCompleteRequestAttemptInvariant"
+      ]
+    },
+    {
+      "name": "bounded observation",
+      "source": "apps/gateway/src/data-plane/observation/invariant.ts",
+      "test": "apps/gateway/src/data-plane/observation/invariant.test.ts",
+      "consumers": [
+        "apps/gateway/src/data-plane/observation/bounded-byte-observer.ts"
+      ],
+      "symbols": [
+        "assertObserverConfiguration",
+        "assertObservationSummary"
+      ]
+    },
+    {
+      "name": "shutdown quiescence",
+      "source": "apps/gateway/src/app/shutdown-controller.ts",
+      "test": "apps/gateway/src/app/shutdown-controller.test.ts",
+      "consumers": [
+        "apps/gateway/src/app/lifecycle.ts"
+      ],
+      "symbol": "ShutdownController"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+flowchart LR
+  W[欢迎页] --> P[选择厂商预设]
+  P --> K[填写 API Key]
+  K --> T[测试连接与协议 Probe]
+  T --> M[发现模型 + models.dev 预填]
+  M --> R[创建默认同协议路由]
+  R --> C[创建 Harness Client Key]
+  C --> G[生成 Codex / Claude Code 配置]
+  G --> V[发送测试请求]
+  V --> D[进入概览页]
+  T -->|失败| F[显示影响、原因和可执行修复]
+  F --> K

@@ -1,0 +1,52 @@
+{
+  "request": {
+    "id": "req_01H...",
+    "client": "Codex - Arch",
+    "harnessProfile": "codex",
+    "protocol": "openai_responses",
+    "requestedModel": "gpt-5.4",
+    "resolvedRoute": "codex-gpt54-deepseek",
+    "finalStatus": "succeeded",
+    "attemptCount": 2,
+    "ttftMs": 1280,
+    "durationMs": 6720,
+    "estimatedCost": "0.001286",
+    "costStatus": "calculated"
+  },
+  "attempts": [
+    {
+      "sequence": 1,
+      "provider": "DeepSeek",
+      "endpoint": "Responses",
+      "account": "主账号",
+      "credentialMask": "****A8F7",
+      "upstreamModel": "deepseek-v4-flash",
+      "httpStatus": 429,
+      "status": "failed",
+      "errorCategory": "upstream_rate_limit",
+      "durationMs": 142,
+      "estimatedCost": null
+    },
+    {
+      "sequence": 2,
+      "provider": "DeepSeek",
+      "endpoint": "Responses",
+      "account": "备用账号",
+      "credentialMask": "****C9D3",
+      "upstreamModel": "deepseek-v4-flash",
+      "httpStatus": 200,
+      "semanticStatus": "completed",
+      "status": "succeeded",
+      "durationMs": 6578,
+      "usage": {
+        "inputTokens": 21384,
+        "outputTokens": 20932,
+        "cacheReadTokens": 12984,
+        "totalTokens": 42316,
+        "source": "reported",
+        "complete": true
+      },
+      "estimatedCost": "0.001286"
+    }
+  ]
+}

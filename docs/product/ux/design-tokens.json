@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "ai-api-gateway-shadcn-product-ux",
+  "version": "0.1.0-alpha.3",
+  "mode": "light",
+  "color": {
+    "background": "#f4f4f5",
+    "foreground": "#18181b",
+    "surface": "#ffffff",
+    "surfaceSubtle": "#fafafa",
+    "muted": "#f4f4f5",
+    "mutedForeground": "#71717a",
+    "border": "#e4e4e7",
+    "input": "#e4e4e7",
+    "ring": "#a1a1aa",
+    "primary": "#18181b",
+    "primaryForeground": "#fafafa",
+    "destructive": "#dc2626",
+    "semantic": {
+      "success": {
+        "foreground": "#15803d",
+        "background": "#f0fdf4",
+        "border": "#bbf7d0"
+      },
+      "warning": {
+        "foreground": "#b45309",
+        "background": "#fffbeb",
+        "border": "#fde68a"
+      },
+      "danger": {
+        "foreground": "#b91c1c",
+        "background": "#fef2f2",
+        "border": "#fecaca"
+      },
+      "info": {
+        "foreground": "#1d4ed8",
+        "background": "#eff6ff",
+        "border": "#bfdbfe"
+      },
+      "purple": {
+        "foreground": "#7e22ce",
+        "background": "#faf5ff",
+        "border": "#e9d5ff"
+      }
+    }
+  },
+  "radius": {
+    "shell": "12px",
+    "default": "10px",
+    "small": "6px",
+    "pill": "999px"
+  },
+  "shadow": {
+    "xs": "0 1px 2px rgb(0 0 0 / 0.035)",
+    "sm": "0 1px 3px rgb(0 0 0 / 0.055), 0 1px 2px rgb(0 0 0 / 0.03)",
+    "dialog": "0 24px 60px rgb(0 0 0 / 0.20)",
+    "sheet": "-16px 0 44px rgb(0 0 0 / 0.14)"
+  },
+  "layout": {
+    "shellOuterGap": "12px",
+    "sidebarExpanded": "230px",
+    "sidebarCollapsed": "70px",
+    "topbarHeight": "56px",
+    "pageGutterDesktop": "24px",
+    "pageGutterMedium": "20px",
+    "pageGutterCompact": "16px",
+    "pageTopPadding": "22px",
+    "pageBottomPadding": "32px",
+    "requestMasterMin": "620px",
+    "requestInspectorMin": "390px",
+    "connectionDirectory": "300px",
+    "settingsNavigation": "220px",
+    "settingsContentMax": "760px",
+    "sheetDefault": "500px",
+    "sheetWide": "640px"
+  },
+  "control": {
+    "defaultHeight": "34px",
+    "smallHeight": "30px",
+    "iconDefault": "34px",
+    "iconSmall": "30px"
+  },
+  "table": {
+    "headerHeight": "35px",
+    "rowHeight": "42px",
+    "fontSize": "12px",
+    "headerFontSize": "10px"
+  },
+  "typography": {
+    "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif",
+    "monoFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    "pageTitle": {
+      "size": "22px",
+      "lineHeight": "30px",
+      "weight": 680,
+      "tracking": "-0.025em"
+    },
+    "editorTitle": {
+      "size": "18px",
+      "lineHeight": "26px",
+      "weight": 670
+    },
+    "entityTitle": {
+      "size": "16px",
+      "lineHeight": "23px",
+      "weight": 660
+    },
+    "cardTitle": {
+      "size": "13px",
+      "lineHeight": "19px",
+      "weight": 650
+    },
+    "body": {
+      "size": "14px",
+      "lineHeight": "21px",
+      "weight": 400
+    },
+    "control": {
+      "size": "12px",
+      "lineHeight": "16px",
+      "weight": 560
+    },
+    "helper": {
+      "size": "11px",
+      "lineHeight": "17px",
+      "weight": 400
+    },
+    "micro": {
+      "size": "10px",
+      "lineHeight": "14px",
+      "weight": 400
+    }
+  },
+  "breakpoint": {
+    "wide": "1600px",
+    "desktop": "1440px",
+    "minimumCommitted": "1280px",
+    "compactDesktop": "1024px"
+  },
+  "motion": {
+    "fast": "80ms",
+    "default": "120ms",
+    "overlay": "150ms",
+    "sheet": "180ms",
+    "easing": "ease-out"
+  }
+}

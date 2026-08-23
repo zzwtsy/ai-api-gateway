@@ -1,0 +1,18 @@
+stateDiagram-v2
+  [*] --> SelectCredential
+  SelectCredential --> SendAttempt: 找到健康 Key
+  SelectCredential --> NextTarget: 当前 Endpoint 无可用 Key
+  SendAttempt --> Success: 2xx + 正常终态
+  SendAttempt --> Cooldown: 429
+  SendAttempt --> AuthFailed: 401 / 403
+  SendAttempt --> RetryableFailure: 连接错误 / 明确 5xx
+  SendAttempt --> TerminalFailure: 4xx 参数错误
+  SendAttempt --> StreamCommitted: 已向客户端发送首字节
+  Cooldown --> SelectCredential: 标记 cooldown，尝试同 Endpoint 下一 Key
+  AuthFailed --> SelectCredential: 标记 auth_failed，尝试下一 Key
+  RetryableFailure --> NextTarget: 尝试预算允许
+  NextTarget --> SelectCredential: 同协议备用 Target
+  NextTarget --> TerminalFailure: 无 Target 或预算耗尽
+  StreamCommitted --> TerminalFailure: 禁止换 Key 或 Provider
+  Success --> [*]
+  TerminalFailure --> [*]

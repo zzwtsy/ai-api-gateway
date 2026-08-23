@@ -1,0 +1,48 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad="0.2", nodesep="0.35", ranksep="0.7", fontname="Noto Sans CJK SC", splines=ortho];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=9.5, margin="0.12,0.08"];
+  edge [color="#94a3b8", arrowsize=0.55, fontname="Noto Sans CJK SC", fontsize=8];
+  subgraph cluster_client { label="客户端身份"; color="#bfdbfe"; style="rounded";
+    hp [label="HarnessProfile"];
+    gc [label="GatewayClient"];
+    gk [label="GatewayClientKey"];
+    hp -> gc [label="1:N"];
+    gc -> gk [label="1:N"];
+  }
+  subgraph cluster_provider { label="上游连接"; color="#ddd6fe"; style="rounded";
+    p [label="Provider"];
+    e [label="UpstreamEndpoint"];
+    a [label="ProviderAccount"];
+    c [label="ProviderCredential"];
+    ec [label="EndpointCredential"];
+    p -> e [label="1:N"];
+    p -> a [label="1:N"];
+    a -> c [label="1:N"];
+    e -> ec [label="1:N"];
+    c -> ec [label="1:N"];
+  }
+  subgraph cluster_model { label="模型与路由"; color="#bae6fd"; style="rounded";
+    md [label="ModelDefinition"];
+    pm [label="ProviderModelBinding"];
+    rr [label="RouteRule"];
+    rt [label="RouteTarget"];
+    md -> pm [label="1:N"];
+    e -> pm [label="1:N"];
+    rr -> rt [label="1:N"];
+    e -> rt;
+    pm -> rt;
+  }
+  subgraph cluster_obs { label="请求事实"; color="#bbf7d0"; style="rounded";
+    req [label="Request"];
+    att [label="Attempt"];
+    usage [label="NormalizedUsage"];
+    price [label="PricingSnapshot"];
+    req -> att [label="1:N"];
+    att -> usage [label="0..1"];
+    att -> price [label="0..1"];
+  }
+  gc -> req;
+  rr -> req;
+  rt -> att;
+  c -> att;
+}

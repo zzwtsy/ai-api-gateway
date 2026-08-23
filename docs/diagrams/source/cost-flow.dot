@@ -1,0 +1,29 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="transparent", pad="0.2", nodesep="0.35", ranksep="0.45", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=10.5];
+  edge [color="#64748b", fontname="Noto Sans CJK SC", fontsize=9, arrowsize=0.65];
+  done [label="Attempt 完成"];
+  has [label="有 Usage?", shape=diamond, style="filled", fillcolor="#f8fafc"];
+  norm [label="Normalize Usage"];
+  unknown [label="Usage = unknown / partial", fillcolor="#fff7ed", color="#f97316"];
+  binding [label="定位实际上游 Model Binding"];
+  rule [label="解析当时生效 PricingRule"];
+  snapshot [label="保存不可变 PricingSnapshot", fillcolor="#dbeafe", color="#2563eb"];
+  api [label="计算 API-equivalent cost"];
+  billing [label="Account billing_mode", shape=diamond, style="filled", fillcolor="#f8fafc"];
+  billed [label="estimated_billed_cost"];
+  sub [label="包月/免费：参考价值与边际费用分开"];
+  custom [label="unknown / custom"];
+  total [label="汇总所有 Attempt → Request Cost", fillcolor="#ecfdf5", color="#22c55e"];
+  done -> has;
+  has -> norm [label="是"];
+  has -> unknown [label="否"];
+  norm -> binding -> rule -> snapshot -> api -> billing;
+  billing -> billed [label="metered"];
+  billing -> sub [label="subscription/free"];
+  billing -> custom [label="unknown/custom"];
+  billed -> total;
+  sub -> total;
+  custom -> total;
+  unknown -> total;
+}

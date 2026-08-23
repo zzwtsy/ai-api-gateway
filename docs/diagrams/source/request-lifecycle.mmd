@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  participant H as Harness
+  participant I as Ingress
+  participant A as Client Auth
+  participant R as Route Resolver
+  participant C as Credential Selector
+  participant U as Upstream
+  participant O as Observability
+  H->>I: HTTP request + Gateway Client Key
+  I->>I: 识别入口协议并生成 gateway_request_id
+  I->>A: 认证 Header
+  A-->>I: GatewayClient + HarnessProfile
+  I->>R: protocol + requested_model + client context
+  R-->>I: RouteRule + RouteTarget snapshot
+  I->>C: endpoint + account policy
+  C-->>I: selected Credential snapshot
+  I->>O: create Request + Attempt
+  I->>U: 同协议请求（改鉴权、URL、model、显式 patch）
+  alt 非流式
+    U-->>I: HTTP response
+    I-->>H: status/body/allowed headers
+  else SSE 流式
+    U-->>I: raw SSE bytes
+    I-->>H: byte-transparent stream
+    I->>O: side-channel event/usage parsing
+  end
+  I->>O: complete Attempt and Request

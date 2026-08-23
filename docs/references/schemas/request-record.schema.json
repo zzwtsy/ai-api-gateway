@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/request-record.schema.json",
+  "title": "RequestRecordExample",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request",
+    "attempts"
+  ],
+  "properties": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "client",
+        "harnessProfile",
+        "protocol",
+        "requestedModel",
+        "resolvedRoute",
+        "finalStatus",
+        "attemptCount",
+        "costStatus"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "client": {
+          "type": "string",
+          "minLength": 1
+        },
+        "harnessProfile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protocol": {
+          "type": "string",
+          "enum": [
+            "openai_chat",
+            "openai_responses",
+            "anthropic_messages"
+          ]
+        },
+        "requestedModel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolvedRoute": {
+          "type": "string",
+          "minLength": 1
+        },
+        "finalStatus": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "succeeded",
+            "failed",
+            "cancelled",
+            "stream_interrupted"
+          ]
+        },
+        "attemptCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ttftMs": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "durationMs": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "estimatedCost": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "costStatus": {
+          "type": "string",
+          "enum": [
+            "reported",
+            "calculated",
+            "estimated",
+            "partial",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "provider",
+          "endpoint",
+          "account",
+          "credentialMask",
+          "upstreamModel",
+          "status",
+          "durationMs"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "endpoint": {
+            "type": "string",
+            "minLength": 1
+          },
+          "account": {
+            "type": "string",
+            "minLength": 1
+          },
+          "credentialMask": {
+            "type": "string",
+            "minLength": 4
+          },
+          "upstreamModel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "httpStatus": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 100,
+            "maximum": 599
+          },
+          "semanticStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "stream_interrupted"
+            ]
+          },
+          "errorCategory": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "usage": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/normalizedUsage"
+              }
+            ]
+          },
+          "estimatedCost": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "normalizedUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "inputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "outputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reasoningTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cacheReadTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cacheWriteTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "audioInputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "audioOutputTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "totalTokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "source": {
+          "enum": [
+            "reported",
+            "calculated",
+            "estimated",
+            "unknown"
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source",
+        "complete"
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.artifacts/
+.env
+*.local
+*.log
+.DS_Store
+
+apps/e2e/test-results/
+apps/e2e/playwright-report/
+apps/e2e/.auth/
+
+# Drizzle generated snapshots are committed once generated.
+# Do not ignore apps/gateway/drizzle/.

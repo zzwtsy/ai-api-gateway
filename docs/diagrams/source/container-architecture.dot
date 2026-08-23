@@ -1,0 +1,48 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="transparent", pad="0.25", nodesep="0.35", ranksep="0.5", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=11];
+  edge [color="#64748b", arrowsize=0.65, fontname="Noto Sans CJK SC", fontsize=9];
+  subgraph cluster_app { label="AI API Gateway 单体进程"; color="#93c5fd"; style="rounded";
+    subgraph cluster_dp { label="Data Plane"; color="#bfdbfe"; style="rounded";
+      ingress [label="Ingress Router"];
+      auth [label="Client Auth"];
+      route [label="Route Resolver"];
+      cred [label="Credential Selector"];
+      transport [label="Undici Protocol Transport"];
+      client [label="Client Stream Writer"];
+      observer [label="Bounded Observer Tap"];
+      record [label="Request / Attempt Recorder"];
+      ingress -> auth -> route -> cred -> transport -> client;
+      transport -> observer [label="try enqueue", style=dashed];
+      observer -> record;
+    }
+    subgraph cluster_cp { label="Control Plane"; color="#ddd6fe"; style="rounded";
+      api [label="OpenAPI Admin API"];
+      providers [label="Provider / Credentials"];
+      models [label="Model Registry"];
+      compiler [label="Route Snapshot Compiler"];
+      analytics [label="Analytics / Pricing"];
+      probe [label="Probe Runner"];
+      scheduler [label="Scheduler"];
+      api -> providers;
+      api -> models;
+      api -> compiler;
+      api -> analytics;
+      scheduler -> probe;
+      scheduler -> models;
+      scheduler -> analytics;
+    }
+    ui [label="React Desktop Web UI", fillcolor="#eff6ff", color="#60a5fa"];
+    ui -> api;
+    compiler -> route [label="immutable snapshot", style=dashed];
+    providers -> cred [label="credential state", style=dashed];
+    models -> route [label="model binding", style=dashed];
+  }
+  db [label="PostgreSQL", shape=cylinder];
+  payload [label="Local PayloadStore", shape=cylinder];
+  upstream [label="Upstream Providers"];
+  transport -> upstream;
+  record -> db;
+  record -> payload;
+  api -> db;
+}

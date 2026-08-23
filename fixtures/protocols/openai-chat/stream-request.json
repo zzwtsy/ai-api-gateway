@@ -1,0 +1,6 @@
+{
+  "model": "demo-model",
+  "stream": true,
+  "messages": [{ "role": "user", "content": "hello" }],
+  "unknown_provider_extension": { "preserve": true }
+}

@@ -1,0 +1,57 @@
+id: zhipu
+name: 智谱
+presetKind: built_in
+modelsDevProviderId: zhipuai
+endpoints:
+  - id: zhipu-openai-chat
+    name: 通用 OpenAI Chat
+    protocol: openai_chat
+    baseUrl: https://open.bigmodel.cn/api/paas/v4
+    requestPath: /chat/completions
+    modelsPath: /models
+    authScheme: bearer
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 300000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: documented
+    headers: {}
+    query: {}
+    enabled: true
+  - id: zhipu-anthropic
+    name: Anthropic Messages
+    protocol: anthropic_messages
+    baseUrl: https://open.bigmodel.cn/api/anthropic
+    requestPath: /v1/messages
+    modelsPath: null
+    authScheme: bearer
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 300000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: documented
+    headers: {}
+    query: {}
+    enabled: true
+accounts:
+  - id: zhipu-main
+    name: 通用 API 账号
+    billingMode: metered
+    billingPlanName: null
+    credentials:
+      - id: zhipu-main-key
+        accountId: zhipu-main
+        name: 通用 API Key
+        kind: api_key
+        secretRef: env://ZHIPU_API_KEY
+        status: unverified
+        endpointBindings:
+          - endpointId: zhipu-openai-chat
+            priority: 100
+            enabled: true
+          - endpointId: zhipu-anthropic
+            priority: 100
+            enabled: true
+enabled: true

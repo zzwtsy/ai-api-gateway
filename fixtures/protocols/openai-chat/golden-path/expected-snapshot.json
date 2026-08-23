@@ -1,0 +1,48 @@
+{
+  "upstream": {
+    "origin": "http://127.0.0.1:4010",
+    "path": "/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "authorization": "[REDACTED]",
+      "content-type": "application/json",
+      "x-extra": "preserved"
+    },
+    "bodyBase64": "eyJtb2RlbCI6ImRlbW8tbW9kZWwiLCJzdHJlYW0iOnRydWUsIm1lc3NhZ2VzIjpbeyJyb2xlIjoidXNlciIsImNvbnRlbnQiOiLkv53nlZnmnKrnn6XlrZfmrrUifV0sInVua25vd25fcHJvdmlkZXJfZXh0ZW5zaW9uIjp7Im5lc3RlZCI6WzEsdHJ1ZSwi5YC8Il19fQ=="
+  },
+  "downstream": {
+    "statusCode": 200,
+    "contentType": "text/event-stream; charset=utf-8",
+    "providerTrace": "trace-fixture",
+    "setCookie": null,
+    "bodyBase64": "ZGF0YTogeyJjaG9pY2VzIjpbeyJkZWx0YSI6eyJjb250ZW50Ijoi5L2g5aW9In19XX0KCmRhdGE6IFtET05FXQoK"
+  },
+  "recording": {
+    "request": {
+      "clientId": "bootstrap-client",
+      "protocol": "openai-chat",
+      "requestedModel": "demo-model",
+      "upstreamModel": "demo-model",
+      "routingSnapshotVersion": 7,
+      "stream": true,
+      "outcome": "succeeded",
+      "statusCode": 200,
+      "latencyMs": 40,
+      "ttftMs": 10,
+      "observationStatus": "complete",
+      "observedBytes": 66
+    },
+    "attempts": [
+      {
+        "sequence": 1,
+        "connectionId": "bootstrap-provider-connection",
+        "credentialId": "bootstrap-provider-credential",
+        "upstreamModel": "demo-model",
+        "outcome": "succeeded",
+        "statusCode": 200,
+        "errorCode": null,
+        "fallbackReason": null
+      }
+    ]
+  }
+}

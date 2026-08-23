@@ -1,0 +1,13 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "content-type": "text/event-stream; charset=utf-8",
+    "x-provider-trace": "trace-fixture",
+    "set-cookie": "provider-cookie=must-not-forward"
+  },
+  "chunksBase64": [
+    "ZGF0YTogeyJjaG9pY2VzIjpbeyJkZWx0YSI6eyJjb250ZW50Ijoi5A==",
+    "vaDl",
+    "pb0ifX1dfQoKZGF0YTogW0RPTkVdCgo="
+  ]
+}

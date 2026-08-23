@@ -1,0 +1,23 @@
+# 本地只拦截低延迟缺陷；完整矩阵由分 Lane CI 负责。
+pre-commit:
+  jobs:
+    - name: 暂存区 TypeScript/JavaScript Lint
+      glob: "*.{ts,tsx,mjs}"
+      run: pnpm exec eslint --fix --no-warn-ignored {staged_files}
+      stage_fixed: true
+
+    - name: 仓库脚本自测
+      glob: "scripts/**/*.mjs"
+      run: pnpm test:scripts
+
+    - name: Decision Note 格式
+      glob: "docs/decisions/**/*.md"
+      run: pnpm verify:decisions
+
+    - name: 暂存区空白检查
+      run: git diff --cached --check
+
+pre-push:
+  jobs:
+    - name: 快速防腐门禁
+      run: pnpm check:quick

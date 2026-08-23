@@ -1,0 +1,84 @@
+x-gateway-base: &gateway-base
+  build:
+    context: .
+  ports:
+    - "3001:3001"
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:18.6-bookworm
+    environment:
+      POSTGRES_DB: aigw
+      POSTGRES_USER: aigw
+      POSTGRES_PASSWORD: aigw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aigw -d aigw"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - aigw-postgres:/var/lib/postgresql/data
+
+  mock-provider:
+    image: node:24-bookworm-slim
+    ports:
+      - "127.0.0.1:4010:4010"
+    working_dir: /workspace
+    command: ["node", "apps/e2e/src/mock-provider.ts"]
+    environment:
+      MOCK_PROVIDER_HOST: 0.0.0.0
+      MOCK_PROVIDER_PORT: 4010
+    volumes:
+      - ./:/workspace:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4010/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    profiles: ["demo"]
+
+  gateway:
+    <<: *gateway-base
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      LOG_LEVEL: info
+      DATABASE_URL: ${DATABASE_URL:-postgresql://aigw:aigw@postgres:5432/aigw}
+      STORAGE_DRIVER: postgres
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must contain at least 32 random characters}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://127.0.0.1:3001}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://127.0.0.1:3001}
+      GATEWAY_CLIENT_KEY: ${GATEWAY_CLIENT_KEY:?GATEWAY_CLIENT_KEY must be explicitly configured}
+      GATEWAY_KEY_PEPPER: ${GATEWAY_KEY_PEPPER:?GATEWAY_KEY_PEPPER must be explicitly configured}
+      BOOTSTRAP_PROVIDER_BASE_URL: ${BOOTSTRAP_PROVIDER_BASE_URL:?BOOTSTRAP_PROVIDER_BASE_URL must be explicitly configured}
+      BOOTSTRAP_PROVIDER_API_KEY: ${BOOTSTRAP_PROVIDER_API_KEY:?BOOTSTRAP_PROVIDER_API_KEY must be explicitly configured}
+    profiles: ["app"]
+
+  gateway-demo:
+    <<: *gateway-base
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      LOG_LEVEL: info
+      DATABASE_URL: postgresql://aigw:aigw@postgres:5432/aigw
+      STORAGE_DRIVER: postgres
+      BETTER_AUTH_SECRET: development-better-auth-secret-change-me
+      BETTER_AUTH_URL: http://127.0.0.1:3001
+      WEB_ORIGIN: http://127.0.0.1:3001
+      DEV_ADMIN_TOKEN: admin_dev_local
+      GATEWAY_CLIENT_KEY: gw_dev_local_key
+      GATEWAY_KEY_PEPPER: development-gateway-key-pepper
+      BOOTSTRAP_PROVIDER_BASE_URL: http://mock-provider:4010
+      BOOTSTRAP_PROVIDER_API_KEY: mock-provider-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-provider:
+        condition: service_healthy
+    profiles: ["demo"]
+
+volumes:
+  aigw-postgres:

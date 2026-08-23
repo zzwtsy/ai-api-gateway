@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "dsh-prose-standard": {
+      "source": "deepseek-ai/deepseek-harness",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/dsh-prose-standard/SKILL.md",
+      "computedHash": "01b47d02504a552fda6c424f004393dd8ba2b2e616e0e28ac6e55f5a49dc8ac1"
+    },
+    "dsh-trim-cot-leakage": {
+      "source": "deepseek-ai/deepseek-harness",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/dsh-trim-cot-leakage/SKILL.md",
+      "computedHash": "626be3447316a720cf203d213ed3a5783416129bde1c57dbe590e8bf3f7f688e"
+    },
+    "pnpm": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pnpm/SKILL.md",
+      "computedHash": "2ec08c851c6f901d4ed72c21b826416ed074a487db65662b36249418afd728bf"
+    },
+    "vite": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vite/SKILL.md",
+      "computedHash": "867ff66238f3152e9c494339ad08dc432dd0df5bcf5cc7a00b61a72b580eb908"
+    },
+    "vitest": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vitest/SKILL.md",
+      "computedHash": "943d436114c677802426741980146c07560bf375297666b03062444f4b98a785"
+    }
+  }
+}

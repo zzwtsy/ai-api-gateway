@@ -1,0 +1,41 @@
+flowchart TB
+  subgraph APP[AI API Gateway 单体进程]
+    subgraph DP[Data Plane]
+      I[Ingress Router]
+      A[Client Authentication]
+      R[Route Resolver]
+      CS[Credential Selector]
+      P[Undici Protocol Transport]
+      C[Client Stream Writer]
+      OT[Bounded Observer Tap]
+      O[Request / Attempt Recorder]
+      I --> A --> R --> CS --> P --> C
+      P -.try enqueue.-> OT --> O
+    end
+    subgraph CP[Control Plane]
+      API[OpenAPI Admin API]
+      PM[Provider / Credential Management]
+      MM[Model Registry]
+      RC[Route Snapshot Compiler]
+      AN[Analytics / Pricing]
+      PR[Probe Runner]
+      SCH[Scheduler]
+      API --> PM
+      API --> MM
+      API --> RC
+      API --> AN
+      SCH --> PR
+      SCH --> MM
+      SCH --> AN
+    end
+    UI[React Desktop Web UI] --> API
+    RC -.原子发布 immutable snapshot.-> R
+    PM -.Credential state.-> CS
+    MM -.ProviderModelBinding.-> R
+  end
+  DB[(PostgreSQL)]
+  PS[(Local PayloadStore)]
+  UP[Upstream Providers]
+  APP --> DB
+  O --> PS
+  P --> UP

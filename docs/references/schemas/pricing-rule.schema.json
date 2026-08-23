@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PricingRuleConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "providerModelBindingId",
+    "currency",
+    "unit",
+    "validFrom",
+    "source"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "providerModelBindingId": {
+      "type": "string"
+    },
+    "endpointId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "unit": {
+      "const": "per_million_tokens"
+    },
+    "inputRate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "outputRate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "reasoningRate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "cacheReadRate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "cacheWriteRate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+    },
+    "reasoningIncludedInOutput": {
+      "type": "boolean",
+      "default": false
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "validTo": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "source": {
+      "enum": [
+        "models_dev",
+        "provider",
+        "manual",
+        "account_override"
+      ]
+    },
+    "sourceVersion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "priority": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

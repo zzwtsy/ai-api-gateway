@@ -1,0 +1,19 @@
+flowchart TD
+  S[收到请求] --> K[由 Gateway Key 解析 GatewayClient]
+  K --> P[由入口路径确定协议]
+  P --> M[读取请求 model]
+  M --> Q[查询已编译 Route Snapshot]
+  Q --> O{按确定性排序找到规则?}
+  O -- 否 --> E[返回 gateway_no_route]
+  O -- 是 --> T[按 sequence 遍历 RouteTarget]
+  T --> V{Target 协议与入口一致?}
+  V -- 否 --> X[配置无效，不允许发布]
+  V -- 是 --> C[选择健康 Credential]
+  C --> A{有可用 Credential?}
+  A -- 否 --> N[下一个 Target]
+  A -- 是 --> F[创建 Attempt 并转发]
+  F --> R{结果是否允许回退?}
+  R -- 成功 --> OK[返回结果]
+  R -- 不可重试/已发首字节 --> FAIL[返回上游结果或错误]
+  R -- 可回退且预算未耗尽 --> N
+  N --> T

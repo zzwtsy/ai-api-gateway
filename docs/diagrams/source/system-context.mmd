@@ -1,0 +1,22 @@
+flowchart LR
+  subgraph Clients[Harness 客户端]
+    C[Codex]
+    CC[Claude Code]
+    PI[Pi / 其他 Harness]
+  end
+  B[Desktop Browser]
+  G[AI API Gateway]
+  DB[(PostgreSQL)]
+  M[models.dev]
+  DS[DeepSeek]
+  ZP[智谱]
+  KM[Kimi]
+  C -->|Responses + 独立 Gateway Key| G
+  CC -->|Anthropic Messages + 独立 Gateway Key| G
+  PI -->|Chat / Responses / Anthropic| G
+  B -->|Control Plane API| G
+  G -->|同协议透明转发| DS
+  G -->|同协议透明转发| ZP
+  G -->|同协议透明转发| KM
+  G --> DB
+  G -->|元数据预填与同步| M

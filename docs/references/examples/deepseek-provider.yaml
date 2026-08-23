@@ -1,0 +1,76 @@
+id: deepseek
+name: DeepSeek
+presetKind: built_in
+modelsDevProviderId: deepseek
+endpoints:
+  - id: deepseek-chat
+    name: Chat Completions
+    protocol: openai_chat
+    baseUrl: https://api.deepseek.com
+    requestPath: /chat/completions
+    modelsPath: null
+    authScheme: bearer
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 300000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: documented
+    headers: {}
+    query: {}
+    enabled: true
+  - id: deepseek-responses
+    name: Responses
+    protocol: openai_responses
+    baseUrl: https://api.deepseek.com
+    requestPath: /responses
+    modelsPath: null
+    authScheme: bearer
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 300000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: partial
+    headers: {}
+    query: {}
+    enabled: true
+  - id: deepseek-anthropic
+    name: Anthropic Messages
+    protocol: anthropic_messages
+    baseUrl: https://api.deepseek.com/anthropic
+    requestPath: /v1/messages
+    modelsPath: null
+    authScheme: x_api_key
+    transport: http_sse
+    supportsStreaming: true
+    supportsWebsocket: false
+    requestTimeoutMs: 300000
+    streamIdleTimeoutMs: 300000
+    compatibilityStatus: partial
+    headers: {}
+    query: {}
+    enabled: true
+accounts:
+  - id: deepseek-main
+    name: 主账号
+    billingMode: metered
+    billingPlanName: null
+    credentials:
+      - id: deepseek-main-key
+        accountId: deepseek-main
+        name: 主 Key
+        kind: api_key
+        secretRef: env://DEEPSEEK_API_KEY
+        status: unverified
+        endpointBindings:
+          - endpointId: deepseek-chat
+            priority: 100
+            enabled: true
+          - endpointId: deepseek-responses
+            priority: 100
+            enabled: true
+          - endpointId: deepseek-anthropic
+            priority: 100
+            enabled: true
+enabled: true

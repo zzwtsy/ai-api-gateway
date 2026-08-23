@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/endpoint.schema.json",
+  "title": "UpstreamEndpointConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "protocol",
+    "baseUrl",
+    "requestPath",
+    "authScheme"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "protocol": {
+      "enum": [
+        "openai_chat",
+        "openai_responses",
+        "anthropic_messages"
+      ]
+    },
+    "baseUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "requestPath": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "modelsPath": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^/"
+    },
+    "authScheme": {
+      "enum": [
+        "bearer",
+        "x_api_key",
+        "custom_headers"
+      ]
+    },
+    "transport": {
+      "enum": [
+        "http_json",
+        "http_sse",
+        "websocket"
+      ],
+      "default": "http_sse"
+    },
+    "supportsStreaming": {
+      "type": "boolean",
+      "default": true
+    },
+    "supportsWebsocket": {
+      "type": "boolean",
+      "default": false
+    },
+    "requestTimeoutMs": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 7200000,
+      "default": 300000
+    },
+    "streamIdleTimeoutMs": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 7200000,
+      "default": 300000
+    },
+    "compatibilityStatus": {
+      "enum": [
+        "verified",
+        "documented",
+        "partial",
+        "unverified",
+        "blocked"
+      ],
+      "default": "unverified"
+    },
+    "headers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -1,0 +1,19 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad="0.2", nodesep="0.4", ranksep="0.55", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=10.5];
+  edge [color="#64748b", fontname="Noto Sans CJK SC", fontsize=9, arrowsize=0.65];
+  welcome [label="欢迎页"];
+  provider [label="选择厂商预设"];
+  key [label="填写 API Key"];
+  test [label="连接测试 + Protocol Probe"];
+  model [label="发现模型 + models.dev 预填"];
+  route [label="创建默认同协议路由"];
+  client [label="创建 Harness Client Key"];
+  config [label="生成 Codex / Claude Code 配置"];
+  verify [label="发送测试请求"];
+  dashboard [label="进入概览", fillcolor="#ecfdf5", color="#22c55e"];
+  error [label="影响 + 原因 + 修复建议", fillcolor="#fff7ed", color="#f97316"];
+  welcome -> provider -> key -> test -> model -> route -> client -> config -> verify -> dashboard;
+  test -> error [label="失败"];
+  error -> key;
+}

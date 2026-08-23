@@ -1,0 +1,17 @@
+id: price-deepseek-v4-flash-main
+providerModelBindingId: deepseek-responses-v4-flash
+endpointId: deepseek-responses
+accountId: deepseek-main
+currency: USD
+unit: per_million_tokens
+inputRate: "0.50"
+outputRate: "2.00"
+reasoningRate: null
+cacheReadRate: "0.05"
+cacheWriteRate: null
+reasoningIncludedInOutput: true
+validFrom: "2026-08-20T00:00:00Z"
+validTo: null
+source: manual
+sourceVersion: local-v1
+priority: 100

@@ -1,0 +1,15 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad="0.2", nodesep="0.45", ranksep="0.6", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=10.5];
+  edge [color="#64748b", fontname="Noto Sans CJK SC", fontsize=9, arrowsize=0.65];
+  h [label="Harness\nGateway Key"];
+  ingress [label="识别协议\n生成 request_id"];
+  auth [label="认证 Client\n解析 Harness Profile"];
+  route [label="读取 model\n匹配 Route Snapshot"];
+  cred [label="选择健康\nCredential"];
+  attempt [label="创建 Request\n和 Attempt"];
+  upstream [label="同协议上游请求\n改 URL / auth / model / patch", fillcolor="#dbeafe", color="#2563eb"];
+  stream [label="透明返回 JSON / SSE\n旁路解析 Usage"];
+  complete [label="完成 Attempt / Request\n计算费用与指标"];
+  h -> ingress -> auth -> route -> cred -> attempt -> upstream -> stream -> complete;
+}

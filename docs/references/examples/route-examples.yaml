@@ -1,0 +1,46 @@
+routes:
+  - id: codex-gpt54-deepseek
+    name: Codex gpt-5.4 → DeepSeek Responses
+    scope:
+      type: harness
+      id: codex
+    protocol: openai_responses
+    matcher:
+      type: exact
+      pattern: gpt-5.4
+    priority: 100
+    enabled: true
+    maxGatewayAttempts: 2
+    targets:
+      - sequence: 1
+        endpointId: deepseek-responses
+        providerModelBindingId: deepseek-responses-v4-flash
+        accountSelectionMode: automatic
+        accountSelectorId: null
+        requestTimeoutMs: 300000
+        patches:
+          - location: body
+            path: /reasoning/effort
+            mode: default_if_absent
+            value: max
+            sequence: 1
+  - id: claude-sonnet-kimi
+    name: Claude Sonnet → Kimi Anthropic
+    scope:
+      type: harness
+      id: claude-code
+    protocol: anthropic_messages
+    matcher:
+      type: prefix
+      pattern: claude-sonnet
+    priority: 100
+    enabled: true
+    maxGatewayAttempts: 2
+    targets:
+      - sequence: 1
+        endpointId: kimi-anthropic
+        providerModelBindingId: kimi-anthropic-k3-1m
+        accountSelectionMode: automatic
+        accountSelectorId: null
+        requestTimeoutMs: 7200000
+        patches: []

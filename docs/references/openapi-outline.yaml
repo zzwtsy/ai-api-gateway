@@ -1,0 +1,2874 @@
+openapi: 3.1.0
+info:
+  title: AI API Gateway 控制面 API
+  version: 0.1.0-alpha.3
+  description: '面向单用户、自托管 AI API Gateway 的管理 API 轮廓。
+
+    本文件描述控制面，不描述 OpenAI Chat Completions、OpenAI Responses、Anthropic Messages 数据面入口。
+
+    Secret 创建、路由解释、兼容性探测和 Request/Attempt 可观测性是核心能力。
+
+    '
+servers:
+- url: /admin/api/v1
+security:
+- sessionCookie: []
+tags:
+- name: System
+- name: Providers
+- name: Endpoints
+- name: Accounts
+- name: Credentials
+- name: Models
+- name: Routes
+- name: Clients
+- name: Requests
+- name: Analytics
+- name: Settings
+paths:
+  /health:
+    get:
+      tags:
+      - System
+      summary: 读取控制面健康状态
+      security: []
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+      operationId: getControlPlaneHealth
+      description: 读取控制面健康状态。
+  /providers:
+    get:
+      tags:
+      - Providers
+      summary: 列出 Provider
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          $ref: '#/components/responses/ProviderListResponse'
+      operationId: listProviders
+      description: 列出 Provider。
+    post:
+      tags:
+      - Providers
+      summary: 创建 Provider 连接
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderCreateInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      operationId: createProvider
+      description: 创建 Provider 连接。
+  /providers/{providerId}:
+    parameters:
+    - $ref: '#/components/parameters/ProviderId'
+    get:
+      tags:
+      - Providers
+      summary: 读取 Provider 详情
+      responses:
+        '200':
+          description: Provider detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      operationId: getProviderById
+      description: 读取 Provider 详情。
+    patch:
+      tags:
+      - Providers
+      summary: 更新 Provider
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderPatchInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      operationId: updateProvider
+      description: 更新 Provider。
+    delete:
+      tags:
+      - Providers
+      summary: 删除未被引用的 Provider
+      responses:
+        '204':
+          description: Deleted
+        '409':
+          $ref: '#/components/responses/Conflict'
+      operationId: deleteProvider
+      description: 删除未被引用的 Provider。
+  /providers/{providerId}/endpoints:
+    parameters:
+    - $ref: '#/components/parameters/ProviderId'
+    get:
+      tags:
+      - Endpoints
+      summary: 列出 Provider 的 Endpoint
+      responses:
+        '200':
+          description: Endpoint list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointListResponse'
+      operationId: listProviderEndpoints
+      description: 列出 Provider 的 Endpoint。
+    post:
+      tags:
+      - Endpoints
+      summary: 创建 UpstreamEndpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndpointInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointResponse'
+      operationId: createProviderEndpoint
+      description: 创建 UpstreamEndpoint。
+  /endpoints/{endpointId}:
+    parameters:
+    - $ref: '#/components/parameters/EndpointId'
+    get:
+      tags:
+      - Endpoints
+      summary: 读取 Endpoint
+      responses:
+        '200':
+          description: Endpoint detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointResponse'
+      operationId: getEndpointById
+      description: 读取 Endpoint。
+    patch:
+      tags:
+      - Endpoints
+      summary: 更新 Endpoint
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndpointPatchInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndpointResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      operationId: updateEndpoint
+      description: 更新 Endpoint。
+    delete:
+      tags:
+      - Endpoints
+      summary: 删除未被路由引用的 Endpoint
+      responses:
+        '204':
+          description: Deleted
+        '409':
+          $ref: '#/components/responses/Conflict'
+      operationId: deleteEndpoint
+      description: 删除未被路由引用的 Endpoint。
+  /endpoints/{endpointId}/probe:
+    parameters:
+    - $ref: '#/components/parameters/EndpointId'
+    post:
+      tags:
+      - Endpoints
+      summary: 执行协议与功能兼容性探测
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProbeInput'
+      responses:
+        '202':
+          description: Probe accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+      operationId: probeEndpoint
+      description: 执行协议与功能兼容性探测。
+  /endpoints/{endpointId}/discover-models:
+    parameters:
+    - $ref: '#/components/parameters/EndpointId'
+    post:
+      tags:
+      - Models
+      summary: 从 Endpoint 发现模型
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Discovery accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+      operationId: discoverEndpointModels
+      description: 从 Endpoint 发现模型。
+  /providers/{providerId}/accounts:
+    parameters:
+    - $ref: '#/components/parameters/ProviderId'
+    get:
+      tags:
+      - Accounts
+      summary: 列出 Provider Account
+      responses:
+        '200':
+          description: Account list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountListResponse'
+      operationId: listProviderAccounts
+      description: 列出 Provider Account。
+    post:
+      tags:
+      - Accounts
+      summary: 创建 Provider Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+      operationId: createProviderAccount
+      description: 创建 Provider Account。
+  /accounts/{accountId}:
+    parameters:
+    - $ref: '#/components/parameters/AccountId'
+    patch:
+      tags:
+      - Accounts
+      summary: 更新 Provider Account
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountPatchInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+      operationId: updateProviderAccount
+      description: 更新 Provider Account。
+  /accounts/{accountId}/credentials:
+    parameters:
+    - $ref: '#/components/parameters/AccountId'
+    post:
+      tags:
+      - Credentials
+      summary: 创建并加密存储上游 Credential
+      description: 输入 Secret 不会在响应中返回；响应仅包含掩码、指纹和状态。
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialCreateInput'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialResponse'
+      operationId: createProviderCredential
+  /credentials/{credentialId}/probe:
+    parameters:
+    - $ref: '#/components/parameters/CredentialId'
+    post:
+      tags:
+      - Credentials
+      summary: 验证 Credential
+      responses:
+        '200':
+          description: Probe result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialProbeResponse'
+      operationId: probeCredential
+      description: 验证 Credential。
+  /credentials/{credentialId}/disable:
+    parameters:
+    - $ref: '#/components/parameters/CredentialId'
+    post:
+      tags:
+      - Credentials
+      summary: 禁用 Credential
+      responses:
+        '200':
+          description: Disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialResponse'
+      operationId: disableCredential
+      description: 禁用 Credential。
+  /credentials/{credentialId}/enable:
+    parameters:
+    - $ref: '#/components/parameters/CredentialId'
+    post:
+      tags:
+      - Credentials
+      summary: 启用 Credential
+      responses:
+        '200':
+          description: Enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialResponse'
+      operationId: enableCredential
+      description: 启用 Credential。
+  /credentials/{credentialId}/clear-cooldown:
+    parameters:
+    - $ref: '#/components/parameters/CredentialId'
+    post:
+      tags:
+      - Credentials
+      summary: 手动解除 Credential 冷却
+      responses:
+        '200':
+          description: Cooldown cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialResponse'
+      operationId: clearCredentialCooldown
+      description: 手动解除 Credential 冷却。
+  /models:
+    get:
+      tags:
+      - Models
+      summary: 查询 ProviderModelBinding
+      parameters:
+      - in: query
+        name: providerId
+        schema:
+          type: string
+      - in: query
+        name: endpointId
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          $ref: '#/components/schemas/ModelBindingStatus'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Model binding list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelBindingListResponse'
+      operationId: listModelBindings
+      description: 查询 ProviderModelBinding。
+  /models/{bindingId}:
+    parameters:
+    - $ref: '#/components/parameters/BindingId'
+    get:
+      tags:
+      - Models
+      summary: 读取 ProviderModelBinding
+      responses:
+        '200':
+          description: Model binding detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelBindingResponse'
+      operationId: getModelBindingById
+      description: 读取 ProviderModelBinding。
+    patch:
+      tags:
+      - Models
+      summary: 更新模型绑定或本地字段覆盖
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelBindingPatchInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelBindingResponse'
+      operationId: updateModelBinding
+      description: 更新模型绑定或本地字段覆盖。
+  /models/{bindingId}/match-models-dev:
+    parameters:
+    - $ref: '#/components/parameters/BindingId'
+    post:
+      tags:
+      - Models
+      summary: 匹配 models.dev 模型
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                providerId:
+                  type: string
+                modelId:
+                  type: string
+      responses:
+        '200':
+          description: Match candidates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsDevMatchResponse'
+      operationId: matchModelBindingToModelsDev
+      description: 匹配 models.dev 模型。
+  /models-dev/status:
+    get:
+      tags:
+      - Models
+      summary: 读取 models.dev 同步状态
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsDevStatusResponse'
+      operationId: getModelsDevStatus
+      description: 读取 models.dev 同步状态。
+  /models-dev/sync:
+    post:
+      tags:
+      - Models
+      summary: 同步 models.dev Snapshot
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Sync accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+      operationId: syncModelsDev
+      description: 同步 models.dev Snapshot。
+  /routes:
+    get:
+      tags:
+      - Routes
+      summary: 列出路由规则
+      parameters:
+      - in: query
+        name: clientId
+        schema:
+          type: string
+      - in: query
+        name: harnessProfile
+        schema:
+          type: string
+      - in: query
+        name: protocol
+        schema:
+          $ref: '#/components/schemas/Protocol'
+      - in: query
+        name: enabled
+        schema:
+          type: boolean
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Route list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteListResponse'
+      operationId: listRoutingRules
+      description: 列出路由规则。
+    post:
+      tags:
+      - Routes
+      summary: 创建路由规则
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteResponse'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+      operationId: createRoutingRule
+      description: 创建路由规则。
+  /routes/{routeId}:
+    parameters:
+    - $ref: '#/components/parameters/RouteId'
+    get:
+      tags:
+      - Routes
+      summary: 读取路由规则
+      responses:
+        '200':
+          description: Route detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteResponse'
+      operationId: getRoutingRuleById
+      description: 读取路由规则。
+    put:
+      tags:
+      - Routes
+      summary: 完整替换路由规则
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+      operationId: replaceRoutingRule
+      description: 完整替换路由规则。
+    delete:
+      tags:
+      - Routes
+      summary: 删除路由规则
+      responses:
+        '204':
+          description: Deleted
+      operationId: deleteRoutingRule
+      description: 删除路由规则。
+  /routes/{routeId}/validate:
+    parameters:
+    - $ref: '#/components/parameters/RouteId'
+    post:
+      tags:
+      - Routes
+      summary: 验证路由及协议、目标和 Patch
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteValidationResponse'
+      operationId: validateRoutingRule
+      description: 验证路由及协议、目标和 Patch。
+  /routes/explain:
+    post:
+      tags:
+      - Routes
+      summary: 使用运行时同一解析器解释路由
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteExplainInput'
+      responses:
+        '200':
+          description: Explain result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteExplainResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      operationId: explainRoutingDecision
+      description: 使用运行时同一解析器解释路由。
+  /routes/publish:
+    post:
+      tags:
+      - Routes
+      summary: 编译并原子发布 Route Snapshot
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteSnapshotResponse'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+      operationId: publishRoutingSnapshot
+      description: 编译并原子发布 Route Snapshot。
+  /clients:
+    get:
+      tags:
+      - Clients
+      summary: 列出 GatewayClient
+      parameters:
+      - in: query
+        name: harnessProfile
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - disabled
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Client list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientListResponse'
+      operationId: listGatewayClients
+      description: 列出 GatewayClient。
+    post:
+      tags:
+      - Clients
+      summary: 创建 GatewayClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+      operationId: createGatewayClient
+      description: 创建 GatewayClient。
+  /clients/{clientId}:
+    parameters:
+    - $ref: '#/components/parameters/ClientId'
+    get:
+      tags:
+      - Clients
+      summary: 读取 GatewayClient
+      responses:
+        '200':
+          description: Client detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+      operationId: getGatewayClientById
+      description: 读取 GatewayClient。
+    patch:
+      tags:
+      - Clients
+      summary: 更新 GatewayClient
+      parameters:
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientPatchInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientResponse'
+      operationId: updateGatewayClient
+      description: 更新 GatewayClient。
+  /clients/{clientId}/keys:
+    parameters:
+    - $ref: '#/components/parameters/ClientId'
+    post:
+      tags:
+      - Clients
+      summary: 创建 Gateway Client Key
+      description: 完整 Secret 仅在此响应返回一次。
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expiresAt:
+                  type:
+                  - string
+                  - 'null'
+                  format: date-time
+      responses:
+        '201':
+          description: Created
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientKeyCreatedResponse'
+      operationId: createGatewayClientKey
+  /client-keys/{keyId}/revoke:
+    parameters:
+    - $ref: '#/components/parameters/KeyId'
+    post:
+      tags:
+      - Clients
+      summary: 撤销 Gateway Client Key
+      responses:
+        '204':
+          description: Revoked
+      operationId: revokeGatewayClientKey
+      description: 撤销 Gateway Client Key。
+  /clients/{clientId}/configuration:
+    parameters:
+    - $ref: '#/components/parameters/ClientId'
+    get:
+      tags:
+      - Clients
+      summary: 生成 Harness 接入配置
+      parameters:
+      - in: query
+        name: platform
+        schema:
+          type: string
+          enum:
+          - linux
+          - macos
+          - powershell
+          - cmd
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - toml
+          - shell
+          - json
+          - text
+      responses:
+        '200':
+          description: Configuration template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientConfigurationResponse'
+      operationId: getGatewayClientConfiguration
+      description: 生成 Harness 接入配置。
+  /requests:
+    get:
+      tags:
+      - Requests
+      summary: 查询逻辑请求
+      parameters:
+      - $ref: '#/components/parameters/From'
+      - $ref: '#/components/parameters/To'
+      - in: query
+        name: clientId
+        schema:
+          type: string
+      - in: query
+        name: harnessProfile
+        schema:
+          type: string
+      - in: query
+        name: providerId
+        schema:
+          type: string
+      - in: query
+        name: endpointId
+        schema:
+          type: string
+      - in: query
+        name: accountId
+        schema:
+          type: string
+      - in: query
+        name: requestedModel
+        schema:
+          type: string
+      - in: query
+        name: actualModel
+        schema:
+          type: string
+      - in: query
+        name: protocol
+        schema:
+          $ref: '#/components/schemas/Protocol'
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: errorCategory
+        schema:
+          type: string
+      - in: query
+        name: hasFallback
+        schema:
+          type: boolean
+      - in: query
+        name: requestId
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Request list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestListResponse'
+      operationId: listRequests
+      description: 查询逻辑请求。
+  /requests/{requestId}:
+    parameters:
+    - $ref: '#/components/parameters/RequestId'
+    get:
+      tags:
+      - Requests
+      summary: 读取请求详情
+      responses:
+        '200':
+          description: Request detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestDetailResponse'
+      operationId: getRequestById
+      description: 读取请求详情。
+  /requests/{requestId}/attempts:
+    parameters:
+    - $ref: '#/components/parameters/RequestId'
+    get:
+      tags:
+      - Requests
+      summary: 读取全部上游 Attempt
+      responses:
+        '200':
+          description: Attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttemptListResponse'
+      operationId: listRequestAttempts
+      description: 读取全部上游 Attempt。
+  /requests/{requestId}/timeline:
+    parameters:
+    - $ref: '#/components/parameters/RequestId'
+    get:
+      tags:
+      - Requests
+      summary: 读取请求时间线
+      responses:
+        '200':
+          description: Timeline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimelineResponse'
+      operationId: getRequestTimeline
+      description: 读取请求时间线。
+  /requests/{requestId}/raw-request:
+    parameters:
+    - $ref: '#/components/parameters/RequestId'
+    get:
+      tags:
+      - Requests
+      summary: 读取脱敏后的 Raw Request
+      responses:
+        '200':
+          description: Redacted request payload
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawPayloadResponse'
+      operationId: getRawRequestPayload
+      description: 读取脱敏后的 Raw Request。
+  /requests/{requestId}/raw-response:
+    parameters:
+    - $ref: '#/components/parameters/RequestId'
+    get:
+      tags:
+      - Requests
+      summary: 读取脱敏后的 Raw Response
+      responses:
+        '200':
+          description: Redacted response payload
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawPayloadResponse'
+      operationId: getRawResponsePayload
+      description: 读取脱敏后的 Raw Response。
+  /analytics/summary:
+    get:
+      tags:
+      - Analytics
+      summary: 读取概览指标
+      parameters:
+      - $ref: '#/components/parameters/From'
+      - $ref: '#/components/parameters/To'
+      - $ref: '#/components/parameters/AnalyticsFilters'
+      responses:
+        '200':
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsSummaryResponse'
+      operationId: getAnalyticsSummary
+      description: 读取概览指标。
+  /analytics/timeseries:
+    get:
+      tags:
+      - Analytics
+      summary: 读取时序数据
+      parameters:
+      - $ref: '#/components/parameters/From'
+      - $ref: '#/components/parameters/To'
+      - in: query
+        name: metric
+        required: true
+        schema:
+          $ref: '#/components/schemas/AnalyticsMetric'
+      - in: query
+        name: interval
+        required: true
+        schema:
+          type: string
+          enum:
+          - hour
+          - day
+          - week
+      - $ref: '#/components/parameters/AnalyticsFilters'
+      responses:
+        '200':
+          description: Timeseries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeseriesResponse'
+      operationId: getAnalyticsTimeseries
+      description: 读取时序数据。
+  /analytics/breakdown:
+    get:
+      tags:
+      - Analytics
+      summary: 按维度分组分析
+      parameters:
+      - $ref: '#/components/parameters/From'
+      - $ref: '#/components/parameters/To'
+      - in: query
+        name: metric
+        required: true
+        schema:
+          $ref: '#/components/schemas/AnalyticsMetric'
+      - in: query
+        name: groupBy
+        required: true
+        schema:
+          type: string
+          enum:
+          - client
+          - harness
+          - provider
+          - endpoint
+          - account
+          - model
+          - protocol
+      - $ref: '#/components/parameters/AnalyticsFilters'
+      responses:
+        '200':
+          description: Breakdown
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreakdownResponse'
+      operationId: getAnalyticsBreakdown
+      description: 按维度分组分析。
+  /settings:
+    get:
+      tags:
+      - Settings
+      summary: 读取可公开设置
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+      operationId: getSettings
+      description: 读取可公开设置。
+  /settings/logging:
+    patch:
+      tags:
+      - Settings
+      summary: 更新日志与 Payload 保留设置
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoggingSettingsInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+      operationId: updateLoggingSettings
+      description: 更新日志与 Payload 保留设置。
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: aigw_session
+  parameters:
+    ProviderId:
+      in: path
+      name: providerId
+      required: true
+      schema:
+        type: string
+    EndpointId:
+      in: path
+      name: endpointId
+      required: true
+      schema:
+        type: string
+    AccountId:
+      in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+    CredentialId:
+      in: path
+      name: credentialId
+      required: true
+      schema:
+        type: string
+    BindingId:
+      in: path
+      name: bindingId
+      required: true
+      schema:
+        type: string
+    RouteId:
+      in: path
+      name: routeId
+      required: true
+      schema:
+        type: string
+    ClientId:
+      in: path
+      name: clientId
+      required: true
+      schema:
+        type: string
+    KeyId:
+      in: path
+      name: keyId
+      required: true
+      schema:
+        type: string
+    RequestId:
+      in: path
+      name: requestId
+      required: true
+      schema:
+        type: string
+    Cursor:
+      in: query
+      name: cursor
+      schema:
+        type: string
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    From:
+      in: query
+      name: from
+      schema:
+        type: string
+        format: date-time
+    To:
+      in: query
+      name: to
+      schema:
+        type: string
+        format: date-time
+    IfMatch:
+      in: header
+      name: If-Match
+      description: 资源版本，例如 `"7"`
+      schema:
+        type: string
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+    AnalyticsFilters:
+      in: query
+      name: filters
+      description: JSON 编码的客户端、Harness、Provider、Endpoint、Account、Model、Protocol 筛选。
+      schema:
+        type: string
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict or optimistic concurrency failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationFailed:
+      description: Semantic validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ProviderListResponse:
+      description: Provider list
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/ListEnvelope'
+            - type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Provider'
+  schemas:
+    Protocol:
+      type: string
+      enum:
+      - openai_chat
+      - openai_responses
+      - anthropic_messages
+    HealthResponse:
+      type: object
+      required:
+      - data
+      - requestId
+      properties:
+        data:
+          type: object
+          required:
+          - status
+          - version
+          properties:
+            status:
+              type: string
+              enum:
+              - ok
+              - degraded
+            version:
+              type: string
+            database:
+              type: string
+              enum:
+              - ok
+              - unavailable
+            routeSnapshotVersion:
+              type:
+              - integer
+              - 'null'
+        requestId:
+          type: string
+    Envelope:
+      type: object
+      required:
+      - data
+      - requestId
+      properties:
+        data: {}
+        requestId:
+          type: string
+    ListEnvelope:
+      type: object
+      required:
+      - data
+      - page
+      - requestId
+      properties:
+        data:
+          type: array
+        page:
+          type: object
+          required:
+          - hasMore
+          properties:
+            cursor:
+              type:
+              - string
+              - 'null'
+            nextCursor:
+              type:
+              - string
+              - 'null'
+            hasMore:
+              type: boolean
+        requestId:
+          type: string
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      - requestId
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type:
+              - object
+              - 'null'
+              additionalProperties: true
+        requestId:
+          type: string
+    Provider:
+      type: object
+      required:
+      - id
+      - slug
+      - name
+      - presetKind
+      - status
+      - version
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        presetKind:
+          type: string
+          enum:
+          - built_in
+          - custom
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+        version:
+          type: integer
+        endpointCount:
+          type: integer
+        accountCount:
+          type: integer
+        modelCount:
+          type: integer
+        lastRequestAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    ProviderCreateInput:
+      type: object
+      required:
+      - name
+      - presetKind
+      properties:
+        name:
+          type: string
+          minLength: 1
+        presetKind:
+          type: string
+          enum:
+          - built_in
+          - custom
+        presetId:
+          type:
+          - string
+          - 'null'
+        notes:
+          type:
+          - string
+          - 'null'
+    ProviderPatchInput:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+        notes:
+          type:
+          - string
+          - 'null'
+    ProviderResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/Provider'
+    Endpoint:
+      type: object
+      required:
+      - id
+      - providerId
+      - name
+      - protocol
+      - baseUrl
+      - requestPath
+      - authScheme
+      - transport
+      - status
+      - version
+      properties:
+        id:
+          type: string
+        providerId:
+          type: string
+        name:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/Protocol'
+        baseUrl:
+          type: string
+          format: uri
+        requestPath:
+          type: string
+        modelsPath:
+          type:
+          - string
+          - 'null'
+        authScheme:
+          type: string
+          enum:
+          - bearer
+          - x_api_key
+          - custom_headers
+        transport:
+          type: string
+          enum:
+          - http_json
+          - http_sse
+          - websocket
+        compatibilityStatus:
+          type: string
+          enum:
+          - verified
+          - documented
+          - partial
+          - unverified
+          - blocked
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+          - unhealthy
+        version:
+          type: integer
+    EndpointInput:
+      type: object
+      required:
+      - name
+      - protocol
+      - baseUrl
+      - requestPath
+      - authScheme
+      properties:
+        name:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/Protocol'
+        baseUrl:
+          type: string
+          format: uri
+        requestPath:
+          type: string
+          pattern: ^/
+        modelsPath:
+          type:
+          - string
+          - 'null'
+        authScheme:
+          type: string
+          enum:
+          - bearer
+          - x_api_key
+          - custom_headers
+        transport:
+          type: string
+          enum:
+          - http_json
+          - http_sse
+          - websocket
+          default: http_sse
+        requestTimeoutMs:
+          type: integer
+          minimum: 1000
+        streamIdleTimeoutMs:
+          type: integer
+          minimum: 1000
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        query:
+          type: object
+          additionalProperties:
+            type: string
+    EndpointPatchInput:
+      allOf:
+      - $ref: '#/components/schemas/EndpointInput'
+      minProperties: 1
+    EndpointResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/Endpoint'
+    EndpointListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ListEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Endpoint'
+    ProbeInput:
+      type: object
+      properties:
+        modelId:
+          type:
+          - string
+          - 'null'
+        checks:
+          type: array
+          items:
+            type: string
+            enum:
+            - basic
+            - stream
+            - tools
+            - reasoning
+            - structured_output
+            - unknown_field
+            - error_shape
+            - usage
+    JobResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - jobId
+            - status
+            properties:
+              jobId:
+                type: string
+              status:
+                type: string
+                enum:
+                - queued
+                - running
+                - succeeded
+                - failed
+    Account:
+      type: object
+      required:
+      - id
+      - providerId
+      - name
+      - billingMode
+      - status
+      - version
+      properties:
+        id:
+          type: string
+        providerId:
+          type: string
+        name:
+          type: string
+        billingMode:
+          type: string
+          enum:
+          - metered
+          - subscription
+          - free
+          - custom
+          - unknown
+        billingPlanName:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+        version:
+          type: integer
+    AccountInput:
+      type: object
+      required:
+      - name
+      - billingMode
+      properties:
+        name:
+          type: string
+        billingMode:
+          type: string
+          enum:
+          - metered
+          - subscription
+          - free
+          - custom
+          - unknown
+        billingPlanName:
+          type:
+          - string
+          - 'null'
+        currency:
+          type:
+          - string
+          - 'null'
+    AccountPatchInput:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+        billingMode:
+          type: string
+          enum:
+          - metered
+          - subscription
+          - free
+          - custom
+          - unknown
+        billingPlanName:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+    AccountResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/Account'
+    AccountListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ListEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Account'
+    Credential:
+      type: object
+      required:
+      - id
+      - accountId
+      - name
+      - kind
+      - maskedDisplay
+      - fingerprint
+      - status
+      properties:
+        id:
+          type: string
+        accountId:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+          - api_key
+          - bearer_token
+          - custom_header_set
+        maskedDisplay:
+          type: string
+        fingerprint:
+          type: string
+        status:
+          type: string
+          enum:
+          - unverified
+          - healthy
+          - cooldown
+          - auth_failed
+          - unavailable
+          - disabled
+        cooldownUntil:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        lastSuccessAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        lastFailureAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    CredentialCreateInput:
+      type: object
+      required:
+      - name
+      - kind
+      - secret
+      - endpointBindings
+      properties:
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+          - api_key
+          - bearer_token
+          - custom_header_set
+        secret:
+          type: string
+          minLength: 1
+          writeOnly: true
+        endpointBindings:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+            - endpointId
+            - enabled
+            - priority
+            properties:
+              endpointId:
+                type: string
+              enabled:
+                type: boolean
+              priority:
+                type: integer
+              weight:
+                type: integer
+                minimum: 1
+                default: 1
+    CredentialResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/Credential'
+    CredentialProbeResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - credential
+            - result
+            properties:
+              credential:
+                $ref: '#/components/schemas/Credential'
+              result:
+                type: object
+                required:
+                - success
+                properties:
+                  success:
+                    type: boolean
+                  statusCode:
+                    type:
+                    - integer
+                    - 'null'
+                  latencyMs:
+                    type:
+                    - integer
+                    - 'null'
+                  message:
+                    type:
+                    - string
+                    - 'null'
+    ModelBindingStatus:
+      type: string
+      enum:
+      - available
+      - deprecated
+      - unavailable
+      - unverified
+    ModelBinding:
+      type: object
+      required:
+      - id
+      - endpointId
+      - upstreamModelId
+      - name
+      - status
+      - fieldSources
+      - version
+      properties:
+        id:
+          type: string
+        endpointId:
+          type: string
+        modelDefinitionId:
+          type:
+          - string
+          - 'null'
+        upstreamModelId:
+          type: string
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/ModelBindingStatus'
+        contextWindow:
+          type:
+          - integer
+          - 'null'
+        maxOutputTokens:
+          type:
+          - integer
+          - 'null'
+        inputModalities:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: object
+          additionalProperties: true
+        fieldSources:
+          type: object
+          additionalProperties:
+            type: string
+        version:
+          type: integer
+    ModelBindingPatchInput:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/ModelBindingStatus'
+        modelDefinitionId:
+          type:
+          - string
+          - 'null'
+        overrides:
+          type: object
+          additionalProperties: true
+    ModelBindingResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ModelBinding'
+    ModelBindingListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ListEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/ModelBinding'
+    ModelsDevMatchResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - candidates
+            properties:
+              candidates:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - providerId
+                  - modelId
+                  - confidence
+                  properties:
+                    providerId:
+                      type: string
+                    modelId:
+                      type: string
+                    confidence:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                    exact:
+                      type: boolean
+    ModelsDevStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - status
+            properties:
+              status:
+                type: string
+                enum:
+                - never_synced
+                - healthy
+                - stale
+                - failed
+              fetchedAt:
+                type:
+                - string
+                - 'null'
+                format: date-time
+              contentHash:
+                type:
+                - string
+                - 'null'
+              lastError:
+                type:
+                - string
+                - 'null'
+    RouteScope:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - client
+          - harness
+          - global
+        id:
+          type:
+          - string
+          - 'null'
+    RouteMatcher:
+      type: object
+      required:
+      - type
+      - pattern
+      properties:
+        type:
+          type: string
+          enum:
+          - exact
+          - prefix
+          - glob
+          - regex
+        pattern:
+          type: string
+          minLength: 1
+    RequestPatch:
+      type: object
+      required:
+      - location
+      - path
+      - mode
+      - value
+      - sequence
+      properties:
+        location:
+          type: string
+          enum:
+          - header
+          - query
+          - body
+        path:
+          type: string
+        mode:
+          type: string
+          enum:
+          - default_if_absent
+          - force
+          - reject_on_conflict
+        value: {}
+        sequence:
+          type: integer
+          minimum: 1
+    RouteTargetInput:
+      type: object
+      required:
+      - sequence
+      - endpointId
+      - providerModelBindingId
+      - accountSelectionMode
+      - patches
+      properties:
+        sequence:
+          type: integer
+          minimum: 1
+        endpointId:
+          type: string
+        providerModelBindingId:
+          type: string
+        accountSelectionMode:
+          type: string
+          enum:
+          - automatic
+          - account
+          - credential_group
+        accountSelectorId:
+          type:
+          - string
+          - 'null'
+        requestTimeoutMs:
+          type:
+          - integer
+          - 'null'
+          minimum: 1000
+        patches:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestPatch'
+    RouteInput:
+      type: object
+      required:
+      - name
+      - scope
+      - protocol
+      - matcher
+      - priority
+      - enabled
+      - maxGatewayAttempts
+      - targets
+      properties:
+        name:
+          type: string
+        scope:
+          $ref: '#/components/schemas/RouteScope'
+        protocol:
+          $ref: '#/components/schemas/Protocol'
+        matcher:
+          $ref: '#/components/schemas/RouteMatcher'
+        priority:
+          type: integer
+        enabled:
+          type: boolean
+        maxGatewayAttempts:
+          type: integer
+          minimum: 1
+          maximum: 5
+        targets:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RouteTargetInput'
+    Route:
+      allOf:
+      - $ref: '#/components/schemas/RouteInput'
+      - type: object
+        required:
+        - id
+        - version
+        properties:
+          id:
+            type: string
+          version:
+            type: integer
+          validationStatus:
+            type: string
+            enum:
+            - valid
+            - warning
+            - invalid
+    RouteResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/Route'
+    RouteListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ListEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Route'
+    RouteValidationResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - valid
+            - errors
+            - warnings
+            properties:
+              valid:
+                type: boolean
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValidationIssue'
+              warnings:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValidationIssue'
+    ValidationIssue:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        path:
+          type:
+          - string
+          - 'null'
+        details:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+    RouteExplainInput:
+      type: object
+      required:
+      - clientId
+      - protocol
+      - model
+      properties:
+        clientId:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/Protocol'
+        model:
+          type: string
+    RouteExplainResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - selectedRoute
+            - selectedTarget
+            - rankedCandidates
+            - rejectedCandidates
+            properties:
+              selectedRoute:
+                $ref: '#/components/schemas/Route'
+              selectedTarget:
+                $ref: '#/components/schemas/RouteTargetInput'
+              rankedCandidates:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RouteCandidate'
+              rejectedCandidates:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RouteCandidate'
+    RouteCandidate:
+      type: object
+      required:
+      - routeId
+      - rank
+      - accepted
+      - reasons
+      properties:
+        routeId:
+          type: string
+        rank:
+          type: integer
+        accepted:
+          type: boolean
+        reasons:
+          type: array
+          items:
+            type: string
+    RouteSnapshotResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - version
+            - publishedAt
+            - routeCount
+            properties:
+              version:
+                type: integer
+              publishedAt:
+                type: string
+                format: date-time
+              routeCount:
+                type: integer
+              contentHash:
+                type: string
+    Client:
+      type: object
+      required:
+      - id
+      - name
+      - harnessProfile
+      - allowedProtocols
+      - status
+      - version
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        harnessProfile:
+          type: string
+        allowedProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/Protocol'
+        allowedModelPatterns:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+        lastUsedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        version:
+          type: integer
+    ClientInput:
+      type: object
+      required:
+      - name
+      - harnessProfile
+      - allowedProtocols
+      properties:
+        name:
+          type: string
+        harnessProfile:
+          type: string
+        allowedProtocols:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Protocol'
+        allowedModelPatterns:
+          type: array
+          items:
+            type: string
+        dailyCostLimit:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+        monthlyCostLimit:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+    ClientPatchInput:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+        allowedProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/Protocol'
+        allowedModelPatterns:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+        dailyCostLimit:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+        monthlyCostLimit:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+    ClientResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/Client'
+    ClientListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ListEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Client'
+    ClientKeyCreatedResponse:
+      type: object
+      required:
+      - data
+      - requestId
+      properties:
+        data:
+          type: object
+          required:
+          - keyId
+          - secret
+          - prefix
+          - last4
+          properties:
+            keyId:
+              type: string
+            secret:
+              type: string
+              writeOnly: true
+            prefix:
+              type: string
+            last4:
+              type: string
+            expiresAt:
+              type:
+              - string
+              - 'null'
+              format: date-time
+        requestId:
+          type: string
+    ClientConfigurationResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - harnessProfile
+            - content
+            properties:
+              harnessProfile:
+                type: string
+              mediaType:
+                type: string
+              content:
+                type: string
+              warnings:
+                type: array
+                items:
+                  type: string
+    RequestSummary:
+      type: object
+      required:
+      - id
+      - startedAt
+      - clientId
+      - protocol
+      - requestedModel
+      - status
+      - attemptCount
+      properties:
+        id:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        clientId:
+          type: string
+        harnessProfile:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/Protocol'
+        requestedModel:
+          type: string
+        resolvedModel:
+          type:
+          - string
+          - 'null'
+        providerId:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+          enum:
+          - pending
+          - succeeded
+          - failed
+          - cancelled
+          - stream_interrupted
+        attemptCount:
+          type: integer
+        hasFallback:
+          type: boolean
+        ttftMs:
+          type:
+          - integer
+          - 'null'
+        latencyMs:
+          type:
+          - integer
+          - 'null'
+        totalTokens:
+          type:
+          - integer
+          - 'null'
+        estimatedCost:
+          type:
+          - string
+          - 'null'
+        costStatus:
+          type: string
+          enum:
+          - reported
+          - calculated
+          - estimated
+          - partial
+          - unknown
+    RequestListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ListEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/RequestSummary'
+    RequestDetailResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            allOf:
+            - $ref: '#/components/schemas/RequestSummary'
+            - type: object
+              properties:
+                routeId:
+                  type:
+                  - string
+                  - 'null'
+                routeSnapshot:
+                  type:
+                  - object
+                  - 'null'
+                  additionalProperties: true
+                normalizedUsage:
+                  type:
+                  - object
+                  - 'null'
+                  additionalProperties: true
+                cost:
+                  type:
+                  - object
+                  - 'null'
+                  additionalProperties: true
+                error:
+                  type:
+                  - object
+                  - 'null'
+                  additionalProperties: true
+    Attempt:
+      type: object
+      required:
+      - id
+      - requestId
+      - sequence
+      - endpointId
+      - credentialId
+      - status
+      - startedAt
+      properties:
+        id:
+          type: string
+        requestId:
+          type: string
+        sequence:
+          type: integer
+        routeTargetId:
+          type: string
+        endpointId:
+          type: string
+        accountId:
+          type: string
+        credentialId:
+          type: string
+        upstreamRequestModel:
+          type: string
+        upstreamReportedModel:
+          type:
+          - string
+          - 'null'
+        upstreamRequestId:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+          enum:
+          - pending
+          - succeeded
+          - failed
+          - cancelled
+          - stream_interrupted
+        statusCode:
+          type:
+          - integer
+          - 'null'
+        errorCategory:
+          type:
+          - string
+          - 'null'
+        startedAt:
+          type: string
+          format: date-time
+        firstByteAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        firstSemanticOutputAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        retryReason:
+          type:
+          - string
+          - 'null'
+        normalizedUsage:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+        pricingSnapshot:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+    AttemptListResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Attempt'
+    TimelineResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              required:
+              - at
+              - type
+              - label
+              properties:
+                at:
+                  type: string
+                  format: date-time
+                type:
+                  type: string
+                label:
+                  type: string
+                details:
+                  type:
+                  - object
+                  - 'null'
+                  additionalProperties: true
+    RawPayloadResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - mode
+            - redacted
+            - truncated
+            - content
+            properties:
+              mode:
+                type: string
+                enum:
+                - full
+                - truncated
+                - metadata_only
+                - disabled
+              redacted:
+                type: boolean
+              truncated:
+                type: boolean
+              content: {}
+    AnalyticsMetric:
+      type: string
+      enum:
+      - request_count
+      - tokens
+      - cost
+      - request_error_rate
+      - attempt_error_rate
+      - fallback_rate
+      - rate_limit_rate
+      - ttft
+      - latency
+    RateMetric:
+      type: object
+      required:
+      - metric
+      - numerator
+      - denominator
+      - value
+      properties:
+        metric:
+          type: string
+        numerator:
+          type: integer
+        denominator:
+          type: integer
+        value:
+          type: number
+    AnalyticsSummaryResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - requestCount
+            - tokenCount
+            - costs
+            - requestErrorRate
+            - attemptErrorRate
+            - fallbackRate
+            properties:
+              requestCount:
+                type: integer
+              tokenCount:
+                type: integer
+              costs:
+                type: object
+                properties:
+                  apiEquivalent:
+                    type:
+                    - string
+                    - 'null'
+                  estimatedBilled:
+                    type:
+                    - string
+                    - 'null'
+                  reported:
+                    type:
+                    - string
+                    - 'null'
+                  unknownAttemptCount:
+                    type: integer
+              requestErrorRate:
+                $ref: '#/components/schemas/RateMetric'
+              attemptErrorRate:
+                $ref: '#/components/schemas/RateMetric'
+              fallbackRate:
+                $ref: '#/components/schemas/RateMetric'
+              p95TtftMs:
+                type:
+                - number
+                - 'null'
+              p95LatencyMs:
+                type:
+                - number
+                - 'null'
+    TimeseriesResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - metric
+            - interval
+            - points
+            properties:
+              metric:
+                $ref: '#/components/schemas/AnalyticsMetric'
+              interval:
+                type: string
+              points:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - at
+                  - value
+                  properties:
+                    at:
+                      type: string
+                      format: date-time
+                    value:
+                      type:
+                      - number
+                      - 'null'
+                    numerator:
+                      type:
+                      - integer
+                      - 'null'
+                    denominator:
+                      type:
+                      - integer
+                      - 'null'
+    BreakdownResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            required:
+            - metric
+            - groupBy
+            - rows
+            properties:
+              metric:
+                $ref: '#/components/schemas/AnalyticsMetric'
+              groupBy:
+                type: string
+              rows:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - key
+                  - label
+                  - value
+                  properties:
+                    key:
+                      type: string
+                    label:
+                      type: string
+                    value:
+                      type:
+                      - number
+                      - 'null'
+                    numerator:
+                      type:
+                      - integer
+                      - 'null'
+                    denominator:
+                      type:
+                      - integer
+                      - 'null'
+    SettingsResponse:
+      allOf:
+      - $ref: '#/components/schemas/Envelope'
+      - type: object
+        properties:
+          data:
+            type: object
+            additionalProperties: true
+    LoggingSettingsInput:
+      type: object
+      properties:
+        requestPayloadMode:
+          type: string
+          enum:
+          - full
+          - truncated
+          - metadata_only
+          - disabled
+        responsePayloadMode:
+          type: string
+          enum:
+          - full
+          - truncated
+          - metadata_only
+          - disabled
+        maxPayloadBytes:
+          type: integer
+          minimum: 0
+        retentionDays:
+          type: integer
+          minimum: 1
+        redactHeaders:
+          type: array
+          items:
+            type: string

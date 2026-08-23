@@ -1,0 +1,15 @@
+id: claude-code-desktop
+name: Claude Code - Desktop
+harnessProfile: claude-code
+allowedProtocols:
+  - anthropic_messages
+allowedModelPatterns:
+  - "claude-*"
+  - "kimi-*"
+  - "glm-*"
+dailyCostLimit: null
+monthlyCostLimit: null
+status: active
+key:
+  secretRef: env://GATEWAY_CLAUDE_KEY
+  expiresAt: null

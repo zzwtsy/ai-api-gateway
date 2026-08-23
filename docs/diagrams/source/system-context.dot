@@ -1,0 +1,26 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad="0.25", nodesep="0.55", ranksep="0.85", fontname="Noto Sans CJK SC"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#cbd5e1", fontname="Noto Sans CJK SC", fontsize=12, margin="0.18,0.10"];
+  edge [color="#64748b", fontname="Noto Sans CJK SC", fontsize=10, arrowsize=0.7];
+  subgraph cluster_clients { label="Harness 客户端"; color="#dbeafe"; style="rounded";
+    codex [label="Codex"];
+    claude [label="Claude Code"];
+    pi [label="Pi / 其他 Harness"];
+  }
+  browser [label="Desktop Browser", fillcolor="#eff6ff", color="#60a5fa"];
+  gateway [label="AI API Gateway\n协议保持 · 路由 · 多账号 · 可观测性", fillcolor="#dbeafe", color="#2563eb", penwidth=1.6];
+  db [label="PostgreSQL", shape=cylinder, fillcolor="#f8fafc"];
+  models [label="models.dev\n元数据预填", fillcolor="#f5f3ff", color="#8b5cf6"];
+  deepseek [label="DeepSeek"];
+  zhipu [label="智谱"];
+  kimi [label="Kimi"];
+  codex -> gateway [label="Responses + Gateway Key"];
+  claude -> gateway [label="Anthropic + Gateway Key"];
+  pi -> gateway [label="Chat / Responses / Anthropic"];
+  browser -> gateway [label="Control Plane"];
+  gateway -> deepseek [label="同协议透明转发"];
+  gateway -> zhipu [label="同协议透明转发"];
+  gateway -> kimi [label="同协议透明转发"];
+  gateway -> db;
+  gateway -> models [label="同步/预填", style=dashed];
+}

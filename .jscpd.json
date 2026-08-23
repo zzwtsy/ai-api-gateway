@@ -1,0 +1,22 @@
+{
+  "minTokens": 70,
+  "minLines": 8,
+  "mode": "mild",
+  "format": ["typescript", "tsx", "javascript"],
+  "pattern": "{apps,scripts}/**/*.{ts,tsx,mjs}",
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/tests/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "apps/web/src/components/ui/**",
+    "apps/web/src/api/schema.d.ts",
+    "apps/gateway/drizzle/**"
+  ],
+  "reporters": ["console"],
+  "exitCode": 1,
+  "noColors": true,
+  "noTips": true
+}

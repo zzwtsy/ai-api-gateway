@@ -1,0 +1,16 @@
+flowchart TD
+  A[Attempt 完成] --> U{上游返回 Usage?}
+  U -- 是 --> N[协议旁路解析为 NormalizedUsage]
+  U -- 否 --> X[Usage 状态 = unknown / partial]
+  N --> B[定位实际上游 ProviderModelBinding]
+  B --> P[解析请求时生效的 PricingRule]
+  P --> S[创建不可变 PricingSnapshot]
+  S --> C[计算 API-equivalent cost]
+  C --> BM{Account billing_mode}
+  BM -- metered --> E[estimated_billed_cost]
+  BM -- subscription/free --> R[参考价值与实际边际费用分开]
+  BM -- unknown/custom --> Q[cost_status = unknown/custom]
+  E --> T[汇总所有 Attempt 为 Request Cost]
+  R --> T
+  Q --> T
+  X --> T
