@@ -133,7 +133,7 @@ export async function setProjectVersion(repositoryRoot: string, targetVersion: s
   return { previousVersion: currentVersion, version: normalizedTarget, paths: updates.length };
 }
 
-export function collectChangelogViolations(source: string, rootVersion: string): string[] {
+function collectChangelogViolations(source: string, rootVersion: string): string[] {
   const failures: string[] = [];
   const versions = [...source.matchAll(/^## (\S+) — .+$/gmu)].flatMap(match => match[1] === undefined ? [] : [match[1]]);
   if (versions.length === 0)

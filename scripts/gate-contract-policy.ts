@@ -100,6 +100,11 @@ function collectArtifactLaneViolations(input: GateContractInput): string[] {
   if (!/^RUN pnpm install --frozen-lockfile$/mu.test(input.dockerfileSource)) {
     failures.push("Dockerfile must install from the frozen lockfile");
   }
+  const lifecycleCopy = input.dockerfileSource.indexOf("COPY scripts/install-lefthook.ts scripts/install-lefthook.ts");
+  const install = input.dockerfileSource.indexOf("RUN pnpm install --frozen-lockfile");
+  if (lifecycleCopy === -1 || install === -1 || lifecycleCopy > install) {
+    failures.push("Dockerfile must copy the root postinstall entry before installing dependencies");
+  }
 
   return failures;
 }
@@ -108,7 +113,7 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
-export function modeScript(mode: string): string {
+function modeScript(mode: string): string {
   if (mode === "hygiene")
     return "hygiene";
   if (mode.startsWith("ci-"))

@@ -3,7 +3,7 @@ import { z } from "@hono/zod-openapi";
 const RequestOutcomeSchema = z.enum(["running", "succeeded", "failed", "client_cancelled"]);
 const AttemptOutcomeSchema = z.enum(["running", "succeeded", "failed", "client_cancelled"]);
 
-export const AttemptSchema = z.object({
+const AttemptSchema = z.object({
   id: z.string(),
   requestId: z.string(),
   sequence: z.number().int().positive(),

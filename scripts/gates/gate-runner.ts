@@ -14,7 +14,7 @@ export interface Gate {
   env?: Record<string, string | undefined>;
 }
 
-export interface GateExecution {
+interface GateExecution {
   status: "passed" | "failed";
   exitCode?: number | null;
   signal?: NodeJS.Signals | null;
@@ -199,7 +199,7 @@ export async function runGateGraph(gates: readonly Gate[], options: RunOptions =
   });
 }
 
-export function executeGateProcess(gate: Gate): Promise<GateExecution> {
+function executeGateProcess(gate: Gate): Promise<GateExecution> {
   return new Promise<GateExecution>((resolve) => {
     const child = spawn(gate.command, gate.args, {
       cwd: gate.cwd,

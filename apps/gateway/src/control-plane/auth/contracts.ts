@@ -4,7 +4,7 @@ export interface ControlUser {
   readonly source: "better-auth" | "development-token";
 }
 
-export interface ControlSessionUser {
+interface ControlSessionUser {
   readonly id: string;
   readonly email: string;
 }

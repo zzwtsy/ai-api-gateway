@@ -32,6 +32,11 @@ describe("control-plane OpenAPI", () => {
     }
     expect(document.paths).not.toHaveProperty("/openai/v1/chat/completions");
   });
+
+  it("marks the create-connection JSON body as required", () => {
+    expect(document.paths?.["/admin/api/v1/connections"]?.post?.requestBody).toMatchObject({ required: true });
+  });
+
   it("mounts the Better Auth handler for nested auth paths", async () => {
     const response = await app.request("/api/auth/get-session");
     expect(response.status).toBe(503);

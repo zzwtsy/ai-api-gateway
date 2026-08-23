@@ -9,8 +9,8 @@ import { systemClock } from "../../src/core/time/clock.js";
 import { createDatabase } from "../../src/db/client.js";
 import { runMigrations } from "../../src/db/run-migrations.js";
 
-let container: Awaited<ReturnType<PostgreSqlContainer["start"]>>;
-let database: DatabaseHandle;
+let container: Awaited<ReturnType<PostgreSqlContainer["start"]>> | undefined;
+let database: DatabaseHandle | undefined;
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer("postgres:18.6-bookworm").start();
@@ -22,12 +22,16 @@ beforeAll(async () => {
 }, 120_000);
 
 afterAll(async () => {
-  await database.close();
-  await container.stop();
+  try {
+    await database?.close();
+  } finally {
+    await container?.stop();
+  }
 });
 
 describe("PostgreSQL adapters", () => {
   it("persists the control-plane Connection Golden Path", async () => {
+    const database = requireDatabase();
     const repository = new PostgresConnectionRepository(database.db, systemClock);
     const created = await repository.create({
       name: "Integration provider",
@@ -44,6 +48,7 @@ describe("PostgreSQL adapters", () => {
   });
 
   it("persists Request and Attempt as one logical transaction", async () => {
+    const database = requireDatabase();
     const store = new PostgresRequestStore(database.db);
     const startedAt = new Date("2026-08-22T00:00:00.000Z");
     const finishedAt = new Date("2026-08-22T00:00:00.125Z");
@@ -95,3 +100,9 @@ describe("PostgreSQL adapters", () => {
     });
   });
 });
+
+function requireDatabase(): DatabaseHandle {
+  if (database === undefined)
+    throw new Error("PostgreSQL integration database is not initialized");
+  return database;
+}

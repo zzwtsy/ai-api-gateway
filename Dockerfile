@@ -10,6 +10,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/gateway/package.json apps/gateway/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY apps/e2e/package.json apps/e2e/package.json
+COPY scripts/install-lefthook.ts scripts/install-lefthook.ts
 RUN pnpm install --frozen-lockfile
 
 FROM dependencies AS build

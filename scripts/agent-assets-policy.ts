@@ -1,7 +1,7 @@
 import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
-export const requiredAgentAssets = Object.freeze([
+const requiredAgentAssets = Object.freeze([
   "AGENTS.md",
   "ai/AGENTS.md",
   "ai/golden-paths.md",

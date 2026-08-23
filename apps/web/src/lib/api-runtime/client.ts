@@ -18,7 +18,7 @@ const developmentAuthMiddleware: Middleware = {
   },
 };
 
-export const fetchClient = createFetchClient<paths>({
+const fetchClient = createFetchClient<paths>({
   baseUrl: window.location.origin,
   credentials: "include",
 });

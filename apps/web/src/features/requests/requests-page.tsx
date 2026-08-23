@@ -185,10 +185,7 @@ function RequestInspector({
               <div key={attempt.id} className="rounded-lg border p-3">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">
-                    第
-                    {attempt.sequence}
-                    {" "}
-                    次尝试
+                    {`第 ${attempt.sequence} 次尝试`}
                   </span>
                   <StatusBadge tone={attemptTone(attempt.outcome)}>
                     {formatAttemptOutcome(attempt.outcome)}

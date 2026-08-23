@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
-export const ConnectionProtocolSchema = z.enum([
+const ConnectionProtocolSchema = z.enum([
   "openai-chat",
   "openai-responses",
   "anthropic-messages",

@@ -2,7 +2,7 @@ x-gateway-base: &gateway-base
   build:
     context: .
   ports:
-    - "3001:3001"
+    - "${AIGW_DOCKER_GATEWAY_PORT:-3001}:3001"
   depends_on:
     postgres:
       condition: service_healthy
@@ -20,12 +20,12 @@ services:
       timeout: 3s
       retries: 30
     volumes:
-      - aigw-postgres:/var/lib/postgresql/data
+      - aigw-postgres:/var/lib/postgresql
 
   mock-provider:
     image: node:24-bookworm-slim
     ports:
-      - "127.0.0.1:4010:4010"
+      - "127.0.0.1:${AIGW_DOCKER_PROVIDER_PORT:-4010}:4010"
     working_dir: /workspace
     command: [node, apps/e2e/src/mock-provider.ts]
     environment:

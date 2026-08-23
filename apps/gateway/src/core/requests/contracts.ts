@@ -1,7 +1,7 @@
 export type ProtocolId = "openai-chat" | "openai-responses" | "anthropic-messages";
 export type RequestOutcome = "running" | "succeeded" | "failed" | "client_cancelled";
 export type AttemptOutcome = "running" | "succeeded" | "failed" | "client_cancelled";
-export type ObservationStatus = "pending" | "complete" | "incomplete";
+type ObservationStatus = "pending" | "complete" | "incomplete";
 
 export interface GatewayRequestRecord {
   readonly id: string;
@@ -40,7 +40,7 @@ export interface RequestWithAttempts extends GatewayRequestRecord {
   readonly attempts: readonly GatewayAttemptRecord[];
 }
 
-export interface StartRequestInput {
+interface StartRequestInput {
   readonly id: string;
   readonly clientId: string;
   readonly protocol: ProtocolId;
@@ -51,7 +51,7 @@ export interface StartRequestInput {
   readonly startedAt: Date;
 }
 
-export interface StartAttemptInput {
+interface StartAttemptInput {
   readonly id: string;
   readonly requestId: string;
   readonly sequence: number;
@@ -61,7 +61,7 @@ export interface StartAttemptInput {
   readonly startedAt: Date;
 }
 
-export interface CompleteRequestInput {
+interface CompleteRequestInput {
   readonly id: string;
   readonly outcome: Exclude<RequestOutcome, "running">;
   readonly statusCode: number | null;
@@ -72,7 +72,7 @@ export interface CompleteRequestInput {
   readonly observedBytes: number;
 }
 
-export interface CompleteAttemptInput {
+interface CompleteAttemptInput {
   readonly id: string;
   readonly outcome: Exclude<AttemptOutcome, "running">;
   readonly statusCode: number | null;

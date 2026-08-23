@@ -20,7 +20,7 @@ export function registryArtifactPaths(baseline: RegistryBaseline): string[] {
   ];
 }
 
-export function officialRegistryArtifactPaths(baseline: RegistryBaseline): string[] {
+function officialRegistryArtifactPaths(baseline: RegistryBaseline): string[] {
   return baseline.shadcn.components.map(
     component => `apps/web/src/components/ui/${component}.tsx`,
   );

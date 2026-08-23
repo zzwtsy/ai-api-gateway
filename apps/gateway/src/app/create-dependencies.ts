@@ -20,7 +20,6 @@ export interface RuntimeResources {
 }
 
 export function createInMemoryDependencies(env: Env, logger: AppLogger): ApplicationDependencies {
-  const targetUrl = resolveTargetUrl(env.BOOTSTRAP_PROVIDER_BASE_URL, "/v1/chat/completions");
   return {
     env,
     logger,
@@ -28,23 +27,7 @@ export function createInMemoryDependencies(env: Env, logger: AppLogger): Applica
     controlAuth: unavailableControlAuth,
     connectionRepository: new MemoryConnectionRepository(systemClock),
     requestStore: new MemoryRequestStore(),
-    gatewayClientAuthenticator: new StaticGatewayClientAuthenticator(
-      env.GATEWAY_CLIENT_KEY,
-      env.GATEWAY_KEY_PEPPER,
-    ),
-    providerCredentialResolver: new StaticProviderCredentialResolver([
-      { id: "bootstrap-provider-credential", secret: env.BOOTSTRAP_PROVIDER_API_KEY },
-    ]),
-    routingSnapshotStore: new StaticRoutingSnapshotStore({
-      version: env.ROUTING_SNAPSHOT_VERSION,
-      target: {
-        connectionId: "bootstrap-provider-connection",
-        credentialId: "bootstrap-provider-credential",
-        protocol: "openai-chat",
-        origin: targetUrl.origin,
-        path: targetUrl.path,
-      },
-    }),
+    ...createStaticProxyDependencies(env),
     transportRegistry: new UndiciTransportRegistry(env),
   };
 }
@@ -59,7 +42,6 @@ export function createRuntimeResources(env: Env, logger: AppLogger): RuntimeReso
   }
 
   const database = createDatabase(env.DATABASE_URL, logger);
-  const targetUrl = resolveTargetUrl(env.BOOTSTRAP_PROVIDER_BASE_URL, "/v1/chat/completions");
   const transportRegistry = new UndiciTransportRegistry(env);
   const dependencies: ApplicationDependencies = {
     env,
@@ -68,6 +50,24 @@ export function createRuntimeResources(env: Env, logger: AppLogger): RuntimeReso
     controlAuth: createBetterAuth(database.pool, env),
     connectionRepository: new PostgresConnectionRepository(database.db, systemClock),
     requestStore: new PostgresRequestStore(database.db),
+    ...createStaticProxyDependencies(env),
+    transportRegistry,
+  };
+
+  return {
+    dependencies,
+    close: async () => {
+      await transportRegistry.close();
+      await database.close();
+    },
+  };
+}
+
+function createStaticProxyDependencies(
+  env: Env,
+): Pick<ApplicationDependencies, "gatewayClientAuthenticator" | "providerCredentialResolver" | "routingSnapshotStore"> {
+  const targetUrl = resolveTargetUrl(env.BOOTSTRAP_PROVIDER_BASE_URL, "/v1/chat/completions");
+  return {
     gatewayClientAuthenticator: new StaticGatewayClientAuthenticator(
       env.GATEWAY_CLIENT_KEY,
       env.GATEWAY_KEY_PEPPER,
@@ -85,15 +85,6 @@ export function createRuntimeResources(env: Env, logger: AppLogger): RuntimeReso
         path: targetUrl.path,
       },
     }),
-    transportRegistry,
-  };
-
-  return {
-    dependencies,
-    close: async () => {
-      await transportRegistry.close();
-      await database.close();
-    },
   };
 }
 

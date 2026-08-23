@@ -15,7 +15,7 @@ const ErrorDetailSchema = z.object({
   message: z.string(),
 }).openapi("ErrorDetail");
 
-export const ErrorEnvelopeSchema = z.object({
+const ErrorEnvelopeSchema = z.object({
   success: z.literal(false),
   code: ErrorCodeSchema,
   message: z.string(),
@@ -27,7 +27,7 @@ export const ErrorEnvelopeSchema = z.object({
   meta: ResponseMetaSchema,
 }).openapi("ErrorEnvelope");
 
-export function createSuccessEnvelopeSchema<TSchema extends ZodType>(schema: TSchema) {
+function createSuccessEnvelopeSchema<TSchema extends ZodType>(schema: TSchema) {
   return z.object({
     success: z.literal(true),
     code: z.enum(["COMMON_OK", "COMMON_CREATED"]),

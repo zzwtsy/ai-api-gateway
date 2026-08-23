@@ -56,6 +56,7 @@ export const createConnectionRoute = createRoute({
   security: controlSessionSecurity,
   request: {
     body: {
+      required: true,
       content: {
         "application/json": { schema: CreateConnectionBodySchema },
       },

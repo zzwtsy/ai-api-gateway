@@ -2,27 +2,35 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "treatConfigHintsAsErrors": true,
   "includeEntryExports": true,
+  "ignoreIssues": {
+    "apps/web/src/components/ui/**": [
+      "exports",
+      "types"
+    ],
+    "apps/web/src/api/schema.d.ts": [
+      "exports",
+      "types"
+    ],
+    "apps/web/src/routeTree.gen.ts": [
+      "exports",
+      "types"
+    ]
+  },
   "workspaces": {
     ".": {
       "entry": [
-        "eslint.config.ts",
-        "scripts/check.ts",
-        "scripts/change-scope.ts",
-        "scripts/select-evidence.ts",
-        "scripts/install-lefthook.ts",
         "scripts/artifact/*.ts",
         "scripts/docs/*.ts",
+        "scripts/evidence/read-git-source-state.ts",
         "scripts/openapi/*.ts",
         "scripts/verify/*.ts"
       ],
       "project": [
-        "eslint.config.ts",
         "scripts/**/*.ts"
       ]
     },
     "apps/gateway": {
       "entry": [
-        "src/index.ts",
         "src/commands/*.ts"
       ],
       "project": [
@@ -32,42 +40,19 @@
       ]
     },
     "apps/web": {
-      "entry": [
-        "src/main.tsx"
-      ],
       "project": [
         "src/**/*.{ts,tsx}",
         "*.config.ts"
-      ],
-      "ignoreIssues": {
-        "src/components/ui/**": [
-          "exports",
-          "types"
-        ],
-        "src/api/schema.d.ts": [
-          "exports",
-          "types"
-        ],
-        "src/routeTree.gen.ts": [
-          "exports",
-          "types"
-        ]
-      }
+      ]
     },
     "apps/e2e": {
       "entry": [
-        "src/mock-provider.ts",
         "tests/**/*.spec.ts"
       ],
       "project": [
         "src/**/*.ts",
-        "tests/**/*.ts",
-        "playwright.config.ts"
+        "tests/**/*.ts"
       ]
     }
-  },
-  "ignore": [
-    ".artifacts/**",
-    "apps/gateway/drizzle/**"
-  ]
+  }
 }

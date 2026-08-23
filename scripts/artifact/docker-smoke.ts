@@ -2,12 +2,24 @@ import { spawn } from "node:child_process";
 import process from "node:process";
 
 const compose = ["compose", "--profile", "demo"];
-let started = false;
+const gatewayPort = process.env.AIGW_DOCKER_GATEWAY_PORT ?? "3301";
+const providerPort = process.env.AIGW_DOCKER_PROVIDER_PORT ?? "4310";
+const composeEnvironment = {
+  ...process.env,
+  AIGW_DOCKER_GATEWAY_PORT: gatewayPort,
+  AIGW_DOCKER_PROVIDER_PORT: providerPort,
+  BETTER_AUTH_SECRET: "docker-smoke-only-better-auth-secret",
+  GATEWAY_CLIENT_KEY: "docker-smoke-only-gateway-client-key",
+  GATEWAY_KEY_PEPPER: "docker-smoke-only-gateway-key-pepper",
+  BOOTSTRAP_PROVIDER_BASE_URL: "http://mock-provider:4010",
+  BOOTSTRAP_PROVIDER_API_KEY: "docker-smoke-only-provider-key",
+};
+let composeInvoked = false;
 
 try {
+  composeInvoked = true;
   await run("docker", [...compose, "up", "-d", "--build", "gateway-demo"]);
-  started = true;
-  await waitFor("http://127.0.0.1:3001/healthz", 90_000);
+  await waitFor(`http://127.0.0.1:${gatewayPort}/healthz`, 90_000);
 
   const body = {
     model: "demo-model",
@@ -15,7 +27,7 @@ try {
     messages: [{ role: "user", content: "artifact smoke" }],
     unknown_provider_extension: { preserved: true },
   };
-  const response = await fetch("http://127.0.0.1:3001/openai/v1/chat/completions", {
+  const response = await fetch(`http://127.0.0.1:${gatewayPort}/openai/v1/chat/completions`, {
     method: "POST",
     headers: {
       "authorization": "Bearer gw_dev_local_key",
@@ -28,14 +40,14 @@ try {
     throw new Error(`Docker Gateway response failed: ${response.status} ${downstream.slice(0, 300)}`);
   }
 
-  const received = await fetch("http://127.0.0.1:4010/received").then(value => value.json()) as { authorization?: unknown; body?: unknown };
+  const received = await fetch(`http://127.0.0.1:${providerPort}/received`).then(value => value.json()) as { authorization?: unknown; body?: unknown };
   if (received.authorization !== "Bearer mock-provider-key"
     || typeof received.body !== "string"
     || JSON.stringify(JSON.parse(received.body)) !== JSON.stringify(body)) {
     throw new Error("Docker Mock Provider did not receive the expected credential and body");
   }
 
-  const list = await fetch("http://127.0.0.1:3001/admin/api/v1/requests", {
+  const list = await fetch(`http://127.0.0.1:${gatewayPort}/admin/api/v1/requests`, {
     headers: { authorization: "Bearer admin_dev_local" },
   }).then(value => value.json()) as { data?: { outcome?: unknown; id?: unknown }[] };
   if (!Array.isArray(list.data) || list.data.length !== 1 || list.data[0]?.outcome !== "succeeded") {
@@ -45,7 +57,7 @@ try {
   const requestId = list.data[0]?.id;
   if (typeof requestId !== "string")
     throw new Error("Docker Request record is missing its id");
-  const detail = await fetch(`http://127.0.0.1:3001/admin/api/v1/requests/${requestId}`, {
+  const detail = await fetch(`http://127.0.0.1:${gatewayPort}/admin/api/v1/requests/${requestId}`, {
     headers: { authorization: "Bearer admin_dev_local" },
   }).then(value => value.json()) as { data?: { attempts?: unknown[] } };
   if (!Array.isArray(detail.data?.attempts) || detail.data.attempts.length !== 1) {
@@ -54,12 +66,12 @@ try {
 
   process.stdout.write("docker artifact smoke passed\n");
 } catch (error) {
-  if (started) {
+  if (composeInvoked) {
     await run("docker", [...compose, "logs", "--no-color", "postgres", "mock-provider", "gateway-demo"], { allowFailure: true });
   }
   throw error;
 } finally {
-  if (started) {
+  if (composeInvoked) {
     await run("docker", [...compose, "down", "-v", "--remove-orphans"], { allowFailure: true });
   }
 }
@@ -83,7 +95,7 @@ async function waitFor(url: string, timeoutMs: number): Promise<void> {
 
 function run(command: string, args: string[], options: { allowFailure?: boolean } = {}): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const child = spawn(command, args, { stdio: "inherit", env: process.env });
+    const child = spawn(command, args, { stdio: "inherit", env: composeEnvironment });
     child.once("error", reject);
     child.once("exit", (code, signal) => {
       if (code === 0 || options.allowFailure === true) {

@@ -54,6 +54,18 @@ test("Gate contract rejects source-mode browser checks in the artifact lane", as
   assert.ok(errors.some(error => error.includes("compiled Gateway/Web assets")));
 });
 
+test("Gate contract requires the Docker dependency stage to include the root postinstall entry", async () => {
+  const input = await actualInput();
+  const errors = collectGateContractViolations({
+    ...input,
+    dockerfileSource: input.dockerfileSource.replace(
+      "COPY scripts/install-lefthook.ts scripts/install-lefthook.ts\n",
+      "",
+    ),
+  });
+  assert.ok(errors.some(error => error.includes("root postinstall entry")));
+});
+
 test("comments cannot impersonate CI, Playwright or Docker enforcement", async () => {
   const input = await actualInput();
   const errors = collectGateContractViolations({
