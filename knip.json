@@ -5,19 +5,19 @@
   "workspaces": {
     ".": {
       "entry": [
-        "eslint.config.mjs",
-        "scripts/check.mjs",
-        "scripts/change-scope.mjs",
-        "scripts/select-evidence.mjs",
-        "scripts/install-lefthook.mjs",
-        "scripts/artifact/*.mjs",
-        "scripts/docs/*.mjs",
-        "scripts/openapi/*.mjs",
-        "scripts/verify/*.mjs"
+        "eslint.config.ts",
+        "scripts/check.ts",
+        "scripts/change-scope.ts",
+        "scripts/select-evidence.ts",
+        "scripts/install-lefthook.ts",
+        "scripts/artifact/*.ts",
+        "scripts/docs/*.ts",
+        "scripts/openapi/*.ts",
+        "scripts/verify/*.ts"
       ],
       "project": [
-        "eslint.config.mjs",
-        "scripts/**/*.mjs"
+        "eslint.config.ts",
+        "scripts/**/*.ts"
       ]
     },
     "apps/gateway": {

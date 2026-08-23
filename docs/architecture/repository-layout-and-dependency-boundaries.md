@@ -16,7 +16,7 @@ language: zh-CN
 ├── package.json
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
-├── eslint.config.mjs
+├── eslint.config.ts
 ├── lefthook.yml
 │
 ├── apps/

@@ -31,7 +31,7 @@ Status: implemented
 
 ## Verification
 
-- `node --test scripts/tests/*.test.mjs`；
+- `pnpm test:scripts`；
 - `pnpm change-scope --base <confirmed-base>`；
 - `pnpm evidence:select --base <confirmed-base>`；
 - `pnpm verify:runtime-invariants`；

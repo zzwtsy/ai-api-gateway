@@ -88,7 +88,7 @@ jobs:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           VERSION: ${{ inputs.version }}
           COMMIT_SHA: ${{ github.sha }}
-        run: node scripts/release/verify-image-ownership.mjs
+        run: node scripts/release/verify-image-ownership.ts
       - name: 计算镜像标签
         id: metadata
         uses: docker/metadata-action@v6.2.0

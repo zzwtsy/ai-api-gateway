@@ -37,6 +37,6 @@ Status: implemented
 ## Verification
 
 - 根包名为 `ai-api-gateway`，所有 Workspace 使用同一项目版本；
-- `docs/spec-bundles.json` 和 `scripts/docs/bundle-spec.mjs` 可生成三个规范投影；
+- `docs/spec-bundles.json` 和 `scripts/docs/bundle-spec.ts` 可生成三个规范投影；
 - `pnpm docs:check` 拒绝旧版本路径、失效链接和独立规范入口；
 - 活动仓库中不存在 `PROJECT_ARCHITECTURE.md`、旧版本规范副本或独立模板版本声明。

@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "erasableSyntaxOnly": true
+  },
+  "include": [
+    "../eslint.config.ts",
+    "../commitlint.config.ts",
+    "**/*.ts"
+  ]
+}

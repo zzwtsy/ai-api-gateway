@@ -309,7 +309,7 @@ CI 从同一 Gate 定义生成四个明确证明面，Workflow 不重新维护�
 - 编译产物浏览器 Golden Path；
 - Docker Compose + PostgreSQL + Mock Provider 发布形态 Smoke。
 
-每个 Lane 写出机器可读 Gate Report；同一 PR 的新提交取消旧 Head。完整定义见 `scripts/gates/definitions.mjs`，CI 只调用 `check:ci:*`。
+每个 Lane 写出机器可读 Gate Report；同一 PR 的新提交取消旧 Head。完整定义见 `scripts/gates/definitions.ts`，CI 只调用 `check:ci:*`。
 
 ## 10. Git Hook
 
@@ -330,7 +330,7 @@ Hook 不运行完整 Docker E2E；CI 拥有完整矩阵。推送前由 Skill 使
 
 ## 11. Gate Runner
 
-`node scripts/check.mjs <mode> [--report <path>]` 通过一个 JavaScript Gate DAG 表达依赖和有限并发：
+`node scripts/check.ts <mode> [--report <path>]` 通过一个 TypeScript Gate DAG 表达依赖和有限并发：
 
 ```ts
 interface Gate {

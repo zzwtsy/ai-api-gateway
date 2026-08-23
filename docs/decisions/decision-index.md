@@ -209,6 +209,14 @@ Skill 指令可使用中文或英文，新写内容优先英文；文档、AGENT
 
 详细记录：[同步应用版本并从已验证 Commit 发布](implemented/2026-08-23-synchronized-version-and-verifiable-release.md)。
 
+## ADR-030：仓库脚本使用 Node.js 原生 TypeScript
+
+**状态：Accepted**
+
+项目拥有的根配置与仓库脚本统一使用 TypeScript 6，由 Node.js 24 原生 type stripping 直接执行，并通过 `scripts/tsconfig.json` 独立严格检查；不引入第二个 TypeScript 运行器或脚本预编译目录。
+
+详细记录：[仓库脚本使用 Node.js 原生 TypeScript](implemented/2026-08-23-native-typescript-repository-scripts.md)。
+
 ## Decision 模板
 
 新决策使用 [`docs/decisions/_template.md`](_template.md)，并放入 `proposed/`、`implemented/`、`rejected/` 或 `superseded/`。ADR 编号保留为索引，不要求每个独立文件继续使用数字编号。

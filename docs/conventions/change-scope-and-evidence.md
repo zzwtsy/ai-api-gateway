@@ -80,8 +80,8 @@ pnpm evidence:select --base origin/main --json
 
 ## 6. 机器保证
 
-- `scripts/change-scope.mjs` 有临时 Git 仓库自测；
-- `scripts/evidence-policy.mjs` 有高风险、文档-only 和 unknown 路径自测；
-- `scripts/gates/gate-runner.mjs` 在执行任何命令前验证依赖图；
+- `scripts/change-scope.ts` 有临时 Git 仓库自测；
+- `scripts/evidence-policy.ts` 有高风险、文档-only 和 unknown 路径自测；
+- `scripts/gates/gate-runner.ts` 在执行任何命令前验证依赖图；
 - 缺失依赖、循环、重复 Gate ID、失败依赖跳过和 `after` 语义都有负向测试；
 - CI 使用明确 Lane，不在 Workflow 中重新手写另一套命令顺序。

@@ -6,13 +6,13 @@ commit-msg:
 
 pre-commit:
   jobs:
-    - name: 暂存区 TypeScript/JavaScript Lint
-      glob: "*.{ts,tsx,mjs}"
+    - name: 暂存区 TypeScript Lint
+      glob: "*.{ts,tsx}"
       run: pnpm exec eslint --fix --no-warn-ignored {staged_files}
       stage_fixed: true
 
     - name: 仓库脚本自测
-      glob: "scripts/**/*.mjs"
+      glob: "scripts/**/*.ts"
       run: pnpm test:scripts
 
     - name: Decision Note 格式

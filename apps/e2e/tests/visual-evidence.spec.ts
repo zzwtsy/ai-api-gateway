@@ -130,7 +130,7 @@ test("记录 Blue/Inter Sidebar 规范截图", async ({ page, request }) => {
 
 async function readEvidenceSourceState(expected?: GitSourceState): Promise<GitSourceState> {
   const args = [
-    path.join(repositoryRoot, "scripts/evidence/read-git-source-state.mjs"),
+    path.join(repositoryRoot, "scripts/evidence/read-git-source-state.ts"),
     repositoryRoot,
   ];
   if (expected !== undefined)
