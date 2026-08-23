@@ -2,6 +2,7 @@ import { PlugZapIcon, Plus, X } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/product/page-header";
+import { StatusBadge } from "@/components/product/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +44,7 @@ export function ConnectionsPage() {
         title="连接"
         description="管理上游 Provider Endpoint；账号与凭据将作为连接内部的耐久子资源扩展。"
         actions={(
-          <Button onClick={() => setCreating((value) => !value)}>
+          <Button onClick={() => setCreating(value => !value)}>
             {creating
               ? <X data-icon="inline-start" />
               : <Plus data-icon="inline-start" />}
@@ -71,7 +72,7 @@ export function ConnectionsPage() {
         </CardHeader>
         <CardContent>
           <ConnectionDirectory loading={query.isLoading} connections={connections} />
-          {query.error !== null && (
+          {query.isError && (
             <p className="mt-4 text-sm text-destructive">
               {describeApiError(query.error, "无法加载连接")}
             </p>
@@ -115,7 +116,7 @@ function ConnectionDirectory({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {connections.map((item) => (
+        {connections.map(item => (
           <TableRow key={item.id}>
             <TableCell>
               <div className="font-medium">{item.name}</div>
@@ -126,9 +127,9 @@ function ConnectionDirectory({
               {item.baseUrl}
             </TableCell>
             <TableCell>
-              <Badge variant={item.enabled ? "success" : "secondary"}>
+              <StatusBadge tone={item.enabled ? "success" : "neutral"}>
                 {item.enabled ? "启用" : "停用"}
-              </Badge>
+              </StatusBadge>
             </TableCell>
           </TableRow>
         ))}

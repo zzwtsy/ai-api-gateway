@@ -11,8 +11,18 @@
     "framework": "vite",
     "workspace": "apps/web",
     "preset": "base-nova",
+    "presetCode": "b1Ymqvgiu",
     "base": "base",
     "style": "nova",
+    "theme": {
+      "primary": "blue",
+      "font": "inter",
+      "fontPackage": "@fontsource-variable/inter"
+    },
+    "sourcePolicy": {
+      "components": "upstream-exact",
+      "hooks": "linted-functional-equivalence"
+    },
     "iconLibrary": "lucide",
     "upstreamRepository": "shadcn-ui/ui",
     "upstreamCommit": "1773ecfeeb4a04366978d353e69b5c7ded78dcb2",
@@ -26,31 +36,36 @@
       "label",
       "select",
       "separator",
+      "sheet",
+      "sidebar",
       "skeleton",
       "spinner",
-      "table"
+      "table",
+      "tooltip"
     ],
-    "localPatches": {
-      "badge": [
-        "success and warning semantic product-status variants"
-      ],
-      "spinner": [
-        "zh-CN accessible label"
-      ]
-    },
+    "registryHooks": [
+      "use-mobile"
+    ],
+    "localPatches": {},
     "componentDigests": {
-      "badge": "1a8bbd6e99073a9db7187fc295ba55099745295c52aee403050dc66a9e87df92",
-      "button": "fc2e0c1417e6f09f6963291a2a48a646dfec5acba95a8c7567810264479aef13",
-      "card": "d008fb8557ce6a939ac41e81ab86e76546f82bff4cab0fa439b55f4a5e897af6",
-      "empty": "4367907e31039f2c69fa2dafc948cd1fac2709e770a70276cc9dcfda550324a6",
-      "field": "4dd7775855722d7b04fa90d687b6223fe6076259b7fd59728a43fe7b9fa961a7",
-      "input": "7a0d18948c3a0731f6df7689b796aeb51b4e1231b5bb7ab2a8c3506e6ef9d3a7",
-      "label": "eebf6f3ad4de87489da1ca9d0f24a8aaf4d77a94f362db130721531e568600f7",
-      "select": "8dd1c7e4d7ff544f5cfc1079def00836e7de78a7648ace063adab05f0bf69056",
-      "separator": "908808b39ed38a1724c656412cfbb270617b0ef628b87dcd9ace669e018a6a9b",
-      "skeleton": "485c6867daf193a560bc4a0c5f8eea424cb823b7eddff0e6f7768ffe79eb552b",
-      "spinner": "a4a9359df61c29fc7add60963fa863c641459aa46d0257c51531d10f3c85a298",
-      "table": "5dc043006b1063e7206b94fe66729c8349dc49b22254363fa1b6a9ee76b5149a"
+      "badge": "968b0403af74a785c9408ca69a677235e49d0c80b2c27fb9858ad421a8778c7d",
+      "button": "d14549ab3ba7a9d5d1f424c2599233bffa0b317121abf3b6efa2fb902d5e2781",
+      "card": "d8113cbf964f8d1aadf2649d2944d8bbc6e3cfd49d36746f76868cbc4dde3cfe",
+      "empty": "e65ee3ba54a21ed61e3c50041bb12a6a3fcb215c56611cda6795c23a7bd89f61",
+      "field": "6160da8be06476aa0fb45162e8b27ab1fd481431d92c1c3ec850027e6cc4f400",
+      "input": "f7d6ecff9a4d631feeaf401c02bb87e26ddb38131c55d15a43b9290747390847",
+      "label": "fc58859ab5ee622b2fe853a6501a0ed8008d022ab34a4f0bf98bb7324c5b3619",
+      "select": "ca3bd1b370ea67b84632d435c22d8270752fa6013c06c365162af265e4a0e87e",
+      "separator": "082aff76b823256112a622d92dcef79dd008fe8c252611e184c002db770763f3",
+      "sheet": "a8ff25079c1167230fc3a9ddce881a8fb24f8ebb1eecbc8189c7f1cf242018df",
+      "sidebar": "29e33400cfdd00cb499da3615ed2258d75192d2b2a5a5117a84d2db4242ed0bf",
+      "skeleton": "8110bba70d0cb9fe968c0b7bd092ad12258caef40b028b4a87f402bdab907faf",
+      "spinner": "900f722c961fa6e1c28104809d56831c9056dc69599e49d364cc13a6f33966a3",
+      "table": "a13f55a7c1406197608f223006cf16f211a257b213362caaef0d2abf3a389c8f",
+      "tooltip": "a9f7b6823ef80334f2a70ee0e7eb40e01f095d63f7e354be6b7c499e2d2c84aa"
+    },
+    "hookDigests": {
+      "use-mobile": "0b7587070a25ea48088a46b3dd7d47eef1d16affba607d5cc1de33db8fbb3e46"
     }
   },
   "eslint": {

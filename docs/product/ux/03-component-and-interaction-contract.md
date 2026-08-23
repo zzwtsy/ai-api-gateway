@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-23
 language: zh-CN
 ---
 
@@ -14,7 +14,7 @@ language: zh-CN
 | 面包屑 | `Breadcrumb` |
 | 页面动作 | `Button`, `DropdownMenu` |
 | 全局搜索 | `CommandDialog`, `CommandInput`, `CommandList`, `CommandGroup`, `CommandItem`, `CommandEmpty` |
-| 数据比较 | `Table`, `Badge`, `Tooltip`, `Pagination` |
+| 数据比较 | `Table`, `Badge`, `StatusBadge`, `Tooltip`, `Pagination` |
 | 同级视图 | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` |
 | 持久问题 | `Alert` |
 | 临时反馈 | `Sonner` |
@@ -42,8 +42,13 @@ language: zh-CN
 8. `TabsTrigger` 必须位于 `TabsList` 内。
 9. `SelectItem`、`DropdownMenuItem`、`CommandItem` 必须位于对应 Group 中。
 10. Loading Button 由 `Spinner + disabled` 组合，不定义不存在的 `isLoading` 属性。
+11. `components/ui` 保持官方 Registry 原样；产品差异进入语义 Token、`components/product` 或布局组合。
 
-## 3. Button 层级
+## 3. 状态 Badge
+
+产品状态统一使用 `<StatusBadge tone="success | warning | danger | neutral">`。`success` 与 `warning` 使用全局产品 Token，`danger` 映射官方 `destructive`，`neutral` 映射官方 `secondary`。普通数量、协议或对象标签继续直接使用官方 `Badge`。
+
+## 4. Button 层级
 
 | Variant | 用途 |
 | --- | --- |
@@ -55,7 +60,7 @@ language: zh-CN
 
 每个页面标题区原则上只有一个 `default` 主按钮。多个同权主要按钮会削弱层级。
 
-## 4. Table
+## 5. Table
 
 表格用于模型、路由、客户端、请求列表和健康比较。
 
@@ -72,7 +77,7 @@ language: zh-CN
 
 禁止用 Checkbox 列装饰表格；只有确实存在批量操作时才显示多选。
 
-## 5. Form
+## 6. Form
 
 表单使用 `FieldGroup + Field`。每个字段必须有可见 Label；Placeholder 不替代 Label。
 
@@ -89,7 +94,7 @@ language: zh-CN
 
 表单应先阻断可确定的错误，再允许提交。路由协议不一致、空 Secret、非法 URL、悬空引用属于阻断错误；兼容性部分支持可作为警告并要求显式确认。
 
-## 6. Dialog、Sheet 与独立页面
+## 7. Dialog、Sheet 与独立页面
 
 | 模式 | 使用场景 | 禁止场景 |
 | --- | --- | --- |
@@ -100,7 +105,7 @@ language: zh-CN
 
 Sheet 默认 500px，宽版 640px。Sheet 内必须有固定 Header、可滚动 Body、固定 Footer。
 
-## 7. 反馈层级
+## 8. 反馈层级
 
 - `FieldError`：字段错误；
 - Inline helper：局部约束或即时解释；
@@ -112,21 +117,21 @@ Sheet 默认 500px，宽版 640px。Sheet 内必须有固定 Header、可滚动 
 
 Toast 不承载必须阅读的信息，也不替代页面状态更新。
 
-## 8. 状态词汇
+## 9. 状态词汇
 
-### 8.1 连接与账号
+### 9.1 连接与账号
 
 ```text
 正常 / 部分兼容 / 冷却中 / 鉴权失败 / 不可用 / 未验证 / 已禁用
 ```
 
-### 8.2 请求
+### 9.2 请求
 
 ```text
 成功 / 成功·回退 / 最终失败 / 已取消 / 流中断
 ```
 
-### 8.3 成本
+### 9.3 成本
 
 ```text
 厂商报告 / Gateway 估算 / 参考值 / 包月内 / unknown
@@ -134,7 +139,7 @@ Toast 不承载必须阅读的信息，也不替代页面状态更新。
 
 同一个状态在不同页面必须使用相同文本、Badge tone 和解释。
 
-## 9. Loading、Empty、Error、Partial
+## 10. Loading、Empty、Error、Partial
 
 每个数据页面必须实现：
 

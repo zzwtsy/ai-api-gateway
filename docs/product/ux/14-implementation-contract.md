@@ -162,6 +162,8 @@ type RequestResult =
 
 全局 CSS 使用 shadcn 语义变量并补充产品 Token。Feature 代码只使用语义 Class 或变量，不复制原始颜色、Sidebar 宽度或圆角数值。
 
+`components/ui` 是官方 Registry 所有面，不接受手工 Patch 或 Formatter 改写。产品状态组件位于 `components/product`，App Shell 差异通过官方 Sidebar 的 Props 和组合表达。
+
 机器可读值见 [`design-tokens.json`](design-tokens.json)。Token 变化必须同步规范、当前截图和视觉回归证据。
 
 ## 11. 测试

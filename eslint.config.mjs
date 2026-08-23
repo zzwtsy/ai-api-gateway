@@ -33,6 +33,7 @@ export default antfu(
       "**/dist/**",
       "**/coverage/**",
       ".artifacts/**",
+      "apps/web/src/components/ui/**",
       "apps/web/src/api/schema.d.ts",
       "apps/web/src/routeTree.gen.ts",
       "apps/gateway/drizzle/**",
@@ -43,6 +44,13 @@ export default antfu(
     files: applicationTypeScript,
     rules: {
       "ts/consistent-type-imports": "error",
+      "ts/ban-ts-comment": ["error", {
+        "ts-check": false,
+        "ts-expect-error": "allow-with-description",
+        "ts-ignore": true,
+        "ts-nocheck": true,
+        "minimumDescriptionLength": 10,
+      }],
       "ts/no-explicit-any": "error",
       "ts/no-floating-promises": "error",
       "ts/no-misused-promises": "error",
@@ -58,7 +66,7 @@ export default antfu(
     name: "aigw/source-quality",
     files: [...gatewaySource, ...webSource],
     rules: {
-      complexity: ["error", 15],
+      "complexity": ["error", 15],
       "max-lines": ["error", { max: 350, skipBlankLines: true, skipComments: true }],
       "max-lines-per-function": ["error", { max: 150, skipBlankLines: true, skipComments: true }],
       "no-nested-ternary": "error",
@@ -139,22 +147,23 @@ export default antfu(
     files: ["scripts/**/*.mjs"],
     rules: {
       "no-console": "error",
-      complexity: ["error", 20],
+      "complexity": ["error", 20],
       "max-lines-per-function": ["error", { max: 180, skipBlankLines: true, skipComments: true }],
     },
   },
   {
-    name: "aigw/shadcn-registry-source",
-    files: ["apps/web/src/components/ui/**/*.{ts,tsx}"],
+    name: "aigw/test-title-style",
+    files: ["**/*.test.{ts,tsx,mjs}", "**/*.spec.{ts,tsx,mjs}"],
     rules: {
-      complexity: "off",
-      "max-lines": "off",
-      "max-lines-per-function": "off",
-      "no-nested-ternary": "off",
-      "ts/no-explicit-any": "off",
-      "ts/strict-boolean-expressions": "off",
-      "react-refresh/only-export-components": "off",
-      "react/no-array-index-key": "off",
+      // describe 是主题分组，允许 PascalCase 类名/模块名；it 保持小写行为描述。
+      "test/prefer-lowercase-title": ["error", { ignore: ["describe"] }],
+    },
+  },
+  {
+    name: "aigw/repository-script-tests",
+    files: ["scripts/tests/**/*.test.mjs"],
+    rules: {
+      "test/no-import-node-test": "off",
     },
   },
   {

@@ -47,31 +47,31 @@ export interface FileRoutesByFullPath {
   '/requests': typeof WorkspaceRequestsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof WorkspaceIndexRoute
   '/login': typeof LoginRoute
   '/connections': typeof WorkspaceConnectionsRoute
   '/requests': typeof WorkspaceRequestsRoute
+  '/': typeof WorkspaceIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_workspace': typeof WorkspaceRouteWithChildren
   '/login': typeof LoginRoute
-  '/_workspace/': typeof WorkspaceIndexRoute
   '/_workspace/connections': typeof WorkspaceConnectionsRoute
   '/_workspace/requests': typeof WorkspaceRequestsRoute
+  '/_workspace/': typeof WorkspaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/login' | '/connections' | '/requests'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/connections' | '/requests'
+  to: '/login' | '/connections' | '/requests' | '/'
   id:
     | '__root__'
     | '/_workspace'
     | '/login'
-    | '/_workspace/'
     | '/_workspace/connections'
     | '/_workspace/requests'
+    | '/_workspace/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -120,15 +120,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface WorkspaceRouteChildren {
-  WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   WorkspaceConnectionsRoute: typeof WorkspaceConnectionsRoute
   WorkspaceRequestsRoute: typeof WorkspaceRequestsRoute
+  WorkspaceIndexRoute: typeof WorkspaceIndexRoute
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
-  WorkspaceIndexRoute: WorkspaceIndexRoute,
   WorkspaceConnectionsRoute: WorkspaceConnectionsRoute,
   WorkspaceRequestsRoute: WorkspaceRequestsRoute,
+  WorkspaceIndexRoute: WorkspaceIndexRoute,
 }
 
 const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(

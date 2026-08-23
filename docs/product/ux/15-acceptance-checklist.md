@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-23
 language: zh-CN
 ---
 
@@ -27,7 +27,8 @@ language: zh-CN
 ## 3. Shell 与视觉
 
 - [ ] 浮动 inset Sidebar 与 Main Surface 结构正确；
-- [ ] 背景为中性灰，内容表面为真白；
+- [ ] Sidebar 为浅色背景，Inset 内容表面为真白，Primary 为蓝色；
+- [ ] Sidebar 可点击和通过 `Cmd/Ctrl+B` 折叠，刷新后恢复，折叠导航显示中文 Tooltip；
 - [ ] 页面主操作在 Page Header；
 - [ ] 顶栏只保留全局能力；
 - [ ] 无渐变、玻璃、发光、超大圆角和装饰性卡片墙；
@@ -61,7 +62,8 @@ language: zh-CN
 
 - [ ] 1440 × 1000 无裁切与文档级水平溢出；
 - [ ] 1280 宽保留全部核心任务；
-- [ ] 1024 × 768 侧栏折叠并显示非阻断提示；
+- [ ] 1024 × 768 展开与折叠状态均无内容裁切；
+- [ ] `<768px` Sidebar Sheet 打开、关闭、焦点和遮罩 Smoke 通过；
 - [ ] 次要列按断点隐藏，核心列保留；
 - [ ] 路由编辑预览在窄视口顺序降级；
 - [ ] Sheet、Dialog、Inspector 内部滚动可用。

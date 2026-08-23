@@ -1,6 +1,7 @@
+import type { FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { KeyRound } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +55,7 @@ export function LoginPage() {
           <CardDescription>首次部署后运行 `pnpm db:bootstrap` 创建账号。</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="flex flex-col gap-5" onSubmit={(event) => void submit(event)}>
+          <form className="flex flex-col gap-5" onSubmit={event => void submit(event)}>
             <FieldGroup>
               <Field data-invalid={error !== null || undefined}>
                 <FieldLabel htmlFor="login-email">邮箱</FieldLabel>
@@ -64,7 +65,7 @@ export function LoginPage() {
                   autoComplete="email"
                   aria-invalid={error !== null}
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={event => setEmail(event.target.value)}
                 />
               </Field>
               <Field data-invalid={error !== null || undefined}>
@@ -75,13 +76,13 @@ export function LoginPage() {
                   autoComplete="current-password"
                   aria-invalid={error !== null}
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={event => setPassword(event.target.value)}
                 />
               </Field>
             </FieldGroup>
             <FieldError>{error}</FieldError>
             <Button type="submit" disabled={pending || password.length === 0}>
-              {pending && <Spinner data-icon="inline-start" />}
+              {pending && <Spinner data-icon="inline-start" aria-label="加载中" />}
               登录
             </Button>
           </form>

@@ -92,6 +92,7 @@ flowchart LR
   n_666561747572653a61757468["feature:auth"]
   n_666561747572653a636f6e6e656374696f6e73["feature:connections"]
   n_666561747572653a7265717565737473["feature:requests"]
+  n_686f6f6b73["hooks"]
   n_696e6465782e637373["index.css"]
   n_6c6962["lib"]
   n_726f757465547265652e67656e2e7473["routeTree.gen.ts"]
@@ -100,6 +101,7 @@ flowchart LR
   n_6170706c69636174696f6e --> n_696e6465782e637373
   n_6170706c69636174696f6e --> n_6c6962
   n_6170706c69636174696f6e --> n_726f757465547265652e67656e2e7473
+  n_636f6d706f6e656e7473 --> n_686f6f6b73
   n_636f6d706f6e656e7473 --> n_6c6962
   n_666561747572653a61757468 --> n_636f6d706f6e656e7473
   n_666561747572653a61757468 --> n_6c6962
@@ -120,12 +122,13 @@ flowchart LR
 | `application` | `index.css` | `apps/web/src/main.tsx → apps/web/src/index.css` |
 | `application` | `lib` | `apps/web/src/app.tsx → apps/web/src/lib/query-client.ts`<br>`apps/web/src/router.tsx → apps/web/src/lib/query-client.ts` |
 | `application` | `routeTree.gen.ts` | `apps/web/src/router.tsx → apps/web/src/routeTree.gen.ts` |
-| `components` | `lib` | `apps/web/src/components/layout/app-shell.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/badge.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/button.tsx → apps/web/src/lib/utils.ts` |
+| `components` | `hooks` | `apps/web/src/components/ui/sidebar.tsx → apps/web/src/hooks/use-mobile.ts` |
+| `components` | `lib` | `apps/web/src/components/product/status-badge.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/badge.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/button.tsx → apps/web/src/lib/utils.ts` |
 | `feature:auth` | `components` | `apps/web/src/features/auth/login-page.tsx → apps/web/src/components/ui/button.tsx`<br>`apps/web/src/features/auth/login-page.tsx → apps/web/src/components/ui/card.tsx`<br>`apps/web/src/features/auth/login-page.tsx → apps/web/src/components/ui/field.tsx` |
 | `feature:auth` | `lib` | `apps/web/src/features/auth/login-page.tsx → apps/web/src/lib/auth-client.ts` |
-| `feature:connections` | `components` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/ui/badge.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/ui/button.tsx` |
+| `feature:connections` | `components` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/status-badge.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/ui/badge.tsx` |
 | `feature:connections` | `lib` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/connections/create-connection-form.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/connections/hooks.ts → apps/web/src/lib/api-runtime/client.ts` |
-| `feature:requests` | `components` | `apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/ui/badge.tsx` |
+| `feature:requests` | `components` | `apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/status-badge.tsx` |
 | `feature:requests` | `lib` | `apps/web/src/features/requests/hooks.ts → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/utils.ts` |
 | `routes` | `components` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/ui/badge.tsx` |
 | `routes` | `feature:auth` | `apps/web/src/routes/login.tsx → apps/web/src/features/auth/login-page.tsx` |

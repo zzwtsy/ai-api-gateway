@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-23
 language: zh-CN
 ---
 
@@ -8,13 +8,13 @@ language: zh-CN
 
 ## 1. 视觉方向
 
-整体采用默认 shadcn 语义与中性配色，但通过精确密度、开放式布局、状态色和信息结构形成现代产品感。视觉应接近专业开发者工具，而不是通用后台模板。
+整体采用官方 shadcn `base-nova + Blue + Inter` 语义主题，通过精确密度、开放式布局、状态色和信息结构形成现代产品感。视觉应接近专业开发者工具，而不是通用后台模板。
 
 必须遵守：
 
 - 真白色内容表面；
-- 中性灰背景；
-- 黑色主操作；
+- 浅色 Sidebar 背景与白色 Inset 内容面；
+- 蓝色主操作；
 - 彩色只承载状态和对象识别；
 - 1px 边框和极轻阴影；
 - 小半径；
@@ -33,7 +33,7 @@ language: zh-CN
 └─────────────────────────────────────────────────────────┘
 
   ┌──────────────── Main Surface（独立白色表面） ───────┐
-  │ Topbar：Breadcrumb / Search / Quick Create / Health  │
+  │ Topbar：Sidebar Trigger / Current Page Title          │
   ├───────────────────────────────────────────────────────┤
   │ Page Scroll                                           │
   │ Page Header                                           │
@@ -41,14 +41,16 @@ language: zh-CN
   └───────────────────────────────────────────────────────┘
 ```
 
-Sidebar 与 Main Surface 均浮在中性页面背景上，外边距 12px，圆角 12px。它们是整套界面最主要的框架动作；页面内部不得继续层层套大圆角容器。
+App Shell 由官方 `SidebarProvider`、`Sidebar variant="inset" collapsible="icon"` 和 `SidebarInset` 组成。Sidebar 使用浅色背景，Inset 使用独立白色内容面，外边距 8px。页面内部不得继续层层套大圆角容器。
+
+Sidebar 展开状态为 16rem，图标状态为 3rem。官方 Provider 拥有交互状态，使用非敏感 `sidebar_state` Cookie 跨刷新恢复，并支持顶部中文 Trigger、侧栏 Rail 和 `Cmd/Ctrl+B`。折叠导航必须显示中文 Tooltip。`SidebarInset` 顶部固定保留 56px Topbar，显示中文折叠按钮和当前页面标题。
 
 ## 3. 尺寸 Token
 
 | Token | 值 | 用途 |
 | --- | ---: | --- |
-| `--sidebar-width` | 230px | 展开侧栏 |
-| collapsed sidebar | 70px | 1280px 以下窄桌面 |
+| `--sidebar-width` | 256px（16rem） | 官方展开侧栏 |
+| `--sidebar-width-icon` | 48px（3rem） | 官方图标侧栏 |
 | `--topbar-height` | 56px | 全局顶栏 |
 | `--page-gutter` | 24px | 1440px 基准页边距 |
 | compact gutter | 20px / 16px | 1440px 以下 / 1280px 以下 |
@@ -69,21 +71,23 @@ Sidebar 与 Main Surface 均浮在中性页面背景上，外边距 12px，圆�
 
 | 语义 | 值 |
 | --- | --- |
-| 页面背景 | `#f4f4f5` |
+| Sidebar | `#fafafa` |
 | 内容表面 | `#ffffff` |
-| 主文字 / 主操作 | `#18181b` |
-| 次级文字 | `#71717a` |
-| 边框 / 输入框 | `#e4e4e7` |
-| 轻背景 | `#fafafa` |
-| Focus ring | `#a1a1aa` |
+| 主文字 | `#0a0a0a` |
+| Primary | `#1447e6` |
+| Primary foreground | `#eff6ff` |
+| 次级文字 | `#737373` |
+| 边框 / 输入框 | `#e5e5e5` |
+| 轻背景 | `#f5f5f5` |
+| Focus ring | `#a1a1a1` |
 
 ### 4.2 状态色
 
 | 状态 | 前景 | 软背景 | 边框 |
 | --- | --- | --- | --- |
-| Success | `#15803d` | `#f0fdf4` | `#bbf7d0` |
-| Warning | `#b45309` | `#fffbeb` | `#fde68a` |
-| Danger | `#b91c1c` | `#fef2f2` | `#fecaca` |
+| Success | `#004726` | `--success / 10%` | `--success / 20%` |
+| Warning | `#743800` | `--warning / 10%` | `--warning / 20%` |
+| Danger | 官方 `destructive` | 官方 `destructive / 10%` | 透明 |
 | Info | `#1d4ed8` | `#eff6ff` | `#bfdbfe` |
 | Purple object accent | `#7e22ce` | `#faf5ff` | `#e9d5ff` |
 
@@ -94,8 +98,7 @@ Sidebar 与 Main Surface 均浮在中性页面背景上，外边距 12px，圆�
 字体栈：
 
 ```text
-Inter, system-ui, -apple-system, BlinkMacSystemFont,
-Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif
+Inter Variable, sans-serif
 ```
 
 | 层级 | 字号 / 行高 | 字重 | 用途 |

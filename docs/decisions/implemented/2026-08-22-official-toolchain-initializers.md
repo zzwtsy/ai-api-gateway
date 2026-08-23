@@ -8,6 +8,8 @@ language: zh-CN
 
 Status: implemented
 
+本记录中的 Neutral 主题和“登记后允许本地 Patch”部分已由 [shadcn Registry 保持官方源码，产品差异由项目拥有层表达](2026-08-23-upstream-exact-shadcn-registry.md) 部分取代。
+
 ## Problem
 
 早期项目骨架依据文档手工还原了 shadcn 组件、ESLint 配置、Vite TypeScript 配置和测试入口。结果虽然外观接近目标工具，但 shadcn 实际仍使用旧 `new-york`/Radix Slot 约定，组件缺少当前 Registry 合同，Browser/Node 类型环境混合，Antfu ESLint 也没有真正成为配置基线。Agent 很容易继续复制这种近似实现，使源码与官方工具逐步分叉。

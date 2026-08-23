@@ -3,6 +3,7 @@ import { MousePointerClickIcon, SendIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/product/page-header";
 import { RequestStatus } from "@/components/product/request-status";
+import { StatusBadge } from "@/components/product/status-badge";
 import { Badge } from "@/components/ui/badge";
 import {
   Empty,
@@ -96,7 +97,7 @@ function RequestList({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {items.map((item) => (
+        {items.map(item => (
           <TableRow
             key={item.id}
             className={cn(selectedRequestId === item.id && "bg-muted/70")}
@@ -180,13 +181,18 @@ function RequestInspector({
             上游尝试链
           </div>
           <div className="flex flex-col gap-2">
-            {data.attempts.map((attempt) => (
+            {data.attempts.map(attempt => (
               <div key={attempt.id} className="rounded-lg border p-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">第 {attempt.sequence} 次尝试</span>
-                  <Badge variant={attemptBadge(attempt.outcome)}>
+                  <span className="font-medium">
+                    第
+                    {attempt.sequence}
+                    {" "}
+                    次尝试
+                  </span>
+                  <StatusBadge tone={attemptTone(attempt.outcome)}>
                     {formatAttemptOutcome(attempt.outcome)}
-                  </Badge>
+                  </StatusBadge>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <span>连接</span>
@@ -207,20 +213,25 @@ function RequestInspector({
           </div>
         </section>
         <section className="rounded-lg bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground">
-          观测状态：{formatObservationStatus(data.observationStatus)}；已观测
-          {" "}{data.observedBytes.toLocaleString()} 字节。完整 Secret 不会出现在此处。
+          观测状态：
+          {formatObservationStatus(data.observationStatus)}
+          ；已观测
+          {" "}
+          {data.observedBytes.toLocaleString()}
+          {" "}
+          字节。完整 Secret 不会出现在此处。
         </section>
       </div>
     </div>
   );
 }
 
-function attemptBadge(value: "running" | "succeeded" | "failed" | "client_cancelled") {
+function attemptTone(value: "running" | "succeeded" | "failed" | "client_cancelled") {
   switch (value) {
     case "succeeded": return "success" as const;
-    case "failed": return "destructive" as const;
+    case "failed": return "danger" as const;
     case "client_cancelled": return "warning" as const;
-    case "running": return "secondary" as const;
+    case "running": return "neutral" as const;
   }
 }
 

@@ -52,7 +52,7 @@ export function CreateConnectionForm({ onCreated }: { readonly onCreated: () => 
   });
 
   return (
-    <form className="flex flex-col gap-5" onSubmit={(event) => void submit(event)}>
+    <form className="flex flex-col gap-5" onSubmit={event => void submit(event)}>
       <FieldGroup>
         <Field data-invalid={form.formState.errors.name !== undefined || undefined}>
           <FieldLabel htmlFor="connection-name">名称</FieldLabel>
@@ -81,7 +81,8 @@ export function CreateConnectionForm({ onCreated }: { readonly onCreated: () => 
               <Select
                 value={field.value}
                 onValueChange={(value) => {
-                  if (value !== null) field.onChange(value);
+                  if (value !== null)
+                    field.onChange(value);
                 }}
               >
                 <SelectTrigger
@@ -94,7 +95,7 @@ export function CreateConnectionForm({ onCreated }: { readonly onCreated: () => 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {protocolItems.map((item) => (
+                    {protocolItems.map(item => (
                       <SelectItem key={item.value} value={item.value}>
                         {item.label}
                       </SelectItem>
@@ -116,12 +117,14 @@ export function CreateConnectionForm({ onCreated }: { readonly onCreated: () => 
           <FieldError errors={[form.formState.errors.baseUrl]} />
         </Field>
       </FieldGroup>
-      {mutation.error !== null && (
+      {mutation.isError && (
         <FieldError>{describeApiError(mutation.error, "无法创建连接")}</FieldError>
       )}
       <div className="flex justify-end">
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending && <Spinner data-icon="inline-start" />}
+          {mutation.isPending && (
+            <Spinner data-icon="inline-start" aria-label="加载中" />
+          )}
           保存连接
         </Button>
       </div>
