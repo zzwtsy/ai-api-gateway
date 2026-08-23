@@ -91,13 +91,13 @@ explainRoutingDecision
 // routes.ts
 import { createRoute } from "@hono/zod-openapi";
 
+import { requireControlSession } from "@/control-plane/auth/require-control-session.js";
 import {
   controlAuthErrorResponses,
   controlSessionSecurity,
   jsonErrorResponse,
   jsonSuccessResponse,
 } from "@/control-plane/http/openapi/index.js";
-import { requireControlSession } from "@/control-plane/auth/require-control-session.js";
 
 import {
   ConnectionSchema,
@@ -133,9 +133,9 @@ export type CreateConnectionRoute = typeof createConnectionRoute;
 ```
 
 ```ts
+import type { CreateConnectionRoute } from "./routes.js";
 // handlers.ts
 import type { AppRouteHandler } from "@/control-plane/http/context.js";
-import type { CreateConnectionRoute } from "./routes.js";
 
 import { successResponse } from "@/control-plane/http/response.js";
 import { ConnectionService } from "./service.js";
@@ -193,13 +193,13 @@ Helper 不能隐藏：
 middleware: [audit({
   before: async () => databaseQuery(),
   after: async () => parseLargeResponse(),
-})]
+})];
 ```
 
 推荐：
 
 ```ts
-middleware: updateConnectionPolicies
+middleware: updateConnectionPolicies;
 ```
 
 复杂策略在 `policies.ts` 实现并单独测试，使 `routes.ts` 仍可被快速阅读为 HTTP 合同。

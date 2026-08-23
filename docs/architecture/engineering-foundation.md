@@ -61,24 +61,21 @@ language: zh-CN
 
 ### 3.1 版本政策
 
-全仓库只安装一个 TypeScript 版本：
+全仓库只安装一个 TypeScript 版本。各 Package 通过默认 Catalog 引用：
 
 ```json
 {
   "devDependencies": {
-    "typescript": "6.0.x"
+    "typescript": "catalog:"
   }
 }
 ```
 
-仓库锁定一个经过验证的稳定补丁版本：
+根 `pnpm-workspace.yaml` 是唯一版本所有者，锁定一个经过验证的稳定补丁版本：
 
-```json
-{
-  "devDependencies": {
-    "typescript": "6.0.3"
-  }
-}
+```yaml
+catalog:
+  typescript: 6.0.3
 ```
 
 禁止：

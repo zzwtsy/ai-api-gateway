@@ -160,9 +160,9 @@ Credential 与 Connection Pool 分离：多个 Key 共享相同 origin Pool。
 
 ```ts
 interface ObserverTap {
-  tryWrite(chunk: Uint8Array): boolean;
-  end(outcome: StreamOutcome): Promise<StreamObservation>;
-  abort(reason: unknown): Promise<void>;
+  tryWrite: (chunk: Uint8Array) => boolean;
+  end: (outcome: StreamOutcome) => Promise<StreamObservation>;
+  abort: (reason: unknown) => Promise<void>;
 }
 ```
 
@@ -174,7 +174,7 @@ interface ObserverTap {
 
 ## 9. Route Resolver
 
-```ts
+```text
 resolveRoute(context, snapshot): RouteResolution
 ```
 
@@ -193,8 +193,8 @@ DB commit
 
 ```ts
 interface SecretCipher {
-  encrypt(plaintext: Uint8Array, context: SecretContext): Promise<EncryptedSecret>;
-  decrypt(secret: EncryptedSecret, context: SecretContext): Promise<Uint8Array>;
+  encrypt: (plaintext: Uint8Array, context: SecretContext) => Promise<EncryptedSecret>;
+  decrypt: (secret: EncryptedSecret, context: SecretContext) => Promise<Uint8Array>;
 }
 ```
 
@@ -204,9 +204,9 @@ Gateway Client Key 只保存哈希/HMAC；Provider Credential 保存加密密文
 
 ```ts
 interface PayloadStore {
-  put(input: AsyncIterable<Uint8Array>, options: PutPayloadOptions): Promise<PayloadRef>;
-  get(ref: PayloadRef): Promise<ReadableStream<Uint8Array>>;
-  delete(ref: PayloadRef): Promise<void>;
+  put: (input: AsyncIterable<Uint8Array>, options: PutPayloadOptions) => Promise<PayloadRef>;
+  get: (ref: PayloadRef) => Promise<ReadableStream<Uint8Array>>;
+  delete: (ref: PayloadRef) => Promise<void>;
 }
 ```
 

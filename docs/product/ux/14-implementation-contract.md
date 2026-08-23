@@ -131,10 +131,10 @@ Query Key 必须包含所有影响结果的筛选、分页、排序和 Scope。M
 UI 不直接渲染数据库实体或内部 Domain Object。每个 Feature 定义稳定 View Model，例如：
 
 ```ts
-type RequestResult =
-  | { kind: "success" }
-  | { kind: "success_with_fallback"; attemptCount: number }
-  | { kind: "failed"; errorClass: string };
+type RequestResult
+  = | { kind: "success" }
+    | { kind: "success_with_fallback"; attemptCount: number }
+    | { kind: "failed"; errorClass: string };
 ```
 
 状态映射集中管理，避免页面各自解释 HTTP Code、Attempt 和 Cost 状态而产生不一致文案。

@@ -89,7 +89,7 @@ language: zh-CN
   <Input id="api-key" aria-invalid={hasError} />
   <FieldDescription>只在提交时写入加密存储。</FieldDescription>
   {hasError ? <FieldError>API Key 格式无效。</FieldError> : null}
-</Field>
+</Field>;
 ```
 
 表单应先阻断可确定的错误，再允许提交。路由协议不一致、空 Secret、非法 URL、悬空引用属于阻断错误；兼容性部分支持可作为警告并要求显式确认。

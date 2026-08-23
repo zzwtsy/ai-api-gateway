@@ -86,18 +86,20 @@ MVP 默认模型名区分大小写，不擅自规范化 `[1m]`、命名空间或
 function resolveRoute(ctx: RouteContext, snapshot: RouteSnapshot): RouteResolution {
   const candidates = snapshot
     .getRules(ctx.clientId, ctx.harnessProfileId, ctx.protocol)
-    .filter((rule) => rule.enabled)
-    .filter((rule) => rule.matcher.matches(ctx.requestedModel))
-    .sort(compareRouteSpecificity)
+    .filter(rule => rule.enabled)
+    .filter(rule => rule.matcher.matches(ctx.requestedModel))
+    .sort(compareRouteSpecificity);
 
-  if (candidates.length === 0) throw new GatewayNoRouteError(ctx)
-  if (isAmbiguous(candidates[0], candidates[1])) throw new GatewayRouteAmbiguousError(ctx)
+  if (candidates.length === 0)
+    throw new GatewayNoRouteError(ctx);
+  if (isAmbiguous(candidates[0], candidates[1]))
+    throw new GatewayRouteAmbiguousError(ctx);
 
   return {
     rule: candidates[0],
     targets: snapshot.getEnabledTargets(candidates[0].id),
     explanation: explain(candidates, ctx),
-  }
+  };
 }
 ```
 
