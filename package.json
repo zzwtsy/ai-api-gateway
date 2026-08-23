@@ -33,6 +33,9 @@
     "docs:module-graph": "node scripts/docs/generate-module-graph.mjs",
     "docs:module-graph:check": "node scripts/docs/generate-module-graph.mjs --check",
     "docs:check": "node scripts/docs/check-docs.mjs",
+    "version:set": "node scripts/version/set-project-version.mjs",
+    "verify:project-version": "node scripts/verify/project-version.mjs",
+    "release:assets": "node scripts/release/create-assets.mjs",
     "verify:typescript-version": "node scripts/verify/typescript-version.mjs",
     "verify:boundaries": "node scripts/verify/boundaries.mjs",
     "verify:imports": "node scripts/verify/imports.mjs",
@@ -68,6 +71,8 @@
     "verify:toolchain-official": "node scripts/verify/toolchain-official.mjs"
   },
   "devDependencies": {
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
     "eslint": "10.8.1",
     "eslint-plugin-boundaries": "7.1.0",
     "typescript": "6.0.3",
@@ -79,6 +84,7 @@
     "@eslint-react/eslint-plugin": "catalog:",
     "eslint-plugin-jsx-a11y": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
+    "semver": "catalog:",
     "shadcn": "catalog:"
   }
 }

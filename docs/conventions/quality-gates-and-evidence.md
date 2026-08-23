@@ -103,6 +103,7 @@ Credential Scheduler、Retry/Fallback Compiler 尚未实现；实现后加入该
 - Decision Note 生命周期；
 - 自动生成模块图；
 - 中文文档、链接、版本与规范投影；
+- 根项目版本、CHANGELOG 与全部同步投影；
 - Agent/Skill 资产和 Secret 静态检查。
 
 ## 3. 测试层级
@@ -222,7 +223,11 @@ Browser against built server
 
 必须保留至少一个 Artifact Plane CI Lane。`tsx` 开发模式成功不能替代 plain Node 生产路径。
 
+远端 Release 只接受 `main` 上相同 SHA 主 CI 已全部成功的 Commit。发布 Workflow 在任何写入前验证版本、CHANGELOG、Release Commit 与 Git Tag 归属，并在镜像推送前验证 GHCR `<version>` 与 `sha-<commit>` 两个标签共同指向同一 Manifest；镜像、Annotated Tag 和 GitHub Release 的顺序与权限由静态合同测试约束。
+
 源码归档不包含 `.git`，因此发布包必须携带 `.artifacts/source-metadata.json`。规范生成器在 Git Checkout 中读取真实 `HEAD`，在源码归档中读取该元数据，使两种入口重建相同版本和 Commit 的规范投影。
+
+正式 UI 证据在录制前后都必须读取真实 Git HEAD 与工作树状态；任一身份变化都使整次临时产物失效。`metadata.json` 记录完整 Git Object ID，`dirty` 来自真实状态，只有 Dirty 证据写入未验证说明。Clean 证据进入 `<full-sha>/<scenario>`，Dirty 证据进入 `dirty-<short-sha>/<scenario>`，不得用环境变量伪造 Commit 身份。
 
 ## 7. 覆盖率政策
 

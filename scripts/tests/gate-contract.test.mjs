@@ -35,16 +35,23 @@ test("Gate contract rejects a missing referenced root script", async () => {
   const rootScripts = { ...input.rootScripts };
   delete rootScripts["verify:runtime-invariants"];
   const errors = collectGateContractViolations({ ...input, rootScripts });
-  assert.ok(errors.some((error) => error.includes("missing root script verify:runtime-invariants")));
+  assert.ok(errors.some(error => error.includes("missing root script verify:runtime-invariants")));
+});
+
+test("CI Static and Docs modes both own project version verification", async () => {
+  const input = await actualInput();
+  for (const mode of ["ci-static", "docs"]) {
+    assert.ok(input.gatesFor(mode).some(gate => gate.id === "project-version"));
+  }
 });
 
 test("Gate contract rejects source-mode browser checks in the artifact lane", async () => {
   const input = await actualInput();
-  const wrapped = (mode) => input.gatesFor(mode).map((gate) => gate.id === "browser-e2e"
+  const wrapped = mode => input.gatesFor(mode).map(gate => gate.id === "browser-e2e"
     ? { ...gate, env: {} }
     : gate);
   const errors = collectGateContractViolations({ ...input, gatesFor: wrapped });
-  assert.ok(errors.some((error) => error.includes("compiled Gateway/Web assets")));
+  assert.ok(errors.some(error => error.includes("compiled Gateway/Web assets")));
 });
 
 test("comments cannot impersonate CI, Playwright or Docker enforcement", async () => {
@@ -53,15 +60,15 @@ test("comments cannot impersonate CI, Playwright or Docker enforcement", async (
     ...input,
     ciSource: input.ciSource.replace(/^\s*- run: pnpm check:ci:static --report .+$/mu, "      # pnpm check:ci:static --report .artifacts/gates/ci-static.json"),
     e2eConfigSource: input.e2eConfigSource.replace(
-      'const useBuild = process.env.AIGW_E2E_USE_BUILD === "1";',
-      '// process.env.AIGW_E2E_USE_BUILD === "1"',
+      "const useBuild = process.env.AIGW_E2E_USE_BUILD === \"1\";",
+      "// process.env.AIGW_E2E_USE_BUILD === \"1\"",
     ),
     dockerfileSource: input.dockerfileSource.replace(
       "RUN pnpm install --frozen-lockfile",
       "# pnpm install --frozen-lockfile",
     ),
   });
-  assert.ok(errors.some((error) => error.includes("check:ci:static")));
-  assert.ok(errors.some((error) => error.includes("Playwright")));
-  assert.ok(errors.some((error) => error.includes("frozen lockfile")));
+  assert.ok(errors.some(error => error.includes("check:ci:static")));
+  assert.ok(errors.some(error => error.includes("Playwright")));
+  assert.ok(errors.some(error => error.includes("frozen lockfile")));
 });

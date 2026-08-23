@@ -1,4 +1,9 @@
 # 本地只拦截低延迟缺陷；完整矩阵由分 Lane CI 负责。
+commit-msg:
+  jobs:
+    - name: Commit Message 结构
+      run: pnpm exec commitlint --edit {1}
+
 pre-commit:
   jobs:
     - name: 暂存区 TypeScript/JavaScript Lint

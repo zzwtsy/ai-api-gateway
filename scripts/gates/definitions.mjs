@@ -35,7 +35,7 @@ export function gatesFor(selected) {
     case "quick":
       return combineGateSets(
         quickVerificationGates(),
-        typechecks.filter((gate) => gate.id !== "e2e-typecheck"),
+        typechecks.filter(gate => gate.id !== "e2e-typecheck"),
         [pnpmScript("gateway-unit", "Gateway 单元测试", "--filter", "@aigw/gateway", "test", {
           needs: ["gateway-typecheck"],
         })],
@@ -43,40 +43,40 @@ export function gatesFor(selected) {
     case "control":
       return combineGateSets(
         quickVerificationGates(),
-        typechecks.filter((gate) => gate.id !== "e2e-typecheck"),
-        core.filter((gate) => ["openapi-contract", "generated-api"].includes(gate.id)),
+        typechecks.filter(gate => gate.id !== "e2e-typecheck"),
+        core.filter(gate => ["openapi-contract", "generated-api"].includes(gate.id)),
       );
     case "data":
       return combineGateSets(
         quickVerificationGates(),
-        typechecks.filter((gate) => gate.id === "gateway-typecheck"),
-        protocol.filter((gate) => ["protocol-contract", "keyless-protocol-snapshot"].includes(gate.id)),
+        typechecks.filter(gate => gate.id === "gateway-typecheck"),
+        protocol.filter(gate => ["protocol-contract", "keyless-protocol-snapshot"].includes(gate.id)),
       );
     case "protocol":
       return combineGateSets(
         quickVerificationGates(),
-        typechecks.filter((gate) => gate.id === "gateway-typecheck"),
-        protocol.filter((gate) => gate.id !== "database-integration"),
+        typechecks.filter(gate => gate.id === "gateway-typecheck"),
+        protocol.filter(gate => gate.id !== "database-integration"),
       );
     case "db":
       return combineGateSets(
         quickVerificationGates(),
         [rootScript("migrations", "Migration 与快照", "verify:migrations")],
-        typechecks.filter((gate) => gate.id === "gateway-typecheck"),
-        protocol.filter((gate) => gate.id === "database-integration"),
+        typechecks.filter(gate => gate.id === "gateway-typecheck"),
+        protocol.filter(gate => gate.id === "database-integration"),
       );
     case "web":
       return combineGateSets(
         quickVerificationGates(),
         [rootScript("toolchain-official", "shadcn 与 Antfu 官方安装探针", "verify:toolchain-official", { needs: ["toolchain-baseline"] })],
-        typechecks.filter((gate) => gate.id === "web-typecheck"),
-        core.filter((gate) => ["web-test", "web-build"].includes(gate.id)),
+        typechecks.filter(gate => gate.id === "web-typecheck"),
+        core.filter(gate => ["web-test", "web-build"].includes(gate.id)),
       );
     case "e2e":
       return combineGateSets(
         quickVerificationGates(),
         typechecks,
-        artifact.filter((gate) => ["build", "browser-e2e"].includes(gate.id)),
+        artifact.filter(gate => ["build", "browser-e2e"].includes(gate.id)),
       );
     case "artifact":
       return combineGateSets(quickVerificationGates(), typechecks, artifact);
@@ -89,14 +89,14 @@ export function gatesFor(selected) {
     case "ci-core":
       return combineGateSets(
         quickVerificationGates(),
-        typechecks.filter((gate) => gate.id !== "e2e-typecheck"),
+        typechecks.filter(gate => gate.id !== "e2e-typecheck"),
         core,
       );
     case "ci-protocol":
       return combineGateSets(
         quickVerificationGates(),
         [rootScript("migrations", "Migration 与快照", "verify:migrations")],
-        typechecks.filter((gate) => gate.id === "gateway-typecheck"),
+        typechecks.filter(gate => gate.id === "gateway-typecheck"),
         protocol,
       );
     case "ci-artifact":
@@ -126,6 +126,7 @@ function staticGates() {
     [
       rootScript("toolchain-official", "shadcn 与 Antfu 官方安装探针", "verify:toolchain-official", { needs: ["toolchain-baseline"] }),
       rootScript("agent-assets", "Agent 与 Skill 资产", "verify:agent-assets"),
+      rootScript("project-version", "项目版本投影", "verify:project-version"),
       rootScript("decision-notes", "Decision Note 生命周期与格式", "verify:decisions"),
       rootScript("migrations", "Migration 与快照", "verify:migrations"),
       rootScript("module-graph", "生成模块依赖图新鲜度", "docs:module-graph:check"),
@@ -242,6 +243,7 @@ function hygieneGates() {
 function docsOnlyGates() {
   return [
     rootScript("script-tests", "仓库脚本自测", "test:scripts"),
+    rootScript("project-version", "项目版本投影", "verify:project-version"),
     rootScript("decision-notes", "Decision Note 生命周期与格式", "verify:decisions"),
     rootScript("module-graph", "生成模块依赖图新鲜度", "docs:module-graph:check"),
     rootScript("docs", "中文规范与生成投影", "docs:check", { needs: ["decision-notes", "module-graph"] }),

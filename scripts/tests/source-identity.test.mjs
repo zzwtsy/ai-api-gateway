@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -11,7 +11,7 @@ test("source archive metadata reproduces the original Git identity", async () =>
   await mkdir(path.join(root, ".artifacts"), { recursive: true });
   await writeFile(path.join(root, ".artifacts/source-metadata.json"), JSON.stringify({
     formatVersion: 1,
-    version: "0.1.0-alpha.3",
+    version: "9.8.7-test.1",
     commit: "8e382a955d3c7794247f66a049522ac86388c25d",
   }));
   assert.equal(await resolveSourceCommit(root, {}), "8e382a955d3c");

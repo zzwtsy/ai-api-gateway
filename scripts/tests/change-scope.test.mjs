@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import { allChangedPaths, collectChangeScope } from "../change-scope.mjs";
+import {
+  isolatedGitEnvironment,
+  isolateGitProcessEnvironment,
+} from "./helpers/isolated-git-environment.mjs";
+
+isolateGitProcessEnvironment();
 
 test("change scope reports committed, staged, unstaged and untracked paths independently", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "aigw-change-scope-"));
@@ -40,7 +46,11 @@ test("change scope reports committed, staged, unstaged and untracked paths indep
 });
 
 function git(cwd, args) {
-  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
+  const result = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    env: isolatedGitEnvironment(),
+  });
   assert.equal(result.status, 0, result.stderr);
   return result;
 }
