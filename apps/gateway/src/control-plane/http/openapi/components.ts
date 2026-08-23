@@ -1,6 +1,7 @@
-import { z, type ZodType } from "@hono/zod-openapi";
-
+import type { ZodType } from "zod";
 import type { ErrorCode } from "../../../core/errors/error-registry.js";
+
+import { z } from "@hono/zod-openapi";
 import { errorRegistry, errorTypeForCode } from "../../../core/errors/error-registry.js";
 
 const ErrorCodeSchema = z.enum(Object.keys(errorRegistry) as [ErrorCode, ...ErrorCode[]]).openapi("ErrorCode");

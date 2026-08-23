@@ -1,17 +1,18 @@
-import { randomUUID } from "node:crypto";
-
 import type { Context } from "hono";
-import { stream } from "hono/streaming";
-import type { StatusCode } from "hono/utils/http-status";
 
-import type { DataEnv } from "../../http/env.js";
+import type { StatusCode } from "hono/utils/http-status";
 import type { AttemptOutcome, RequestOutcome } from "../../../core/requests/contracts.js";
-import { BoundedByteObserver } from "../../observation/bounded-byte-observer.js";
-import { openAiErrorResponse } from "../../http/openai-error.js";
-import { assertRoutingDecisionInvariant } from "../../routing/invariant.js";
+import type { DataEnv } from "../../http/env.js";
+
 import type { UpstreamResponse } from "../../transport/contracts.js";
+import type { OpenAiChatRequestInfo } from "./request.js";
+import { randomUUID } from "node:crypto";
+import { stream } from "hono/streaming";
+import { openAiErrorResponse } from "../../http/openai-error.js";
+import { BoundedByteObserver } from "../../observation/bounded-byte-observer.js";
+import { assertRoutingDecisionInvariant } from "../../routing/invariant.js";
 import { buildUpstreamHeaders, copyUpstreamResponseHeaders } from "./headers.js";
-import { readOpenAiChatRequest, type OpenAiChatRequestInfo } from "./request.js";
+import { readOpenAiChatRequest } from "./request.js";
 
 export async function handleOpenAiChatCompletions(c: Context<DataEnv>) {
   const dependencies = c.get("dataDependencies");
@@ -137,16 +138,8 @@ export async function handleOpenAiChatCompletions(c: Context<DataEnv>) {
     const observation = await observer.finish();
     const statusSucceeded = upstream.statusCode >= 200 && upstream.statusCode < 300;
     const cancelled = clientCancelled || abortController.signal.aborted;
-    const requestOutcome: Exclude<RequestOutcome, "running"> = cancelled
-      ? "client_cancelled"
-      : statusSucceeded && streamError === null
-        ? "succeeded"
-        : "failed";
-    const attemptOutcome: Exclude<AttemptOutcome, "running"> = cancelled
-      ? "client_cancelled"
-      : statusSucceeded && streamError === null
-        ? "succeeded"
-        : "failed";
+    const requestOutcome = resolveCompletedOutcome(cancelled, statusSucceeded && streamError === null);
+    const attemptOutcome: Exclude<AttemptOutcome, "running"> = requestOutcome;
 
     await completeRecords(c, {
       requestId,
@@ -161,13 +154,26 @@ export async function handleOpenAiChatCompletions(c: Context<DataEnv>) {
         : observation.firstByteAt.getTime() - startedAt.getTime(),
       observationStatus: observation.status,
       observedBytes: observation.observedBytes,
-      errorCode: streamError instanceof Error ? streamError.name : undefined,
+      ...(streamError instanceof Error ? { errorCode: streamError.name } : {}),
     });
 
     if (streamError !== null && !cancelled) {
       throw streamError;
     }
   });
+}
+
+function resolveCompletedOutcome(
+  cancelled: boolean,
+  succeeded: boolean,
+): Exclude<RequestOutcome, "running"> {
+  if (cancelled) {
+    return "client_cancelled";
+  }
+  if (succeeded) {
+    return "succeeded";
+  }
+  return "failed";
 }
 
 interface CompletionInput {

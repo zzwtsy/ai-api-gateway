@@ -1,16 +1,20 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import type { BaseEnv } from "../../core/http/env.js";
 import type { ErrorCode } from "../../core/errors/error-registry.js";
+import type { BaseEnv } from "../../core/http/env.js";
 import { errorRegistry, errorTypeForCode } from "../../core/errors/error-registry.js";
 
-export function successResponse<TEnv extends BaseEnv, TData>(
+export function successResponse<
+  TEnv extends BaseEnv,
+  TData,
+  TStatus extends 200 | 201 = 200,
+>(
   c: Context<TEnv>,
   data: TData,
-  options: { readonly message?: string; readonly status?: 200 | 201 } = {},
+  options: { readonly message?: string; readonly status?: TStatus } = {},
 ) {
-  const status = options.status ?? 200;
+  const status = options.status ?? 200 as TStatus;
   return c.json({
     success: true as const,
     code: status === 201 ? "COMMON_CREATED" as const : "COMMON_OK" as const,
@@ -41,4 +45,3 @@ export function errorResponse<TEnv extends BaseEnv>(
     meta: { requestId: c.get("requestId") },
   }, definition.status as ContentfulStatusCode);
 }
-

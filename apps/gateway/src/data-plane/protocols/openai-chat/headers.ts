@@ -47,6 +47,6 @@ export function copyUpstreamResponseHeaders(
     if (value === undefined || responseHopByHopHeaders.has(name.toLowerCase())) {
       continue;
     }
-    setHeader(name, Array.isArray(value) ? value.join(", ") : value);
+    setHeader(name, typeof value === "string" ? value : value.join(", "));
   }
 }
