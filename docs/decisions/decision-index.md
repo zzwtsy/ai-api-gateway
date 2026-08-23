@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-ADR-INDEX
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-23
 language: zh-CN
 ---
 
@@ -184,6 +184,30 @@ MVP 使用显式 Composition Root、静态 Registry 和小型 Interface，不复
 TanStack Router 使用文件路由与生成 Route Tree；`components/ui` 固定为 shadcn Registry-owned；控制面请求采用 `openapi-typescript → openapi-fetch → openapi-react-query → TanStack Query`，避免手写 API Wrapper 与双重服务端状态缓存。
 
 详细记录：[Web 文件路由与 OpenAPI Client](implemented/2026-08-23-web-file-routing-and-openapi-client.md)。
+
+## ADR-027：shadcn Registry 保持官方源码
+
+**状态：Accepted**
+
+`components/ui` 不接受手工 Patch 或 Formatter 改写；产品差异进入语义 Token、`components/product` 或布局组合。Web 采用 `base-nova + Blue + Inter`，App Shell 组合官方 `inset + icon` Sidebar。
+
+详细记录：[shadcn Registry 保持官方源码](implemented/2026-08-23-upstream-exact-shadcn-registry.md)。
+
+## ADR-028：Agent Skill 中英文均可并优先英文
+
+**状态：Accepted**
+
+Skill 指令可使用中文或英文，新写内容优先英文；文档、AGENTS、协作输出和 Web UI 继续默认中文。
+
+详细记录：[Agent Skill 中英文均可并优先英文](implemented/2026-08-23-english-preferred-agent-skills.md)。
+
+## ADR-029：同步应用版本并从已验证 Commit 发布
+
+**状态：Accepted**
+
+根 `package.json` 是唯一项目版本所有者；版本 Setter 定点同步全部投影，发布只从已进入 `main` 且相同 SHA 主 CI 全绿的 Release Commit 手动触发。镜像成功后创建 Annotated Tag 与 GitHub Release。
+
+详细记录：[同步应用版本并从已验证 Commit 发布](implemented/2026-08-23-synchronized-version-and-verifiable-release.md)。
 
 ## Decision 模板
 

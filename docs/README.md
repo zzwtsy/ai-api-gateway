@@ -46,6 +46,9 @@ Decision Note 解释为什么存在某个选择，但不覆盖当前源码和现
 | 修改数据库 | `architecture/domain-model.md`、`conventions/database.md` |
 | 修改前端 | `product/ux/README.md`、对应页面规范、`conventions/web-product-ux.md` |
 | 修改中文文案或国际化 | `conventions/language-and-localization.md` |
+| 修改 TypeScript 注释或抑制指令 | `conventions/typescript-comments.md`、`.agents/skills/typescript-comments/SKILL.md` |
+| 创建或拆分 Commit | `conventions/git-commits.md`、`.agents/skills/git-commit/SKILL.md` |
+| 修改版本或准备发布 | `conventions/versioning-and-release.md`、`.agents/skills/version-release/SKILL.md` |
 | 修改测试或质量 Gate | `conventions/testing-and-acceptance.md`、`conventions/quality-gates-and-evidence.md`、`conventions/change-scope-and-evidence.md` |
 | 修改运行时关系或生命周期 | `conventions/runtime-invariants.md`、`conventions/defensive-patterns.md` |
 | 阶段收口或删除熵 | `conventions/simplification-and-entropy-control.md`、`.agents/skills/simplification-audit/SKILL.md` |

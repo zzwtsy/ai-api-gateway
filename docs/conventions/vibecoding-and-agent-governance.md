@@ -200,6 +200,8 @@ Decision Note
 
 AI 指令本身也是代码库资产，必须进入 CI。
 
+项目 Skill 至少包含 TypeScript 注释、受控 Git Commit 与版本发布能力。`.ts/.tsx` 注释由 `typescript-comments` 唯一拥有；Commit 与发布 Skill 必须保留 Index 和远端写入授权边界。`skills-lock.json` 管理的第三方 Skill 仍检查链接，但其通用 `pnpm` 示例不按项目根脚本解释。
+
 ## 9. Golden Path 优先
 
 AI 新增功能前先搜索：
@@ -252,7 +254,6 @@ AI 新增功能前先搜索：
 - 供应链与 License 是否可接受。
 
 数据面协议透明性优先于代码行数减少。
-
 
 ## 13. 逃逸缺陷与永久 Guard
 

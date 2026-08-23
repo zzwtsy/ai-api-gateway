@@ -30,6 +30,9 @@
 | 数据库 / Migration | `docs/architecture/domain-model.md`、`docs/conventions/database.md` |
 | 前端 / UX | `apps/web/AGENTS.md`、`docs/product/ux/README.md`、`docs/conventions/web-product-ux.md`、`docs/references/official-toolchain-baseline.md` |
 | 中文文案或国际化 | `docs/conventions/language-and-localization.md` |
+| TypeScript 注释或抑制指令 | `docs/conventions/typescript-comments.md`、`.agents/skills/typescript-comments/SKILL.md` |
+| 创建或拆分 Commit | `docs/conventions/git-commits.md`、`.agents/skills/git-commit/SKILL.md` |
+| 版本准备或远端发布 | `docs/conventions/versioning-and-release.md`、`.agents/skills/version-release/SKILL.md` |
 | 架构边界 | `docs/architecture/repository-layout-and-dependency-boundaries.md` |
 | 工具初始化或升级 | `docs/references/official-toolchain-baseline.md`、`.agents/skills/update-shadcn/SKILL.md` |
 | CI、构建或 Agent 资产 | `docs/conventions/vibecoding-and-agent-governance.md`、`docs/conventions/quality-gates-and-evidence.md`、`docs/conventions/change-scope-and-evidence.md` |

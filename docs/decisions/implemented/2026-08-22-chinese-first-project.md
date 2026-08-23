@@ -8,6 +8,8 @@ language: zh-CN
 
 Status: implemented
 
+本记录中 Skill 默认中文的部分已由 [Agent Skill 中英文均可并优先英文](2026-08-23-english-preferred-agent-skills.md) 部分取代；其他中文优先边界继续有效。
+
 ## Problem
 
 维护者以中文工作，若强制所有内部文档、Issue 和设计过程先写英文，会显著增加表达成本并降低规范准确性；但代码、API 和开源生态需要稳定的英文技术标识，未来也可能有国际贡献者。

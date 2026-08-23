@@ -1,0 +1,82 @@
+[
+  {
+    "query": "用 shadcn 和 Lucide 重新设计这个后台的模型列表页，重点优化信息层级、筛选、空状态和行操作。",
+    "should_trigger": true
+  },
+  {
+    "query": "这张设置页截图为什么难用？请按默认 shadcn 风格做一次 UX 审查，不要只谈颜色。",
+    "should_trigger": true
+  },
+  {
+    "query": "帮我决定这个编辑账号流程应该用 Dialog、Sheet 还是独立页面，并给出状态设计。",
+    "should_trigger": true
+  },
+  {
+    "query": "Refactor our shadcn admin dashboard so the primary workflow is clearer, the table works on mobile, and errors preserve form input.",
+    "should_trigger": true
+  },
+  {
+    "query": "为开发者工具设计首次使用、加载失败、筛选无结果和权限不足几个状态。",
+    "should_trigger": true
+  },
+  {
+    "query": "现有 React 页面到处都是 Card 和图标按钮，请在不改业务逻辑的前提下优化 UX。",
+    "should_trigger": true
+  },
+  {
+    "query": "Design an implementation-ready UX spec for a shadcn settings page with provider accounts, API keys, and advanced options.",
+    "should_trigger": true
+  },
+  {
+    "query": "检查这个表单的标签、验证、保存反馈、未保存离开和键盘操作是否合理。",
+    "should_trigger": true
+  },
+  {
+    "query": "把这个桌面端表格页面适配到手机，但不要简单地把每一行变成卡片。",
+    "should_trigger": true
+  },
+  {
+    "query": "实现这个 shadcn CRUD 页面，并在浏览器中验证创建、错误、空状态和删除恢复流程。",
+    "should_trigger": true
+  },
+  {
+    "query": "pnpm dlx shadcn@latest add dialog 为什么报 registry 错误？",
+    "should_trigger": false
+  },
+  {
+    "query": "帮我把 shadcn Button 升级到最新版并保留本地修改。",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a highly expressive fashion landing page with cinematic gradients and custom illustrations.",
+    "should_trigger": false
+  },
+  {
+    "query": "Lucide 的 CircleCheck 图标应该从哪个包导入？",
+    "should_trigger": false
+  },
+  {
+    "query": "解释 UI 和 UX 的区别。",
+    "should_trigger": false
+  },
+  {
+    "query": "给这个 Logo 设计三种图形方案。",
+    "should_trigger": false
+  },
+  {
+    "query": "修复 React 组件里的 useEffect 无限循环。",
+    "should_trigger": false
+  },
+  {
+    "query": "为 iOS 原生应用设计底部导航和手势。",
+    "should_trigger": false
+  },
+  {
+    "query": "只调整这个按钮的 hover 颜色，让它更鲜艳。",
+    "should_trigger": false
+  },
+  {
+    "query": "写一个 Tailwind CSS 的三列响应式网格示例。",
+    "should_trigger": false
+  }
+]

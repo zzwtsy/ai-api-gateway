@@ -1,0 +1,7 @@
+interface:
+  display_name: "TypeScript Comments"
+  short_description: "Review project TypeScript comments and suppressions"
+  default_prompt: "Use $typescript-comments to review these TypeScript comments against the project contract."
+
+policy:
+  allow_implicit_invocation: true

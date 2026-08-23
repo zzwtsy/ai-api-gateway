@@ -73,7 +73,7 @@ models.dev 只作为模型能力、上下文和参考价格预填，不是运行
 - openapi-react-query：https://openapi-ts.dev/openapi-react-query/
 - TanStack Table：https://tanstack.com/table/latest
 
-固定版本、初始化命令和本地补丁见 [官方工具链初始化基线](official-toolchain-baseline.md)。
+固定版本、初始化命令、官方源码策略和评审摘要见 [官方工具链初始化基线](official-toolchain-baseline.md)。
 
 ## 工程参考：hono-openapi-starter
 

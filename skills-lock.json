@@ -1,18 +1,6 @@
 {
   "version": 1,
   "skills": {
-    "dsh-prose-standard": {
-      "source": "deepseek-ai/deepseek-harness",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/dsh-prose-standard/SKILL.md",
-      "computedHash": "01b47d02504a552fda6c424f004393dd8ba2b2e616e0e28ac6e55f5a49dc8ac1"
-    },
-    "dsh-trim-cot-leakage": {
-      "source": "deepseek-ai/deepseek-harness",
-      "sourceType": "github",
-      "skillPath": ".agents/skills/dsh-trim-cot-leakage/SKILL.md",
-      "computedHash": "626be3447316a720cf203d213ed3a5783416129bde1c57dbe590e8bf3f7f688e"
-    },
     "pnpm": {
       "source": "antfu/skills",
       "sourceType": "github",

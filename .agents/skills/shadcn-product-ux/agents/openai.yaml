@@ -1,0 +1,19 @@
+interface:
+  display_name: shadcn product ux
+  short_description: Use this skill when designing, reviewing, or refactoring product-style
+    web UX with shadcn/ui and Lucide, especially dashboards, admin tools, settings,
+    forms, tables, detail pages, and multi-step workflows. Turn requirements, screenshots,
+    or an existing frontend into clear information architecture, predictable interaction
+    patterns, appropriate shadcn component choices, complete UI states, accessible
+    behavior, and implementation-ready guidance while preserving the default shadcn
+    visual language. Do not use for isolated component installation or debugging,
+    purely decorative marketing-site art direction, or non-web interfaces.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Git Commit"
+  short_description: "Create scoped local commits without disturbing the index"
+  default_prompt: "Use $git-commit to prepare a safe, scoped local commit for these changes."
+
+policy:
+  allow_implicit_invocation: true
