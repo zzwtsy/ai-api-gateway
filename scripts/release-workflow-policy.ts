@@ -1,4 +1,5 @@
 const requiredActions = [
+  "pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10",
   "docker/login-action@v4.6.0",
   "docker/setup-qemu-action@v4.2.0",
   "docker/setup-buildx-action@v4.3.0",

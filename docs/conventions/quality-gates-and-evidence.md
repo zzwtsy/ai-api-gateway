@@ -102,7 +102,7 @@ Credential Scheduler、Retry/Fallback Compiler 尚未实现；实现后加入该
 - 仓库脚本自测；
 - Decision Note 生命周期；
 - 自动生成模块图；
-- 中文文档、链接、版本与规范投影；
+- 中文文档、链接、版本与规范投影可生成性；
 - 根项目版本、CHANGELOG 与全部同步投影；
 - Agent/Skill 资产和 Secret 静态检查。
 
@@ -222,6 +222,10 @@ Browser against built server
 ```
 
 必须保留至少一个 Artifact Plane CI Lane。`tsx` 开发模式成功不能替代 plain Node 生产路径。
+
+Source Plane Gate 必须只依赖 Checkout、锁文件安装和明确声明的前置步骤，不得从被忽略的 `dist` 或 `.artifacts` 解析类型、读取比较基线或推断成功。需要验证构建产物的脚本必须在 Build 后通过 plain Node 运行 Artifact 入口；生成但不提交的投影应从真实维护源在内存或全新临时目录中验证。
+
+GitHub Actions 中执行项目 Gate 的 JavaScript Action 必须使用 Node 24 Runtime，并固定到已核对版本的不可变 Commit；Gate 合同测试负责拒绝回退到 Node 20 Runtime。
 
 远端 Release 只接受 `main` 上相同 SHA 主 CI 已全部成功的 Commit。发布 Workflow 在任何写入前验证版本、CHANGELOG、Release Commit 与 Git Tag 归属，并在镜像推送前验证 GHCR `<version>` 与 `sha-<commit>` 两个标签共同指向同一 Manifest；镜像、Annotated Tag 和 GitHub Release 的顺序与权限由静态合同测试约束。
 

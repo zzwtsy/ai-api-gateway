@@ -28,6 +28,10 @@ for (const file of files) {
       const base = specifier.startsWith("@/")
         ? resolveAlias(file, specifier)
         : path.resolve(path.dirname(file), specifier);
+      if (base !== null && isGeneratedOutput(base)) {
+        failures.push(`${relative(file)} 不得导入生成目录 ${specifier}；Source Plane Gate 必须在干净 Checkout 中成立`);
+        continue;
+      }
       if (base === null || await resolvesToFile(base) === false) {
         failures.push(`${relative(file)} imports unresolved ${specifier}`);
       }
@@ -69,20 +73,19 @@ async function resolvesToFile(base: string): Promise<boolean> {
       candidates.push(path.join(base, `index${suffix}`));
     }
   }
-  const builtSourceCandidate = base.includes(`${path.sep}dist${path.sep}`)
-    ? base.replace(`${path.sep}dist${path.sep}`, `${path.sep}src${path.sep}`)
-    : null;
-  if (builtSourceCandidate !== null) {
-    const extension = path.extname(builtSourceCandidate);
-    const stem = extension === "" ? builtSourceCandidate : builtSourceCandidate.slice(0, -extension.length);
-    candidates.push(`${stem}.ts`, `${stem}.tsx`, `${stem}.mts`, `${stem}.cts`);
-  }
   for (const candidate of candidates) {
     if (await isFile(candidate)) {
       return true;
     }
   }
   return false;
+}
+
+function isGeneratedOutput(target: string): boolean {
+  const targetFromRoot = path.relative(root, target);
+  if (targetFromRoot.startsWith("..") || path.isAbsolute(targetFromRoot))
+    return false;
+  return targetFromRoot.split(path.sep).some(segment => segment === "dist" || segment === ".artifacts");
 }
 
 async function isFile(file: string): Promise<boolean> {

@@ -33,6 +33,14 @@ test("Release Workflow rejects unstable latest and reversed remote writes", () =
   assert.ok(failures.some(failure => failure.includes("发布顺序") || failure.includes("固定 Action")));
 });
 
+test("Release Workflow rejects pnpm setup that falls back to Node 20", () => {
+  const changed = source.replace(
+    "pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10",
+    "pnpm/action-setup@v4",
+  );
+  assert.ok(collectReleaseWorkflowViolations(changed).some(failure => failure.includes("pnpm/action-setup")));
+});
+
 test("Release Workflow rejects a missing or late GHCR ownership guard", () => {
   const missing = source.replace("run: node scripts/release/verify-image-ownership.ts", "run: true");
   assert.ok(collectReleaseWorkflowViolations(missing).some(failure => failure.includes("GHCR")));

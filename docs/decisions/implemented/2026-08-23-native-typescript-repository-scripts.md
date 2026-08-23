@@ -27,7 +27,7 @@ Status: implemented
 ## Consequences
 
 - 项目拥有的根配置与 `scripts/**` 只维护 TypeScript 源码；应用构建产物仍由 `tsc` 生成 `.js` 并通过 plain Node 验证。
-- `scripts/tsconfig.json` 位于脚本目录内，使 Project Service 自动发现 `scripts/**/*.ts`；根 TypeScript 配置文件通过 ESLint 的窄范围配置显式关联同一 Project。
+- `scripts/tsconfig.json` 位于脚本目录内，使 Project Service 自动发现 `scripts/**/*.ts`；根 TypeScript 配置文件通过 ESLint 的窄范围配置显式关联同一 Project。脚本 Typecheck 属于 Source Plane，不得静态导入被忽略的 `dist` 或 `.artifacts`。
 - Node.js 原生 TypeScript 只支持可擦除语法，因此 `erasableSyntaxOnly` 是脚本 Project 的强制约束。
 - ESLint、commitlint、生成器、Gate Runner、Release Workflow、Hook 和测试直接执行 `.ts` 入口；生态工具升级必须继续验证真实 CLI 加载行为。
 - 路径字符串分布在脚本、Workflow 和 Fixture 中，因此脚本测试、Gate 合同与旧路径扫描共同防止入口漂移。
@@ -36,6 +36,7 @@ Status: implemented
 
 - `pnpm typecheck:scripts`；
 - `pnpm test:scripts`；
+- `pnpm verify:imports`；
 - `pnpm exec eslint scripts eslint.config.ts commitlint.config.ts`；
 - `pnpm verify:toolchain-official`；
 - `pnpm check:quick`；

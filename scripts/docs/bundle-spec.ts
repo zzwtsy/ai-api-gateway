@@ -38,17 +38,7 @@ for (const bundle of bundleManifest.bundles ?? [] as SpecBundle[]) {
   validateBundle(bundle);
   const outputPath = path.join(outputDirectory, bundle.output);
   const body = await buildBundle(bundle, outputPath);
-  if (checkOnly) {
-    let current;
-    try {
-      current = await readFile(outputPath, "utf8");
-    } catch {
-      throw new Error(`Missing generated specification: ${path.relative(root, outputPath)}. Run pnpm docs:bundle.`);
-    }
-    if (current !== body) {
-      throw new Error(`Stale generated specification: ${path.relative(root, outputPath)}. Run pnpm docs:bundle.`);
-    }
-  } else {
+  if (!checkOnly) {
     await writeFile(outputPath, body, "utf8");
   }
   process.stdout.write(`${checkOnly ? "checked" : "generated"}: ${path.relative(root, outputPath)} (${bundle.sources.length} sources)\n`);

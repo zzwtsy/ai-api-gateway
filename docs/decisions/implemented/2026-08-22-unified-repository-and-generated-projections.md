@@ -30,7 +30,7 @@ Status: implemented
 
 - 当前源码、文档和 Gate 可以在同一 PR 中评审；
 - 项目版本不再与“规范版本”“模板版本”分离；
-- 需要维护规范打包脚本和文档新鲜度检查；
+- 需要维护规范打包脚本，并在没有预生成投影的干净 Checkout 中验证模块化维护源可生成全部规范；
 - 生成规范不能手工修补，任何修正必须回到模块化源文档；
 - 后续若提取通用 Starter，必须有两个真实消费项目或独立发布需求。
 
@@ -38,5 +38,5 @@ Status: implemented
 
 - 根包名为 `ai-api-gateway`，所有 Workspace 使用同一项目版本；
 - `docs/spec-bundles.json` 和 `scripts/docs/bundle-spec.ts` 可生成三个规范投影；
-- `pnpm docs:check` 拒绝旧版本路径、失效链接和独立规范入口；
+- `pnpm docs:check` 不依赖 `.artifacts/spec/`，并拒绝旧版本路径、失效链接和独立规范入口；
 - 活动仓库中不存在 `PROJECT_ARCHITECTURE.md`、旧版本规范副本或独立模板版本声明。

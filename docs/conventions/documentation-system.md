@@ -49,6 +49,8 @@ pnpm docs:bundle
 
 输出到 `.artifacts/spec/`。生成文件顶部包含项目版本和 Git Commit；不得手工修改，也不作为另一个事实来源提交到活动文档目录。
 
+`pnpm docs:check` 从模块化维护源在内存中构建全部规范投影，验证清单、源文件和链接改写，无需预先存在 `.artifacts/spec/`。实际写入由 `pnpm docs:bundle` 或 Release 资产生成器负责。
+
 ## 同步规则
 
 - API 字段不在 Markdown 重复维护，引用 `operationId`；
@@ -56,4 +58,4 @@ pnpm docs:bundle
 - UI Token 以 `docs/product/ux/design-tokens.json` 和 Web Theme 为准；
 - 修改目录、脚本或命令时同步 AGENTS、Skill 和文档链接；
 - 旧规范由 Git Tag 保存，不在 `docs/old`、`docs/v0.x` 中保留活动副本；
-- `pnpm docs:check` 必须验证链接、命令引用、规范清单和旧路径残留。
+- `pnpm docs:check` 必须验证链接、命令引用、规范清单、投影可生成性和旧路径残留，且在干净 Checkout 中不得依赖忽略文件。

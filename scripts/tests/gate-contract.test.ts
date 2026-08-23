@@ -45,6 +45,22 @@ test("CI Static and Docs modes both own project version verification", async () 
   }
 });
 
+test("CI rejects Action references that fall back to the Node 20 runtime", async () => {
+  const input = await actualInput();
+  const ciSource = input.ciSource
+    .replaceAll(
+      "pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10",
+      "pnpm/action-setup@v4",
+    )
+    .replaceAll(
+      "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1",
+      "actions/upload-artifact@v4",
+    );
+  const errors = collectGateContractViolations({ ...input, ciSource });
+  assert.ok(errors.some(error => error.includes("pnpm/action-setup") && error.includes("Node 24")));
+  assert.ok(errors.some(error => error.includes("actions/upload-artifact") && error.includes("Node 24")));
+});
+
 test("Gate contract rejects source-mode browser checks in the artifact lane", async () => {
   const input = await actualInput();
   const wrapped = (mode: string) => input.gatesFor(mode).map(gate => gate.id === "browser-e2e"

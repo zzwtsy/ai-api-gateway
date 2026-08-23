@@ -81,6 +81,20 @@ function collectCiEntrypointViolations(input: GateContractInput): string[] {
       failures.push(`CI does not execute ${script} with a machine-readable report`);
     }
   }
+  requirePinnedAction(
+    failures,
+    input.ciSource,
+    "pnpm/action-setup",
+    "0977fd99725f1db4007ccb2928dbb4e90d06cc86",
+    "v6.0.10",
+  );
+  requirePinnedAction(
+    failures,
+    input.ciSource,
+    "actions/upload-artifact",
+    "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    "v7.0.1",
+  );
   return failures;
 }
 
@@ -111,6 +125,17 @@ function collectArtifactLaneViolations(input: GateContractInput): string[] {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function requirePinnedAction(failures: string[], source: string, action: string, commit: string, version: string): void {
+  const references = [...source.matchAll(new RegExp(`^\\s*-\\s+uses:\\s+${escapeRegExp(action)}@([^\\s#]+)(?:\\s+#\\s+(\\S+))?\\s*$`, "gmu"))];
+  if (references.length === 0) {
+    failures.push(`CI 缺少 ${action}`);
+    return;
+  }
+  if (references.some(reference => reference[1] !== commit || reference[2] !== version)) {
+    failures.push(`CI 必须将 ${action} 固定到 ${version} 的 Node 24 Commit ${commit}`);
+  }
 }
 
 function modeScript(mode: string): string {
