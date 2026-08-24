@@ -214,7 +214,9 @@ Request 和 Attempt 是不同事实表。MVP 使用 PostgreSQL 明细和小时/�
 - 小时/天聚合；
 - 备份提醒。
 
-Job 失败不能停止数据面；同一任务使用 Advisory Lock 防止重入。
+Job 失败不能停止数据面；同一任务必须通过耐久原子 Claim 防止重入，跨多项资源的互斥任务再使用 Advisory Lock。
+
+Endpoint 完整兼容性 Probe 使用专用 Application-owned Runner，不建立通用 Job 框架。Run 先持久化再进入进程内队列；PostgreSQL 以活跃目标唯一索引合并重复任务，并以原子状态 Claim 确认唯一执行者。Runner 在关闭时中止并等待拥有的上游请求，之后才能关闭 Undici Pool 和数据库。
 
 ## 7. Application Composition 与生命周期
 

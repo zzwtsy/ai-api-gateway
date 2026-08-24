@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-SEC-001
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -209,3 +209,11 @@ Route 发布/回滚
 - 导出默认不含 Secret；
 - Raw Payload Full 模式有明确风险确认；
 - 首次启动缺少 Master Key 时失败关闭。
+
+## 15. 当前密钥实现
+
+Provider Credential 使用版本化 AES-256-GCM Envelope，Credential ID 与 Key ID 作为 AAD；配置显式声明 Keyring 和 Active Key，写入只使用 Active Key，读取按记录的 Key ID 选择。旧 Key 在相关密文全部重加密前必须保留。Fingerprint 使用独立 Pepper 的 HMAC-SHA-256，只用于重复检测，不用于解密。
+
+Gateway Client Key 使用 256 bit CSPRNG，数据库保存带 Pepper 的 HMAC-SHA-256、Prefix 和 Last4。完整 Key 只在创建和轮换响应出现一次，这两个响应必须使用 `Cache-Control: no-store`。实现取舍见 [Provider Secret Keyring 与 Gateway Client Key 持久化](../decisions/implemented/2026-08-24-durable-secret-and-gateway-key-storage.md)。
+
+PostgreSQL Bootstrap 只创建缺失的 Credential 与 Client。已有记录存在时，启动过程不得用环境变量覆盖密文、HMAC、状态、撤销或轮换结果；否则环境配置会成为绕过耐久安全状态的第二事实来源。

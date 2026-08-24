@@ -484,6 +484,30 @@ notes
 
 CompatibilityFact 不参与运行时自动换模型。
 
+### 10.3 CompatibilityProbeRun
+
+一次显式触发的 Endpoint 兼容性测试：
+
+```text
+id
+profile_id
+endpoint_id
+credential_id
+model
+checks
+status                       queued | running | succeeded | failed
+total_checks
+completed_checks
+current_check
+error_message
+created_at
+started_at
+completed_at
+updated_at
+```
+
+`succeeded` 表示测试套件执行完成，不表示每项能力都受支持。每项完成后独立发布模型级 CompatibilityFact；任务基础设施失败不覆盖上一次有效 Profile 结论。
+
 ## 11. 删除与审计策略
 
 - Provider 被删除前必须没有活跃 RouteTarget；推荐软删除。

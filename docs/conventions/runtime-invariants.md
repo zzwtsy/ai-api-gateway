@@ -54,6 +54,7 @@ scripts/verify/runtime-invariants.json
 | Transport | Origin/Path、AbortSignal、Header 隔离 |
 | Recording | Request/Attempt 身份、模型、序号、时间和终态指标 |
 | Observation | Buffer 上限和 `complete/incomplete` 语义 |
+| Compatibility Probe Resource Shutdown | 后台 Probe 先中止并 Settlement，再关闭其 Transport 与 Storage |
 | Shutdown | 停止接收新请求后，只执行一次资源关闭并等待真正完成 |
 
 后续新增 Credential Scheduler、Snapshot Publisher、Pricing 和 PayloadStore 时，应为它们增加自己的关系不变量，而不是把所有检查堆进一个全局 Validator。

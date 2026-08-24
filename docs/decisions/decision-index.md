@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-ADR-INDEX
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -216,6 +216,14 @@ Skill 指令可使用中文或英文，新写内容优先英文；文档、AGENT
 项目拥有的根配置与仓库脚本统一使用 TypeScript 6，由 Node.js 24 原生 type stripping 直接执行，并通过 `scripts/tsconfig.json` 独立严格检查；不引入第二个 TypeScript 运行器或脚本预编译目录。
 
 详细记录：[仓库脚本使用 Node.js 原生 TypeScript](implemented/2026-08-23-native-typescript-repository-scripts.md)。
+
+## ADR-031：Provider Secret 与 Gateway Client Key 使用不同的耐久存储
+
+**状态：Accepted**
+
+Provider Secret 使用可轮换 Keyring 的 AES-256-GCM，并以 Credential ID 作为 AAD；Gateway Client Key 使用 256-bit CSPRNG 和带 Pepper 的 HMAC-SHA-256，只保存 Prefix 与 Last4。完整 Gateway Key 只在 `no-store` 创建或轮换响应出现一次。
+
+详细记录：[Provider Secret Keyring 与 Gateway Client Key 持久化](implemented/2026-08-24-durable-secret-and-gateway-key-storage.md)。
 
 ## Decision 模板
 

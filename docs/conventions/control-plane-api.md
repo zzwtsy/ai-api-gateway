@@ -105,9 +105,13 @@ POST   /credentials/{credentialId}/disable
 POST   /credentials/{credentialId}/enable
 POST   /credentials/{credentialId}/clear-cooldown
 DELETE /credentials/{credentialId}
+
+GET    /connections/{connectionId}/compatibility
 ```
 
 Secret 创建响应只返回 Mask，不返回输入 Secret。
+
+`POST /endpoints/{endpointId}/probe` 接受绑定的 `credentialId` 和实测 `model`，固定执行完整兼容性套件并返回 `202` 与 Compatibility Probe Run。相同 Endpoint、Credential 和模型已有活跃 Run 时返回该 Run，不重复发送上游请求。客户端通过连接兼容性查询读取进度、Profile 与模型级 Fact；完整 Secret 和原始上游 Body 不属于响应合同。
 
 ## 5. 模型
 

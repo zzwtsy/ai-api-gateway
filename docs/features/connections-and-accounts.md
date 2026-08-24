@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-PROVIDER-001
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -271,3 +271,19 @@ UI 默认按账号聚合，可下钻到 Credential。不要在 Dashboard 直接�
 - 401/403 不会永久污染整个 Provider；
 - Credential Secret 不出现在日志、错误和导出；
 - UI 能查看每个账号和 Key 的健康状态与使用量。
+
+## 13. 当前实现边界
+
+控制面把 Provider、默认 Endpoint、Account、Credential 与 EndpointCredential 作为一次原子创建；`addConnectionEndpoint` 可在现有 Provider 下原子创建额外协议 Endpoint，并只绑定同一 Provider 下未禁用的 Credential。列表和详情返回聚合视图，只包含 Credential Mask、状态和绑定 Endpoint。Provider Secret 以 AES-256-GCM 密文持久化，轮换替换同一 Credential 的密文并恢复为 `unverified`，禁用后不再参与数据面解析。
+
+`probeProviderCredential` 必须由用户显式提交 Endpoint 和真实模型 ID，并在界面说明可能产生费用。它发送一次最小非流式请求，区分成功、鉴权失败、限流、上游拒绝和不可用，只持久化安全状态与成功/失败时间。
+
+`probeEndpoint` 是独立的完整兼容性任务。控制面先返回耐久 Run，再由 Application-owned Runner 顺序测试鉴权与基础请求、SSE、Usage、未知字段、Tool Call、Reasoning、结构化输出、错误 Envelope 和协议对应的 Harness 组合能力。鉴权与基础请求共用一次上游调用；401/403 会停止后续网络请求，并把未执行项明确记录为 `unknown`。同一 Endpoint、Credential 和模型的活跃任务被合并，避免重复计费。
+
+CompatibilityProfile 绑定 Endpoint 与 Harness Profile；CompatibilityFact 同时记录实测模型、支持等级、时间、Run 引用和脱敏结论。Run 的 `succeeded` 只表示套件执行完成；能力差异由 `verified`、`partial`、`blocked` 及 Fact 支持等级表达。结果不保存原始上游 Body、Header 或完整 Credential，也不参与运行时自动选模。
+
+`discoverUpstreamModels` 使用指定 Endpoint 及其已绑定、未禁用的 Credential 请求显式模型目录路径，只接受 OpenAI-compatible `data[].id`。完整 Secret 只在 Gateway 内解密；响应大小受限，失败映射为稳定控制面错误，不保存原始目录或创建后台任务。
+
+当前不执行定时 Probe、厂商私有模型目录解析、模型别名穷举、429 冷却或多 Credential 调度。
+
+PostgreSQL 启动时只在 `BOOTSTRAP_PROVIDER_CREDENTIAL_ID` 不存在时，把环境变量 Secret 加密后创建 Bootstrap Provider、Account 和 Credential。已有 Credential 的密文、状态和轮换结果不会被启动配置覆盖；Bootstrap Endpoint 仍由静态 `RoutingSnapshot` 的环境变量拥有，等待动态 Snapshot 切片接管。

@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-MODEL-001
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -280,3 +280,11 @@ UI 应显示冲突并默认采用 Probe 作为 Endpoint 实测事实，同时保
 - models.dev 不可用时现有模型仍可使用；
 - 模型能力不触发自动视觉路由；
 - Codex 模型目录与标准 OpenAI 模型列表分开。
+
+## 14. 当前实现边界
+
+当前控制面提供 Endpoint 级 `ProviderModelBinding` 列表和显式创建。创建前验证 Endpoint 存在，相同 Endpoint 与上游模型 ID 不可重复；新记录固定为 `unverified`。Web 明确显示能力与价格未知，不把缺失数据表示为零或可用。
+
+创建表单可通过 `discoverUpstreamModels` 显式读取 OpenAI-compatible 模型目录。用户选择 Endpoint、绑定的可用 Credential 和模型目录路径后，Gateway 返回去重排序的模型 ID；选择模型只预填上游模型 ID 与空白显示名称，失败时保留手工输入。该操作不持久化目录、不自动批量创建绑定，也不解析厂商私有格式。
+
+ModelDefinition、models.dev 同步、字段 Provenance、能力矩阵、PricingRule、耐久模型同步、详情编辑和状态 Probe 尚未实现。

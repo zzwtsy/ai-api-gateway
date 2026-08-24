@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 project_version: 0.1.0-alpha.3
 ---
@@ -29,7 +29,7 @@ project_version: 0.1.0-alpha.3
 - 通用 Lint 基线采用 `@antfu/eslint-config`，项目只叠加架构边界与质量棘轮；
 - Web TypeScript 拆分 Browser App 与 Node Tooling 两个 Project Reference；
 - Change Scope、证据选择和 Gate DAG 是统一质量入口；
-- Routing、Transport、Recording、Observation 和 Shutdown 拥有运行时不变量；
+- Routing、Transport、Recording、Observation、Probe Resource Shutdown 和进程 Shutdown 拥有运行时不变量；
 - Keyless Snapshot 同时固定 Provider 实收、Client 实收和 Request/Attempt；
 - CI 分为 Static、Core、Protocol 和 Artifact 四个证明面；
 - Postmortem 与简化审计分别负责把逃逸缺陷变成永久 Guard、删除无主代码。
@@ -37,17 +37,23 @@ project_version: 0.1.0-alpha.3
 ## 已实现的控制面
 
 - 健康检查；
-- Connection 列表、详情和创建；
+- Connection 聚合列表、详情、创建、额外协议 Endpoint 创建、Credential 轮换、禁用和显式最小 Probe；
+- Endpoint 完整兼容性 Probe 的异步 Run、进度查询，以及按 Endpoint、Harness Profile 和模型保存的兼容性事实；
+- Harness Profile 与 Gateway Client 列表、创建、Key 轮换和撤销；
+- Endpoint 级最小 Provider Model Binding 列表、创建和显式 OpenAI-compatible 上游模型发现；
 - Request 列表和 Request/Attempt 详情；
 - Better Auth 接口和仅开发环境可用的控制面令牌；
 - OpenAPI 静态导出与 Scalar Reference；
 - 前端 OpenAPI 类型生成及新鲜度检查；
 - Memory 与 PostgreSQL Repository Adapter。
 
+完整兼容性 Probe 由 Application-owned Runner 顺序执行。PostgreSQL 使用活跃目标唯一索引合并重复任务，并以原子状态 Claim 确认唯一执行者；进程关闭时先中止并等待 Probe，再关闭 Undici 与 PostgreSQL。Probe 原始 Body、Header 和完整 Credential 不进入持久化结果。
+
 ## 已实现的数据面
 
 - `POST /openai/v1/chat/completions`；
 - Gateway Client Key 验证；
+- PostgreSQL 模式从耐久哈希验证 Gateway Client Key，并按需解密 Provider Credential；
 - 单个 Bootstrap `RoutingSnapshot`；
 - Undici 按 Origin 管理连接池；
 - 原始请求正文转发；
@@ -61,12 +67,11 @@ project_version: 0.1.0-alpha.3
 
 以下实现只是验证架构，不应被扩展成通用框架：
 
-- 一个来自环境变量的 Gateway Client Key；
-- 一个来自环境变量的 Provider Credential；
-- 一个保持请求模型不变的静态路由；
+- 一个由环境变量中的耐久记录 ID 绑定的静态路由；
+- Memory 模式直接使用环境变量 Gateway Client Key 与 Provider Credential；
+- PostgreSQL 启动时只为缺失 ID 原子创建 Bootstrap Client/HMAC Key 和加密 Credential，已有记录、撤销与轮换状态不会被环境变量覆盖；
+- Bootstrap Provider 只承载静态路由所需的 Account/Credential 父关系；Endpoint 与动态 Snapshot 仍属于下一条纵向切片；
 - 仅 OpenAI Chat Completions 一个数据面协议；
-- 依赖安装前的 Bootstrap Web API 类型；
-- 无 npm Registry 环境下尚未运行真实 shadcn / Antfu 初始化器和完整依赖探针；
 - 单元和浏览器测试使用的 Memory Adapter。
 
 后续应在现有接口后替换这些实现，而不是建立第二套并行结构。
@@ -74,8 +79,7 @@ project_version: 0.1.0-alpha.3
 ## 下一条纵向切片
 
 ```text
-Connection + Account + 加密 Credential
-→ RouteRule 编辑器
+RouteRule 编辑器
 → Snapshot Compiler
 → 原子发布
 → Data Plane 消费发布版本

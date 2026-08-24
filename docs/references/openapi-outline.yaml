@@ -219,9 +219,8 @@ paths:
       tags:
         - Endpoints
       summary: 执行协议与功能兼容性探测
-      parameters:
-        - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -232,27 +231,45 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobResponse"
+                $ref: "#/components/schemas/CompatibilityProbeRunResponse"
       operationId: probeEndpoint
       description: 执行协议与功能兼容性探测。
-  /endpoints/{endpointId}/discover-models:
+  /connections/{connectionId}/compatibility:
+    parameters:
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Endpoints
+      summary: 获取连接兼容性事实
+      responses:
+        "200":
+          description: Connection compatibility
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionCompatibilityResponse"
+      operationId: getConnectionCompatibility
+      description: 获取连接下的兼容性 Profile、模型级 Fact 与最近 Probe Run。
+  /endpoints/{endpointId}/models/discover:
     parameters:
       - $ref: "#/components/parameters/EndpointId"
     post:
       tags:
-        - Models
-      summary: 从 Endpoint 发现模型
-      parameters:
-        - $ref: "#/components/parameters/IdempotencyKey"
+        - Connections
+      summary: 获取上游模型目录
       responses:
-        "202":
-          description: Discovery accepted
+        "200":
+          description: Upstream model catalog
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JobResponse"
-      operationId: discoverEndpointModels
-      description: 从 Endpoint 发现模型。
+                type: object
+      operationId: discoverUpstreamModels
+      description: 使用绑定 Credential 显式获取 OpenAI-compatible 模型目录。
   /providers/{providerId}/accounts:
     parameters:
       - $ref: "#/components/parameters/ProviderId"
@@ -1576,24 +1593,119 @@ components:
                 $ref: "#/components/schemas/Endpoint"
     ProbeInput:
       type: object
+      required:
+        - credentialId
+        - model
       properties:
-        modelId:
-          type:
-            - string
-            - "null"
+        credentialId:
+          type: string
+        model:
+          type: string
+    CompatibilityProbeRun:
+      type: object
+      required:
+        - id
+        - profileId
+        - connectionId
+        - endpointId
+        - credentialId
+        - harnessProfileId
+        - model
+        - checks
+        - status
+        - totalChecks
+        - completedChecks
+        - currentCheck
+        - errorMessage
+        - createdAt
+        - startedAt
+        - completedAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        profileId:
+          type: string
+        connectionId:
+          type: string
+        endpointId:
+          type: string
+        credentialId:
+          type: string
+        harnessProfileId:
+          type: string
+        model:
+          type: string
         checks:
           type: array
           items:
             type: string
-            enum:
-              - basic
-              - stream
-              - tools
-              - reasoning
-              - structured_output
-              - unknown_field
-              - error_shape
-              - usage
+        status:
+          type: string
+          enum:
+            - queued
+            - running
+            - succeeded
+            - failed
+        totalChecks:
+          type: integer
+        completedChecks:
+          type: integer
+        currentCheck:
+          type:
+            - string
+            - "null"
+        errorMessage:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+          format: date-time
+        startedAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        completedAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CompatibilityProbeRunResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/CompatibilityProbeRun"
+    ConnectionCompatibilityResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required:
+                - profiles
+                - facts
+                - runs
+              properties:
+                profiles:
+                  type: array
+                  items:
+                    type: object
+                facts:
+                  type: array
+                  items:
+                    type: object
+                runs:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/CompatibilityProbeRun"
     JobResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"

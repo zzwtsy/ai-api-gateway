@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-CLIENT-001
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -234,3 +234,13 @@ GatewayClient 名称可能包含设备名或项目名。导出和截图时提供
 - Client 不能使用未授权协议；
 - Codex 和标准 OpenAI 模型目录互不混淆；
 - 配置生成器输出可直接复制的命令和配置片段。
+
+## 13. 当前实现边界
+
+控制面提供内置 Harness Profile、Gateway Client 创建、Key 轮换和单 Key 撤销。客户端允许协议由所选 Harness Profile 派生，名称限制为 100 个字符。完整 Key 由 256 bit CSPRNG 生成，只在创建或确认轮换响应出现一次，响应使用 `Cache-Control: no-store`；数据库只保存带 Pepper 的 HMAC-SHA-256、Prefix 和 Last4。轮换确认前不调用写 API；确认后才把当前 `active` Key 改为 `expiring` 并创建新 Key。已撤销的历史 Key 不会被重新激活或改写。
+
+PostgreSQL 数据面按 Prefix 查找候选，检查 Client/Key 状态和过期时间，并使用常量时间比较验证 HMAC。Web 客户端详情由 `clientId` Search Param 恢复，可生成按入口协议匹配且只包含 `YOUR_GATEWAY_CLIENT_KEY` 占位符的 Cursor、Codex CLI、Claude Code 或 cURL 模板。创建与轮换完成态可使用本次响应中的一次性完整 Key 生成完整片段；服务端不提供旧 Key 恢复入口。
+
+Web 对轮换和撤销使用确认 Dialog，只把未到期的 `active` / `expiring` Key 计入可用数量，并默认折叠历史 Key。当前尚未交付客户端禁用、路由范围、成本上限、发送测试请求、完整的 Profile/操作系统/模型槽位配置生成器，以及自动把到期记录改写为 `revoked`；到期的 `expiring` Key 已在认证执行点拒绝。
+
+首次 PostgreSQL 启动会在 Bootstrap Client ID 不存在时，把 `GATEWAY_CLIENT_KEY` 作为一次性种子写成相同的 HMAC、Prefix 和 Last4 记录。Client 已存在时不会补回、重新激活或改写 Key；环境变量变化不能绕过控制面的轮换和撤销状态。

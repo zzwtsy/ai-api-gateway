@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -85,3 +85,9 @@ language: zh-CN
 ```
 
 “需关注”必须有具体原因，例如价格未知、Probe 过期或 Endpoint 兼容性下降。
+
+## 8. 当前交付
+
+当前页面交付 Endpoint 级绑定列表和创建表单。Endpoint 选项来自连接目录并显示 Provider / Endpoint 名称，不回显内部 ID。选择 Endpoint 后，用户可显式选择绑定且未禁用的 Credential，请求可配置的模型目录路径，并从 OpenAI-compatible `data[].id` 结果中选择模型；选择后自动填充上游模型 ID 和空白显示名称。
+
+模型发现由 Gateway 解密 Provider Credential 并发起受限上游请求，浏览器不持有完整 Secret。上游不可用、鉴权失败、响应过大或格式不兼容时保留手工输入，不创建耐久同步任务，也不清空已经编辑的字段。新绑定显示为“未验证”，能力与价格明确显示为 unknown。筛选、详情 Sheet、models.dev 同步、能力和价格编辑尚未交付。

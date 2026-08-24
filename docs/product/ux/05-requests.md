@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -143,3 +143,9 @@ Tabs 固定为：
 - Inspector 数据部分失败：保留 Request 摘要，对失败 Tab 显示重试；
 - Payload 未保存：不视为错误，而是隐私策略状态；
 - 流中断：最终状态与 Attempt 状态都必须显示，不能只显示 HTTP 200。
+
+## 8. 当前交付
+
+当前页面交付最近 50 条逻辑 Request、`requestId` URL 选中状态、上下排列或桌面双栏的 Master–Detail、请求事实、观测完整度和真实 Attempt 列表。Inspector 顶部根据最终状态、Attempt 结果与 HTTP 状态生成保守诊断；没有失败 Attempt 时不宣称发生故障，缺少可分类 HTTP 状态时不推断为超时。
+
+鉴权、限流、5xx 和未分类失败的连接管理入口携带对应 `connectionId`，模型 404 导航到模型页。筛选、详情 Tabs、路由匹配解释、时间线、Payload 和诊断导出仍属于后续交付。

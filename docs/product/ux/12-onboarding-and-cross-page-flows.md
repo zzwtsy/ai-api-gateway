@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -68,3 +68,11 @@ Setup Checklist 状态持久化。用户关闭页面后可从概览继续。已�
 - 模型 → `routes?model=deepseek-v4-pro`；
 - 客户端 → `requests?client=client_id`；
 - 概览 Attention → 对应 Request、Provider 或分析筛选。
+
+## 10. 当前交付
+
+当前概览以服务器中的连接和 Gateway Client 对象派生三步起步向导：缺少任一类对象时显示，两者都存在时隐藏，历史请求不参与判断。向导通过普通页面导航进入连接、模型和客户端创建入口，不维护第二份 Local Storage 或全局 Store 进度。
+
+连接创建支持 Provider 预设填充。客户端创建完成态支持一次性 Harness 配置片段；客户端详情可由 `clientId` URL 状态恢复，并提供无 Secret 模板或通过显式 Key 轮换重新生成一次性完整配置。
+
+连接详情同时提供一次最小 Credential 测试和显式完整兼容性 Probe。完整 Probe 的 Run、进度与模型级事实保存在服务端，关闭 Sheet 或刷新页面后可从兼容性 Tab 恢复；连接创建完成后尚未自动启动该任务。模型绑定表单可显式读取 OpenAI-compatible 上游模型目录，但耐久自动同步、路由编辑、跨页直接打开创建 Sheet、测试请求闭环和可恢复的持久 Checklist 仍属于后续交付。
