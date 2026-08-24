@@ -40,6 +40,17 @@ const request = {
   ttftMs: 120,
   observationStatus: "complete",
   observedBytes: 512,
+  attempts: [{
+    id: "att_01",
+    requestId: "req_01",
+    sequence: 1,
+    connectionId: "conn_01",
+    credentialId: "cred_01",
+    outcome: "succeeded",
+    statusCode: 200,
+    startedAt: "2026-08-23T08:00:00.000Z",
+    completedAt: "2026-08-23T08:00:01.000Z",
+  }],
 } as const;
 
 describe("requests page", () => {
@@ -72,6 +83,16 @@ describe("requests page", () => {
     expect(screen.getByText("无法加载请求详情")).toBeVisible();
     expect(screen.getByText("详情读取失败")).toBeVisible();
     expect(screen.queryByText("选择一条请求")).not.toBeInTheDocument();
+  });
+
+  it("renders diagnostic summary in inspector when request detail is loaded", () => {
+    hookMocks.useRequests.mockReturnValue(readyQuery([request]));
+    hookMocks.useRequest.mockReturnValue(readyQuery(request));
+
+    render(<RequestsPage requestId="req_01" />);
+
+    expect(screen.getByText("请求执行正常")).toBeVisible();
+    expect(screen.getByText(/直连上游成功/u)).toBeVisible();
   });
 
   it("keeps cached rows visible when a background refresh fails", () => {

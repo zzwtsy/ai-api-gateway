@@ -25,6 +25,7 @@ import {
 import { describeApiError } from "@/lib/api-runtime/client";
 import { cn } from "@/lib/utils";
 
+import { RequestDiagnosticBanner } from "./components/request-diagnostic-banner";
 import { useRequest, useRequests } from "./hooks";
 import { toRequestDetailView, toRequestListItemView } from "./request-view-model";
 
@@ -36,7 +37,7 @@ export function RequestsPage({ requestId }: { readonly requestId: string | undef
     <div className="flex flex-col gap-7">
       <PageHeader
         title="请求"
-        description="从一次逻辑请求解释路由快照、上游尝试和最终结果。"
+        description="从一次逻辑请求解释路由版本、上游尝试和最终结果。"
       />
       <div
         data-slot="request-workbench"
@@ -239,6 +240,9 @@ function RequestInspector({
             onRetry={onRetry}
           />
         )}
+
+        <RequestDiagnosticBanner diagnosis={view.diagnosis} />
+
         <section className="grid grid-cols-2 gap-x-5 gap-y-4">
           {view.facts.map(fact => <Fact key={fact.label} label={fact.label} value={fact.value} />)}
         </section>

@@ -1,4 +1,6 @@
+import type { DiagnosticResult } from "./diagnostic-engine";
 import type { components } from "@/api/schema";
+import { diagnoseRequest } from "./diagnostic-engine";
 
 type RequestRecord = components["schemas"]["GatewayRequest"];
 type RequestDetailRecord = components["schemas"]["GatewayRequestDetail"];
@@ -13,8 +15,9 @@ interface RequestListItemView {
   readonly ttftLabel: string;
 }
 
-interface RequestDetailView {
+export interface RequestDetailView {
   readonly attempts: readonly AttemptView[];
+  readonly diagnosis: DiagnosticResult;
   readonly facts: readonly FactView[];
   readonly id: string;
   readonly observation: ObservationView;
@@ -56,14 +59,16 @@ export function toRequestListItemView(item: RequestRecord): RequestListItemView 
 
 export function toRequestDetailView(item: RequestDetailRecord): RequestDetailView {
   const observation = toObservationView(item);
+  const diagnosis = diagnoseRequest(item);
   return {
     id: item.id,
     outcome: item.outcome,
+    diagnosis,
     facts: [
       { label: "请求模型", value: item.requestedModel },
       { label: "上游模型", value: item.upstreamModel },
       { label: "协议", value: item.protocol },
-      { label: "路由快照", value: `v${item.routingSnapshotVersion}` },
+      { label: "路由版本", value: `v${item.routingSnapshotVersion}` },
       { label: "总延迟", value: formatMilliseconds(item.latencyMs) },
       { label: "TTFT", value: formatMilliseconds(item.ttftMs) },
     ],

@@ -1,10 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  Boxes,
   CircleDollarSign,
+  KeyRound,
   Plug,
   Radio,
   SendIcon,
+  Sparkles,
   TriangleAlert,
 } from "lucide-react";
 
@@ -35,14 +38,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useGatewayClients } from "@/features/clients/hooks";
 import { useConnections } from "@/features/connections/hooks";
 import { useRequests } from "@/features/requests/hooks";
 import { averageInteger } from "@/lib/metrics";
 
 export function OverviewPage() {
+  const clients = useGatewayClients();
   const connections = useConnections();
   const requests = useRequests();
   const items = requests.data ?? [];
+  const connectionList = connections.data ?? [];
   const succeeded = items.filter(item => item.outcome === "succeeded").length;
   const successRate = items.length === 0
     ? null
@@ -53,18 +59,25 @@ export function OverviewPage() {
       .filter((value): value is number => value !== null),
   );
 
+  const isInitialSetup = connections.data !== undefined
+    && clients.data !== undefined
+    && (connectionList.length === 0 || clients.data.length === 0);
+
   return (
     <div className="flex flex-col gap-7">
       <PageHeader
         title="概览"
         description="确认 Gateway 是否健康，并快速进入需要处理的问题。"
       />
+
+      {isInitialSetup && <OnboardingGuide />}
+
       <section className="grid grid-cols-4 gap-7 border-y py-5">
         <Metric icon={Radio} label="请求" value={String(items.length)} detail="最近 50 条" />
         <Metric
           icon={Plug}
           label="连接"
-          value={String(connections.data?.length ?? 0)}
+          value={String(connectionList.length)}
           detail="已配置的 Endpoint"
         />
         <Metric
@@ -80,6 +93,7 @@ export function OverviewPage() {
           detail="不含进行中请求"
         />
       </section>
+
       <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)] gap-6">
         <Card>
           <CardHeader>
@@ -122,6 +136,80 @@ export function OverviewPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function OnboardingGuide() {
+  return (
+    <Card className="border-primary/20 bg-primary/5">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-4 text-primary" />
+          <CardTitle className="text-base">快速起步向导</CardTitle>
+        </div>
+        <CardDescription>
+          完成以下 3 步，即可在本地 IDE 与 CLI 工具中接入网关。
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4 sm:grid-cols-3">
+        <div className="flex flex-col gap-2 rounded-lg border bg-background p-4">
+          <div className="flex items-center gap-2 font-medium text-sm">
+            <Plug className="size-4 text-primary" />
+            <span>1. 接入上游厂商</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            支持 DeepSeek、OpenAI、Anthropic 等预设，一键填入并保存 API Key。
+          </p>
+          <div className="mt-auto pt-2">
+            <Link
+              to="/connections"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              添加连接
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 rounded-lg border bg-background p-4">
+          <div className="flex items-center gap-2 font-medium text-sm">
+            <Boxes className="size-4 text-primary" />
+            <span>2. 确认可用模型</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            查看已配置 Endpoint 上可调用的模型绑定与能力状态。
+          </p>
+          <div className="mt-auto pt-2">
+            <Link
+              to="/models"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              查看模型
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 rounded-lg border bg-background p-4">
+          <div className="flex items-center gap-2 font-medium text-sm">
+            <KeyRound className="size-4 text-primary" />
+            <span>3. 签发接入密钥</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            为 Cursor、Codex 等生成独立 Gateway Key 与一键接入配置代码。
+          </p>
+          <div className="mt-auto pt-2">
+            <Link
+              to="/clients"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              签发密钥
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
