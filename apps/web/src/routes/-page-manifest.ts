@@ -20,4 +20,18 @@ export const pageManifest = [
     label: "连接",
     icon: "connections",
   },
+  {
+    id: "models",
+    path: "/models",
+    navGroup: "配置",
+    label: "模型",
+    icon: "models",
+  },
+  {
+    id: "clients",
+    path: "/clients",
+    navGroup: "配置",
+    label: "客户端",
+    icon: "clients",
+  },
 ] as const;

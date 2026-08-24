@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspaceRouteImport } from './routes/_workspace'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as WorkspaceIndexRouteImport } from './routes/_workspace/index'
+import { Route as WorkspaceClientsRouteImport } from './routes/_workspace/clients'
 import { Route as WorkspaceConnectionsRouteImport } from './routes/_workspace/connections'
+import { Route as WorkspaceModelsRouteImport } from './routes/_workspace/models'
 import { Route as WorkspaceRequestsRouteImport } from './routes/_workspace/requests'
 
 const WorkspaceRoute = WorkspaceRouteImport.update({
@@ -29,9 +31,19 @@ const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceClientsRoute = WorkspaceClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceConnectionsRoute = WorkspaceConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceModelsRoute = WorkspaceModelsRouteImport.update({
+  id: '/models',
+  path: '/models',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceRequestsRoute = WorkspaceRequestsRouteImport.update({
@@ -43,12 +55,16 @@ const WorkspaceRequestsRoute = WorkspaceRequestsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof WorkspaceIndexRoute
   '/login': typeof LoginRoute
+  '/clients': typeof WorkspaceClientsRoute
   '/connections': typeof WorkspaceConnectionsRoute
+  '/models': typeof WorkspaceModelsRoute
   '/requests': typeof WorkspaceRequestsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/clients': typeof WorkspaceClientsRoute
   '/connections': typeof WorkspaceConnectionsRoute
+  '/models': typeof WorkspaceModelsRoute
   '/requests': typeof WorkspaceRequestsRoute
   '/': typeof WorkspaceIndexRoute
 }
@@ -56,20 +72,25 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_workspace': typeof WorkspaceRouteWithChildren
   '/login': typeof LoginRoute
+  '/_workspace/clients': typeof WorkspaceClientsRoute
   '/_workspace/connections': typeof WorkspaceConnectionsRoute
+  '/_workspace/models': typeof WorkspaceModelsRoute
   '/_workspace/requests': typeof WorkspaceRequestsRoute
   '/_workspace/': typeof WorkspaceIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/connections' | '/requests'
+  fullPaths:
+    '/' | '/login' | '/clients' | '/connections' | '/models' | '/requests'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/connections' | '/requests' | '/'
+  to: '/login' | '/clients' | '/connections' | '/models' | '/requests' | '/'
   id:
     | '__root__'
     | '/_workspace'
     | '/login'
+    | '/_workspace/clients'
     | '/_workspace/connections'
+    | '/_workspace/models'
     | '/_workspace/requests'
     | '/_workspace/'
   fileRoutesById: FileRoutesById
@@ -102,11 +123,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/_workspace/clients': {
+      id: '/_workspace/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof WorkspaceClientsRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/_workspace/connections': {
       id: '/_workspace/connections'
       path: '/connections'
       fullPath: '/connections'
       preLoaderRoute: typeof WorkspaceConnectionsRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/_workspace/models': {
+      id: '/_workspace/models'
+      path: '/models'
+      fullPath: '/models'
+      preLoaderRoute: typeof WorkspaceModelsRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/_workspace/requests': {
@@ -120,13 +155,17 @@ declare module '@tanstack/react-router' {
 }
 
 interface WorkspaceRouteChildren {
+  WorkspaceClientsRoute: typeof WorkspaceClientsRoute
   WorkspaceConnectionsRoute: typeof WorkspaceConnectionsRoute
+  WorkspaceModelsRoute: typeof WorkspaceModelsRoute
   WorkspaceRequestsRoute: typeof WorkspaceRequestsRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
+  WorkspaceClientsRoute: WorkspaceClientsRoute,
   WorkspaceConnectionsRoute: WorkspaceConnectionsRoute,
+  WorkspaceModelsRoute: WorkspaceModelsRoute,
   WorkspaceRequestsRoute: WorkspaceRequestsRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
 }

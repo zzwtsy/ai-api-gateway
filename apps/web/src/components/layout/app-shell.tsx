@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Activity, Gauge, KeyRound, Plug, ScrollText } from "lucide-react";
+import { Activity, Boxes, Gauge, KeyRound, Plug, ScrollText, UserRoundCog } from "lucide-react";
 
 import {
   Sidebar,
@@ -23,6 +23,8 @@ const navigationIcons = {
   gauge: Gauge,
   connections: Plug,
   requests: ScrollText,
+  models: Boxes,
+  clients: UserRoundCog,
 } as const;
 
 interface NavigationPage {
@@ -104,7 +106,7 @@ export function AppShell({ pages }: { readonly pages: readonly NavigationPage[] 
                   <span className="flex min-w-0 flex-col">
                     <span className="font-medium">Gateway 在线</span>
                     <span className="truncate text-[11px] text-muted-foreground">
-                      Node 模块化单体 · 路由快照 v1
+                      Node 模块化单体 · 路由版本 v1
                     </span>
                   </span>
                 </SidebarMenuButton>

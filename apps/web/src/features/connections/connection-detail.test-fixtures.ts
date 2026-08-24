@@ -1,0 +1,40 @@
+import type { components } from "@/api/schema";
+
+export const connectionFixture: components["schemas"]["Connection"] = {
+  id: "provider_01",
+  name: "DeepSeek",
+  providerSlug: "deepseek",
+  presetKind: "custom",
+  status: "active",
+  endpoints: [{
+    id: "endpoint_01",
+    name: "主 Endpoint",
+    protocol: "openai-chat",
+    baseUrl: "https://api.example.com",
+    requestPath: "/v1/chat/completions",
+    authScheme: "bearer",
+    supportsStreaming: true,
+    status: "active",
+  }],
+  accounts: [{
+    id: "account_01",
+    name: "主账号",
+    billingMode: "unknown",
+    status: "active",
+    credentials: [{
+      id: "credential_01",
+      name: "主 Key",
+      maskedDisplay: "sk-••••abcd",
+      status: "unverified",
+      endpointIds: ["endpoint_01"],
+      lastSuccessAt: null,
+      lastFailureAt: null,
+      createdAt: "2026-08-24T08:00:00.000Z",
+      updatedAt: "2026-08-24T08:00:00.000Z",
+      rotatedAt: null,
+      disabledAt: null,
+    }],
+  }],
+  createdAt: "2026-08-24T08:00:00.000Z",
+  updatedAt: "2026-08-24T08:00:00.000Z",
+};
