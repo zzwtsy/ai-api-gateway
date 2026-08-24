@@ -27,7 +27,7 @@ openapi-typescript + openapi-fetch + openapi-react-query
 
 `components.json` 是 shadcn 配置事实来源。当前固定 `base-nova`、Base UI、Lucide 和 Tailwind CSS v4；Primitive base、style、icon library、alias 和 Tailwind 版本必须从该文件读取。不得在代码中假设、混用或静默切回 Radix API。
 
-## 2. 目录建议
+## 2. 目录与边界
 
 ```text
 src/
@@ -101,7 +101,7 @@ createRoute
 → openapi-fetch（类型安全 Fetch）
 → openapi-react-query（method/path/params → Query Options/Mutation）
 → TanStack Query（唯一服务端状态缓存）
-→ generated freshness check
+→ 生成物新鲜度检查
 ```
 
 要求：
@@ -109,7 +109,7 @@ createRoute
 - OpenAPI 生成物进入版本控制，但禁止手工修改；
 - `src/api/` 只容纳生成物，不放手写 Client、Interceptor、Query Key 或 Feature Wrapper；
 - Fetch 认证、Base URL 等运行时配置集中在 `src/lib/api-runtime/`；
-- Query Key 由 OpenAPI method/path/params 稳定派生，不再在 Feature 手工复制字符串 Key；
+- Query Key 由 OpenAPI method/path/params 稳定派生，Feature 禁止手工复制字符串 Key；
 - Feature 可以用 `select` 映射控制面 Envelope，但 TanStack Query 仍是唯一服务端状态事实来源；
 - CI 在临时目录重生成并逐文件比较；
 - 数据面 OpenAI/Anthropic 请求不通过该客户端；

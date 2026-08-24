@@ -21,7 +21,7 @@ language: zh-CN
 - 表格、分栏、开放式 KPI 优先；
 - 不使用渐变、玻璃、发光、超大圆角、装饰性彩色卡片、无意义徽章墙。
 
-![重构后界面总览](assets/contact-sheet.png)
+![界面基准总览](assets/contact-sheet.png)
 
 ## 2. Shell 结构
 

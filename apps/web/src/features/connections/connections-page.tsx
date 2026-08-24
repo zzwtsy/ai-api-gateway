@@ -42,7 +42,7 @@ export function ConnectionsPage() {
     <div className="flex flex-col gap-7">
       <PageHeader
         title="连接"
-        description="管理上游 Provider Endpoint；账号与凭据将作为连接内部的耐久子资源扩展。"
+        description="管理上游 Provider Endpoint、协议和连接状态。"
         actions={(
           <Button onClick={() => setCreating(value => !value)}>
             {creating
@@ -57,7 +57,7 @@ export function ConnectionsPage() {
           <CardHeader>
             <CardTitle>添加上游 Endpoint</CardTitle>
             <CardDescription>
-              这里只创建连接元数据，不在浏览器中持久化 Provider Secret。
+              连接元数据保存在控制面；Provider Secret 不会进入浏览器持久化。
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -115,7 +115,7 @@ function ConnectionDirectory({
           <EmptyMedia variant="icon"><PlugZapIcon /></EmptyMedia>
           <EmptyTitle>尚未创建控制面连接</EmptyTitle>
           <EmptyDescription>
-            数据面黄金路径暂时使用环境变量中的模拟上游。
+            使用“添加连接”创建第一个上游 Endpoint。
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

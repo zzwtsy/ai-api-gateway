@@ -31,6 +31,8 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "概览" })).toBeVisible();
+    await expect(page.getByText("请求转发链路", { exact: true })).toBeVisible();
+    await expect(page.getByText(/留给后续功能/u)).toHaveCount(0);
     await page.screenshot({
       path: path.join(outputDirectory, "overview-1440x1000.png"),
       animations: "disabled",
@@ -65,8 +67,18 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
     }
     await expect(desktopSidebar).toHaveAttribute("data-state", "expanded");
     await expect(page.getByText("本地模拟上游")).toBeVisible();
+    await expect(page.getByText("管理上游 Provider Endpoint、协议和连接状态。")).toBeVisible();
     await page.screenshot({
       path: path.join(outputDirectory, "connections-1440x1000.png"),
+      animations: "disabled",
+    });
+
+    await page.getByRole("button", { name: "添加连接" }).click();
+    await expect(page.getByLabel("名称")).toHaveValue("");
+    await expect(page.getByLabel("Provider 标识")).toHaveValue("");
+    await expect(page.getByLabel("上游 Base URL")).toHaveValue("");
+    await page.screenshot({
+      path: path.join(outputDirectory, "connections-empty-form-1440x1000.png"),
       animations: "disabled",
     });
 
@@ -138,6 +150,8 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
         "Blue/Inter theme and official inset Sidebar render in the real Web app",
         "Sidebar expanded and collapsed layouts remain visible at the verified desktop viewports",
         "Connections and Request detail render against the real in-memory Gateway and Mock Provider",
+        "Overview and Connections describe current product behavior without development roadmap copy",
+        "The connection form does not prefill development fixture names or URLs",
         "Request Workbench uses side-by-side geometry at 1440px and stacked geometry at 1280px and 1024px",
         "Request List error and retry action remain inside the Master region at 1440px",
       ],
@@ -146,6 +160,7 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
           "overview-1440x1000.png",
           "overview-collapsed-1024x768.png",
           "connections-1440x1000.png",
+          "connections-empty-form-1440x1000.png",
           "requests-1440x1000.png",
           "requests-stacked-1280x900.png",
           "requests-stacked-1024x768.png",

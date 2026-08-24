@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ConnectionsPage } from "./connections-page";
@@ -21,6 +22,33 @@ describe("connections page", () => {
       isRefetchError: false,
       refetch: vi.fn(),
     });
+    hookMocks.useCreateConnection.mockReturnValue({
+      create: vi.fn(),
+      error: null,
+      isError: false,
+      isPending: false,
+    });
+  });
+
+  it("guides first use without prefilled development fixtures", async () => {
+    const user = userEvent.setup();
+    hookMocks.useConnections.mockReturnValue({
+      data: [],
+      error: null,
+      isError: false,
+      isLoading: false,
+      isPending: false,
+      isRefetchError: false,
+      refetch: vi.fn(),
+    });
+
+    render(<ConnectionsPage />);
+
+    expect(screen.getByText("使用“添加连接”创建第一个上游 Endpoint。")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "添加连接" }));
+    expect(screen.getByLabelText("名称")).toHaveValue("");
+    expect(screen.getByLabelText("Provider 标识")).toHaveValue("");
+    expect(screen.getByLabelText("上游 Base URL")).toHaveValue("");
   });
 
   it("renders a recoverable error without also claiming the directory is empty", () => {

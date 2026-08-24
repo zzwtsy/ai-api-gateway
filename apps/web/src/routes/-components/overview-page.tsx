@@ -10,7 +10,6 @@ import {
 
 import { PageHeader } from "@/components/product/page-header";
 import { RequestStatus } from "@/components/product/request-status";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -104,19 +103,20 @@ export function OverviewPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>数据面黄金路径</CardTitle>
-            <CardDescription>当前实现 OpenAI Chat 的透明流式链路。</CardDescription>
+            <CardTitle>请求转发链路</CardTitle>
+            <CardDescription>
+              OpenAI Chat Completions 保持入口协议并透明转发流式响应。
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="rounded-lg border bg-muted/35 p-4 text-xs leading-6">
               <code className="break-all">POST /openai/v1/chat/completions</code>
               <div className="mt-2 text-muted-foreground">
-                网关客户端密钥 → 路由快照 → Undici → 原始 SSE → 请求 / 尝试
+                Gateway Key → 同协议路由 → 上游 Endpoint → 流式响应 → Request / Attempt
               </div>
             </div>
-            <Badge variant="outline" className="w-fit">TypeScript 6 单版本</Badge>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Responses、Anthropic、完整凭据调度和成本分析留给后续功能；架构边界已经预留，但没有提前引入插件系统。
+              请求与上游尝试分别记录；响应开始后保持已选目标，便于解释实际路由结果。
             </p>
           </CardContent>
         </Card>

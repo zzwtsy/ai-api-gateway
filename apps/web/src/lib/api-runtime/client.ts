@@ -26,8 +26,7 @@ const fetchClient = createFetchClient<paths>({
 fetchClient.use(developmentAuthMiddleware);
 
 /**
- * OpenAPI-aware TanStack Query adapter. Query keys are derived from
- * HTTP method + path + params instead of being duplicated by hand.
+ * TanStack Query 适配器使用 HTTP method、path 和 params 派生 Query Key。
  */
 export const api = createReactQueryClient(fetchClient);
 

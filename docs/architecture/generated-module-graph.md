@@ -82,7 +82,6 @@ flowchart LR
 | `data-plane` | `core` | `apps/gateway/src/data-plane/credentials/static-authenticator.ts → apps/gateway/src/core/crypto/gateway-key.ts`<br>`apps/gateway/src/data-plane/dependencies.ts → apps/gateway/src/core/requests/contracts.ts`<br>`apps/gateway/src/data-plane/dependencies.ts → apps/gateway/src/core/time/clock.ts` |
 | `db` | `core` | `apps/gateway/src/db/client.ts → apps/gateway/src/core/logging/logger.ts` |
 | `entry` | `app` | `apps/gateway/src/index.ts → apps/gateway/src/app/lifecycle.ts` |
-
 ## Web 模块依赖
 
 ```mermaid
@@ -133,7 +132,7 @@ flowchart LR
 | `feature:connections` | `lib` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/connections/create-connection-form.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/connections/hooks.ts → apps/web/src/lib/api-runtime/client.ts` |
 | `feature:requests` | `components` | `apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/data-error-state.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/request-status.tsx` |
 | `feature:requests` | `lib` | `apps/web/src/features/requests/hooks.ts → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/utils.ts` |
-| `routes` | `components` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/ui/badge.tsx` |
+| `routes` | `components` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/ui/button.tsx` |
 | `routes` | `feature:auth` | `apps/web/src/routes/login.tsx → apps/web/src/features/auth/login-page.tsx` |
 | `routes` | `feature:connections` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/connections/hooks.ts`<br>`apps/web/src/routes/_workspace/connections.tsx → apps/web/src/features/connections/connections-page.tsx` |
 | `routes` | `feature:requests` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/requests/hooks.ts`<br>`apps/web/src/routes/_workspace/requests.tsx → apps/web/src/features/requests/requests-page.tsx` |

@@ -38,10 +38,10 @@ export function CreateConnectionForm({ onCreated }: { readonly onCreated: () => 
   const form = useForm<FormValue>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      name: "本地模拟上游",
-      provider: "openai-compatible",
+      name: "",
+      provider: "",
       protocol: "openai-chat",
-      baseUrl: "http://127.0.0.1:4010",
+      baseUrl: "",
     },
   });
 

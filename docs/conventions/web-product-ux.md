@@ -8,12 +8,9 @@ language: zh-CN
 
 控制面采用克制的 shadcn Product UX：中性表面、表格优先、有限语义色、低视觉噪声，不把适合表格的数据改造成卡片网格。
 
-## 当前实现页面
+## 产品目标与交付状态
 
-- 概览：展示逻辑请求指标、最近请求和当前架构链路；
-- 连接：验证控制面列表/创建和 OpenAPI 客户端；
-- 请求：验证 `Request` 与 `Attempt` 的 Master–Detail 排障工作台；
-- 登录：生产环境 Better Auth Session，开发环境受限控制面令牌。
+`docs/product/ux/page-contracts.json` 拥有产品目标页面全集；`apps/web/src/routes/-page-manifest.ts` 拥有已交付导航页面。生成路由和当前源码共同决定实际可访问页面。Convention 不复制页面库存，完整产品合同见 [前端产品 UX 规范](../product/ux/README.md)。
 
 ## 状态与结构
 
@@ -24,5 +21,3 @@ language: zh-CN
 - 完整 Key 不进入 Local Storage、Session Storage、URL 或 Analytics；
 - 未知费用、Usage 和兼容性使用明确状态，不能显示为零或正常；
 - 中文是默认界面语言，术语按 [语言与本地化](language-and-localization.md) 处理。
-
-完整页面合同见 [前端产品 UX 规范](../product/ux/README.md)。
