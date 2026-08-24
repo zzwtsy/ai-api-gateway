@@ -8,7 +8,7 @@ import { errorRegistry, errorTypeForCode } from "../../core/errors/error-registr
 export function successResponse<
   TEnv extends BaseEnv,
   TData,
-  TStatus extends 200 | 201 = 200,
+  TStatus extends 200 | 201 | 202 = 200,
 >(
   c: Context<TEnv>,
   data: TData,

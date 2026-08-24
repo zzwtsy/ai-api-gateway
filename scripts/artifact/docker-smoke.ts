@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 import process from "node:process";
 
@@ -11,6 +12,11 @@ const composeEnvironment = {
   BETTER_AUTH_SECRET: "docker-smoke-only-better-auth-secret",
   GATEWAY_CLIENT_KEY: "docker-smoke-only-gateway-client-key",
   GATEWAY_KEY_PEPPER: "docker-smoke-only-gateway-key-pepper",
+  PROVIDER_SECRET_ACTIVE_KEY_ID: "docker-smoke-v1",
+  PROVIDER_SECRET_KEYRING: JSON.stringify({
+    "docker-smoke-v1": Buffer.alloc(32, 11).toString("base64"),
+  }),
+  PROVIDER_SECRET_FINGERPRINT_PEPPER: "docker-smoke-only-provider-fingerprint-pepper",
   BOOTSTRAP_PROVIDER_BASE_URL: "http://mock-provider:4010",
   BOOTSTRAP_PROVIDER_API_KEY: "docker-smoke-only-provider-key",
 };

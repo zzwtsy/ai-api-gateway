@@ -37,6 +37,18 @@ describe("control-plane OpenAPI", () => {
     expect(document.paths?.["/admin/api/v1/connections"]?.post?.requestBody).toMatchObject({ required: true });
   });
 
+  it("publishes the asynchronous Endpoint compatibility contract", () => {
+    expect(document.paths?.["/admin/api/v1/endpoints/{endpointId}/probe"]?.post).toMatchObject({
+      operationId: "probeEndpoint",
+      requestBody: { required: true },
+      responses: { 202: expect.any(Object) },
+    });
+    expect(document.paths?.["/admin/api/v1/connections/{connectionId}/compatibility"]?.get).toMatchObject({
+      operationId: "getConnectionCompatibility",
+      responses: { 200: expect.any(Object) },
+    });
+  });
+
   it("mounts the Better Auth handler for nested auth paths", async () => {
     const response = await app.request("/api/auth/get-session");
     expect(response.status).toBe(503);

@@ -53,6 +53,9 @@ services:
       WEB_ORIGIN: ${WEB_ORIGIN:-http://127.0.0.1:3001}
       GATEWAY_CLIENT_KEY: ${GATEWAY_CLIENT_KEY:?GATEWAY_CLIENT_KEY must be explicitly configured}
       GATEWAY_KEY_PEPPER: ${GATEWAY_KEY_PEPPER:?GATEWAY_KEY_PEPPER must be explicitly configured}
+      PROVIDER_SECRET_ACTIVE_KEY_ID: ${PROVIDER_SECRET_ACTIVE_KEY_ID:?PROVIDER_SECRET_ACTIVE_KEY_ID must be explicitly configured}
+      PROVIDER_SECRET_KEYRING: ${PROVIDER_SECRET_KEYRING:?PROVIDER_SECRET_KEYRING must be explicitly configured}
+      PROVIDER_SECRET_FINGERPRINT_PEPPER: ${PROVIDER_SECRET_FINGERPRINT_PEPPER:?PROVIDER_SECRET_FINGERPRINT_PEPPER must be explicitly configured}
       BOOTSTRAP_PROVIDER_BASE_URL: ${BOOTSTRAP_PROVIDER_BASE_URL:?BOOTSTRAP_PROVIDER_BASE_URL must be explicitly configured}
       BOOTSTRAP_PROVIDER_API_KEY: ${BOOTSTRAP_PROVIDER_API_KEY:?BOOTSTRAP_PROVIDER_API_KEY must be explicitly configured}
     profiles: [app]
@@ -71,6 +74,9 @@ services:
       DEV_ADMIN_TOKEN: admin_dev_local
       GATEWAY_CLIENT_KEY: gw_dev_local_key
       GATEWAY_KEY_PEPPER: development-gateway-key-pepper
+      PROVIDER_SECRET_ACTIVE_KEY_ID: development-v1
+      PROVIDER_SECRET_KEYRING: '{"development-v1":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}'
+      PROVIDER_SECRET_FINGERPRINT_PEPPER: development-provider-fingerprint-pepper
       BOOTSTRAP_PROVIDER_BASE_URL: http://mock-provider:4010
       BOOTSTRAP_PROVIDER_API_KEY: mock-provider-key
     depends_on:

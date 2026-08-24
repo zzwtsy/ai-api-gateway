@@ -12,6 +12,12 @@ import { ShutdownController } from "./shutdown-controller.js";
 export async function startApplication(): Promise<void> {
   const logger = createLogger(env);
   const resources = createRuntimeResources(env, logger);
+  try {
+    await resources.initialize();
+  } catch (error) {
+    await resources.close();
+    throw error;
+  }
   const webDistDirectory = env.WEB_DIST_DIR ?? fileURLToPath(new URL("../../../web/dist", import.meta.url));
   const app = createApplication(resources.dependencies, { webDistDirectory });
   const server = serve({

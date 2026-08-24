@@ -51,6 +51,15 @@
         "apps/gateway/src/app/lifecycle.ts"
       ],
       "symbol": "ShutdownController"
+    },
+    {
+      "name": "compatibility probe resource shutdown",
+      "source": "apps/gateway/src/app/runtime-resource-order.ts",
+      "test": "apps/gateway/src/app/runtime-resource-order.test.ts",
+      "consumers": [
+        "apps/gateway/src/app/create-dependencies.ts"
+      ],
+      "symbol": "closeRuntimeResources"
     }
   ]
 }

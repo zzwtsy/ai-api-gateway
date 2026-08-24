@@ -25,6 +25,9 @@ export function assertUpstreamRequestInvariant(input: UpstreamRequest): void {
   if (!input.path.startsWith("/") || input.path.startsWith("//")) {
     throw new TransportInvariantError("path must be origin-relative and start with one slash");
   }
+  if (input.method === "GET" && input.body.byteLength !== 0) {
+    throw new TransportInvariantError("GET transport request body must be empty");
+  }
   for (const name of Object.keys(input.headers)) {
     if (forbiddenForwardedHeaders.has(name.toLowerCase())) {
       throw new TransportInvariantError(`forbidden forwarded header: ${name}`);

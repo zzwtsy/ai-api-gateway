@@ -12,13 +12,20 @@ export class UndiciTransportRegistry implements TransportRegistry {
   public async request(input: UpstreamRequest): Promise<UpstreamResponse> {
     assertUpstreamRequestInvariant(input);
     const pool = this.#getPool(input.origin);
-    const response = await pool.request({
-      method: input.method,
-      path: input.path,
-      headers: input.headers,
-      body: input.body,
-      signal: input.signal,
-    });
+    const response = await pool.request(input.method === "GET"
+      ? {
+          method: input.method,
+          path: input.path,
+          headers: input.headers,
+          signal: input.signal,
+        }
+      : {
+          method: input.method,
+          path: input.path,
+          headers: input.headers,
+          body: input.body,
+          signal: input.signal,
+        });
     return {
       statusCode: response.statusCode,
       headers: response.headers,

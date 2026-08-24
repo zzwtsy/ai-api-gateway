@@ -1,7 +1,7 @@
 export interface UpstreamRequest {
   readonly origin: string;
   readonly path: string;
-  readonly method: "POST";
+  readonly method: "GET" | "POST";
   readonly headers: Readonly<Record<string, string>>;
   readonly body: Uint8Array;
   readonly signal: AbortSignal;
