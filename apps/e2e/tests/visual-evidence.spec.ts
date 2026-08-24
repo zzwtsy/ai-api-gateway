@@ -18,6 +18,8 @@ const evidenceRoot = path.join(repositoryRoot, ".artifacts/ui-evidence");
 const scenario = "web-ui-contract";
 const execFileAsync = promisify(execFile);
 
+test.use({ trace: "off" });
+
 test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, request }) => {
   test.skip(!recordEvidence, "仅在显式记录 UI 证据时生成截图");
   const sourceState = await readEvidenceSourceState();
@@ -52,13 +54,28 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       headers,
       data: {
         name: "本地模拟上游",
-        provider: "openai-compatible",
-        protocol: "openai-chat",
-        baseUrl: "http://127.0.0.1:4010",
-        enabled: true,
+        providerSlug: "openai-compatible",
+        endpoint: {
+          name: "默认 Endpoint",
+          protocol: "openai-chat",
+          baseUrl: `http://127.0.0.1:${providerPort}`,
+          requestPath: "/v1/chat/completions",
+          authScheme: "bearer",
+          supportsStreaming: true,
+        },
+        account: { name: "主账号", billingMode: "unknown" },
+        credential: { name: "主 Key", secret: "mock-provider-key" },
       },
     });
     expect(connectionResponse.status()).toBe(201);
+    const connectionPayload = await connectionResponse.json() as {
+      data: {
+        id: string;
+        endpoints: readonly [{ id: string }];
+      };
+    };
+    const connectionId = connectionPayload.data.id;
+    const endpointId = connectionPayload.data.endpoints[0].id;
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/connections");
     const desktopSidebar = page.locator("[data-slot=\"sidebar\"][data-state]");
@@ -66,15 +83,60 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       await page.getByRole("button", { name: "切换侧边栏" }).click();
     }
     await expect(desktopSidebar).toHaveAttribute("data-state", "expanded");
-    await expect(page.getByText("本地模拟上游")).toBeVisible();
+    await expect(page.getByText("本地模拟上游", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("管理上游 Provider Endpoint、协议和连接状态。")).toBeVisible();
     await page.screenshot({
       path: path.join(outputDirectory, "connections-1440x1000.png"),
       animations: "disabled",
     });
 
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(page.getByRole("button", { name: "完整兼容性测试" })).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(outputDirectory, "connections-detail-1280x900.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expect(page.getByRole("button", { name: "完整兼容性测试" })).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(outputDirectory, "connections-detail-1024x768.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.getByRole("tab", { name: "兼容性" }).click();
+    await page.getByRole("button", { name: "开始完整测试" }).click();
+    await page.getByLabel("实测模型 ID").fill("ui-evidence-model");
+    await page.getByRole("button", { name: "开始计费测试" }).click();
+    await expect(page.getByText("正在测试兼容性")).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "compatibility-progress-1280x900.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expect(page.getByText("正在测试兼容性")).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "compatibility-progress-1024x768.png"),
+      animations: "disabled",
+    });
+    await page.getByRole("button", { name: "关闭并后台继续" }).click();
+    await expect.poll(() => new URL(page.url()).searchParams.get("connectionId")).toBe(connectionId);
+    await expect.poll(() => new URL(page.url()).searchParams.get("tab")).toBe("compatibility");
+    await expect(page.getByRole("cell", { name: "鉴权", exact: true })).toBeVisible();
+    await expect(page.getByText("已验证", { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "compatibility-complete-1024x768.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.screenshot({
+      path: path.join(outputDirectory, "compatibility-complete-1280x900.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.getByRole("button", { name: "添加连接" }).click();
-    await expect(page.getByLabel("名称")).toHaveValue("");
+    await expect(page.getByLabel("名称", { exact: true })).toHaveValue("");
     await expect(page.getByLabel("Provider 标识")).toHaveValue("");
     await expect(page.getByLabel("上游 Base URL")).toHaveValue("");
     await page.screenshot({
@@ -82,8 +144,92 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       animations: "disabled",
     });
 
+    const modelResponse = await request.post(`${gatewayOrigin}/admin/api/v1/models`, {
+      headers,
+      data: { endpointId, upstreamModelId: "ui-evidence-model", name: "UI 证据模型" },
+    });
+    expect(modelResponse.status()).toBe(201);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/models");
+    await expect(page.getByText("UI 证据模型", { exact: true })).toBeVisible();
+    await expect(page.getByText("能力与价格未知", { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "models-1280x900.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.screenshot({
+      path: path.join(outputDirectory, "models-1024x768.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/clients");
+    await expect(page.getByText("尚未创建 Gateway 客户端")).toBeVisible();
+    await expect(page.getByLabel("完整 Gateway Key")).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-empty-1280x900.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.getByRole("button", { name: "添加客户端" }).first().click();
+    await expect(page.getByLabel("客户端名称")).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-form-1024x768.png"),
+      animations: "disabled",
+    });
+
+    await page.keyboard.press("Escape");
+    const clientResponse = await request.post(`${gatewayOrigin}/admin/api/v1/clients`, {
+      headers,
+      data: {
+        name: "Codex · UI 证据",
+        profileSlug: "codex",
+        allowedProtocols: ["openai-responses"],
+      },
+    });
+    expect(clientResponse.status()).toBe(201);
+    const clientPayload = await clientResponse.json() as {
+      data: { client: { id: string } };
+    };
+    const clientId = clientPayload.data.client.id;
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/clients");
+    const clientRow = page.getByRole("row").filter({ hasText: "Codex · UI 证据" });
+    const protocolCell = clientRow.getByRole("cell").nth(1);
+    await expect(protocolCell.getByText("OpenAI Responses", { exact: true })).toBeVisible();
+    await expect(protocolCell.getByText("Codex", { exact: true })).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-directory-1280x900.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-directory-1024x768.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/clients?clientId=${encodeURIComponent(clientId)}`);
+    await expect(page.getByText("现有完整 Gateway Key 无法恢复")).toBeVisible();
+    await expect(page.getByText(/YOUR_GATEWAY_CLIENT_KEY/u)).toBeVisible();
+    await expect(page.getByLabel("完整 Gateway Key")).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-detail-1280x900.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-detail-1024x768.png"),
+      animations: "disabled",
+    });
+
     const model = "ui-evidence-model";
     const { requestId } = await createRecordedRequest(request, model);
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/requests");
     await page.getByRole("link", { name: new RegExp(model, "u") }).click();
     await expect(page).toHaveURL(new RegExp(`[?&]requestId=${requestId}(?:&|$)`, "u"));
@@ -150,6 +296,12 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
         "Blue/Inter theme and official inset Sidebar render in the real Web app",
         "Sidebar expanded and collapsed layouts remain visible at the verified desktop viewports",
         "Connections and Request detail render against the real in-memory Gateway and Mock Provider",
+        "Connection detail omits the duplicate full compatibility test action at 1280px and 1024px",
+        "Compatibility Probe progress remains closeable and both progress and durable model-scoped facts render at 1280px and 1024px",
+        "Endpoint model bindings render as unverified with capability and price explicitly unknown",
+        "The Clients empty and creation states render without exposing a complete Gateway Key",
+        "The Clients directory displays only derived protocol badges, without a duplicate Harness badge, at 1280px and 1024px",
+        "The Client detail Sheet renders a non-secret protocol-specific configuration template at 1280px and 1024px",
         "Overview and Connections describe current product behavior without development roadmap copy",
         "The connection form does not prefill development fixture names or URLs",
         "Request Workbench uses side-by-side geometry at 1440px and stacked geometry at 1280px and 1024px",
@@ -160,7 +312,21 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
           "overview-1440x1000.png",
           "overview-collapsed-1024x768.png",
           "connections-1440x1000.png",
+          "connections-detail-1280x900.png",
+          "connections-detail-1024x768.png",
+          "compatibility-progress-1280x900.png",
+          "compatibility-progress-1024x768.png",
+          "compatibility-complete-1280x900.png",
+          "compatibility-complete-1024x768.png",
           "connections-empty-form-1440x1000.png",
+          "models-1280x900.png",
+          "models-1024x768.png",
+          "clients-empty-1280x900.png",
+          "clients-form-1024x768.png",
+          "clients-directory-1280x900.png",
+          "clients-directory-1024x768.png",
+          "clients-detail-1280x900.png",
+          "clients-detail-1024x768.png",
           "requests-1440x1000.png",
           "requests-stacked-1280x900.png",
           "requests-stacked-1024x768.png",

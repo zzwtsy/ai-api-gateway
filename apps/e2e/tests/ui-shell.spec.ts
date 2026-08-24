@@ -51,7 +51,7 @@ test("Select Portal 在 Sidebar 与 Inset 之上", async ({ page }) => {
   await page.getByRole("button", { name: "添加连接" }).click();
   await page.getByRole("combobox", { name: "协议" }).click();
 
-  const popup = page.locator("[data-slot=\"select-content\"]");
+  const popup = page.locator("[data-slot=\"select-content\"][data-open]");
   await expect(popup).toBeVisible();
   await expectAtTop(popup);
   expect(browserErrors).toEqual([]);
