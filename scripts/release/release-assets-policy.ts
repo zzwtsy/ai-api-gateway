@@ -2,9 +2,9 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import process from "node:process";
 import { parseArgs, promisify } from "node:util";
 
+import { buildSpecBundles } from "../docs/spec-bundle.ts";
 import { collectProjectVersionViolations } from "../project-version-policy.ts";
 
 const execFileAsync = promisify(execFile);
@@ -67,14 +67,11 @@ export async function createReleaseAssets({ repositoryRoot, outputDirectory, ver
   await mkdir(outputDirectory, { recursive: true });
   const temporarySpecDirectory = path.join(outputDirectory, ".spec-work");
   await mkdir(temporarySpecDirectory, { recursive: true });
-  await execFileAsync(process.execPath, [
-    path.join(repositoryRoot, "scripts/docs/bundle-spec.ts"),
-    "--output-dir",
-    temporarySpecDirectory,
-  ], {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-    env: { ...process.env, AIGW_SOURCE_COMMIT: commit },
+  await buildSpecBundles({
+    repositoryRoot,
+    outputDirectory: temporarySpecDirectory,
+    checkOnly: false,
+    sourceCommit: commit,
   });
 
   const bundleManifest = JSON.parse(await readFile(path.join(repositoryRoot, "docs/spec-bundles.json"), "utf8"));

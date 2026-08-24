@@ -65,6 +65,10 @@ export default antfu(
       "ts/no-explicit-any": "error",
       "ts/no-floating-promises": "error",
       "ts/no-misused-promises": "error",
+      "no-restricted-syntax": ["error", {
+        selector: "MemberExpression[object.name='process'][property.name='execArgv']",
+        message: "禁止把 process.execArgv 传给子进程；请显式声明子进程运行参数。",
+      }],
       "ts/strict-boolean-expressions": ["error", {
         allowString: true,
         allowNumber: false,

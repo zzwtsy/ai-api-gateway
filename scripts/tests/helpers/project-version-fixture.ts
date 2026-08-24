@@ -83,6 +83,7 @@ export function fixtureChangelog(version: string = fixtureVersion): string {
 async function copyReleaseSources(root: string): Promise<void> {
   for (const relative of [
     "scripts/docs/bundle-spec.ts",
+    "scripts/docs/spec-bundle.ts",
     "scripts/docs/source-identity.ts",
     "docs/spec-bundles.json",
   ]) {

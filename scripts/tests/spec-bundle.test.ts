@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
 import { access, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { promisify } from "node:util";
 
-const execFileAsync = promisify(execFile);
+import { buildSpecBundles } from "../docs/spec-bundle.ts";
+
 const root = path.resolve(import.meta.dirname, "../..");
 
 test("spec bundle check validates source without pre-existing generated files", async (context) => {
@@ -14,16 +13,16 @@ test("spec bundle check validates source without pre-existing generated files", 
   const outputDirectory = path.join(temporaryRoot, "spec");
   context.after(async () => rm(temporaryRoot, { recursive: true, force: true }));
 
-  const { stdout } = await execFileAsync(process.execPath, [
-    "scripts/docs/bundle-spec.ts",
-    "--check",
-    "--output-dir",
+  const results = await buildSpecBundles({
+    repositoryRoot: root,
     outputDirectory,
-  ], {
-    cwd: root,
-    encoding: "utf8",
+    checkOnly: true,
   });
 
-  assert.equal([...stdout.matchAll(/^checked:/gmu)].length, 3);
+  assert.deepEqual(results.map(result => path.basename(result.outputPath)), [
+    "AI_API_GATEWAY_SPEC.md",
+    "AI_API_GATEWAY_ENGINEERING_SPEC.md",
+    "AI_API_GATEWAY_FRONTEND_SPEC.md",
+  ]);
   await assert.rejects(access(outputDirectory));
 });
