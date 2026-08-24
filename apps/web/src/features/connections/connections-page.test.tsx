@@ -110,9 +110,10 @@ describe("connections page states", () => {
 
     expect(screen.getByText("使用“添加连接”创建第一个上游 Endpoint。")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "添加连接" }));
-    expect(screen.getByLabelText("名称")).toHaveValue("");
+    expect(screen.getByLabelText("连接名称")).toHaveValue("");
     expect(screen.getByLabelText("Provider 标识")).toHaveValue("");
-    expect(screen.getByLabelText("上游 Base URL")).toHaveValue("");
+    expect(screen.getByText("Provider 与访问凭据")).toBeVisible();
+    expect(screen.queryByLabelText("上游 Base URL")).not.toBeInTheDocument();
   });
 
   it("renders a recoverable error without also claiming the directory is empty", () => {
@@ -214,8 +215,31 @@ describe("connection URL selection", () => {
       });
     },
   );
+});
 
-  it("selects the newly created connection and closes the sheet", async () => {
+describe("connection creation dialog", () => {
+  it("validates the Provider step before revealing Endpoint settings", async () => {
+    const user = userEvent.setup();
+    hookMocks.useConnections.mockReturnValue({
+      data: [],
+      error: null,
+      isError: false,
+      isLoading: false,
+      isPending: false,
+      isRefetchError: false,
+      refetch: vi.fn(),
+    });
+
+    renderConnectionsPage();
+
+    await user.click(screen.getByRole("button", { name: "添加连接" }));
+    await user.click(screen.getByRole("button", { name: "下一步：Endpoint" }));
+
+    expect(screen.getByLabelText("连接名称")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.queryByLabelText("上游 Base URL")).not.toBeInTheDocument();
+  });
+
+  it("selects the newly created connection and closes the dialog", async () => {
     const user = userEvent.setup();
     hookMocks.createConnection.mockResolvedValue({ id: "conn_new" });
     hookMocks.useConnections.mockReturnValue({
@@ -231,16 +255,17 @@ describe("connection URL selection", () => {
     renderConnectionsPage();
 
     await user.click(screen.getByRole("button", { name: "添加连接" }));
-    await user.type(screen.getByLabelText("名称"), "新连接");
+    await user.type(screen.getByLabelText("连接名称"), "新连接");
     await user.type(screen.getByLabelText("Provider 标识"), "new-provider");
     await user.type(screen.getByLabelText("Provider API Key"), "provider-secret");
+    await user.click(screen.getByRole("button", { name: "下一步：Endpoint" }));
     await user.type(screen.getByLabelText("上游 Base URL"), "https://provider.example.com");
-    await user.click(screen.getByRole("button", { name: "保存连接" }));
+    await user.click(screen.getByRole("button", { name: "创建连接" }));
 
     await waitFor(() => {
       expect(onConnectionIdChange).toHaveBeenLastCalledWith("conn_new");
     });
-    expect(screen.queryByRole("heading", { name: "添加上游 Endpoint" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "添加连接" })).not.toBeInTheDocument();
   });
 
   it("shows Select labels and updates an untouched recommended request path", async () => {
@@ -257,8 +282,11 @@ describe("connection URL selection", () => {
     renderConnectionsPage();
 
     await user.click(screen.getByRole("button", { name: "添加连接" }));
+    await completeProviderStep(user, "protocol-default");
     const protocol = screen.getByRole("combobox", { name: "协议" });
     const requestPath = screen.getByLabelText("请求路径");
+    expect(screen.getByLabelText("上游 Base URL")).toHaveAttribute("aria-invalid", "false");
+    expect(screen.queryByText("请输入合法的 URL")).not.toBeInTheDocument();
     expect(protocol).toHaveTextContent("OpenAI Chat Completions");
 
     await user.click(protocol);
@@ -281,6 +309,7 @@ describe("connection URL selection", () => {
     renderConnectionsPage();
 
     await user.click(screen.getByRole("button", { name: "添加连接" }));
+    await completeProviderStep(user, "protocol-custom");
     const protocol = screen.getByRole("combobox", { name: "协议" });
     const requestPath = screen.getByLabelText("请求路径");
     await user.clear(requestPath);
@@ -292,6 +321,13 @@ describe("connection URL selection", () => {
     expect(requestPath).toHaveValue("/custom/chat");
   });
 });
+
+async function completeProviderStep(user: ReturnType<typeof userEvent.setup>, slug: string) {
+  await user.type(screen.getByLabelText("连接名称"), `连接 ${slug}`);
+  await user.type(screen.getByLabelText("Provider 标识"), slug);
+  await user.type(screen.getByLabelText("Provider API Key"), "provider-secret");
+  await user.click(screen.getByRole("button", { name: "下一步：Endpoint" }));
+}
 
 function renderConnectionsPage(
   connectionId: string | undefined = undefined,

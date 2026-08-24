@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 
 import { CreateModelBindingForm } from "./create-model-binding-form";
 
@@ -30,17 +30,23 @@ const endpoint = {
   credentials: [{ id: "credential_01", label: "主账号 · 主 Key · sk-••••abcd" }],
 };
 
+beforeEach(() => {
+  hookMocks.create.mockReset();
+  hookMocks.discover.mockReset();
+});
+
 it("shows an Endpoint label while submitting its stable ID", async () => {
   const user = userEvent.setup();
   hookMocks.create.mockResolvedValue({});
   render(
     <CreateModelBindingForm
       endpoints={[endpoint]}
+      onCancel={vi.fn()}
       onCreated={vi.fn()}
     />,
   );
 
-  const endpointSelect = screen.getByRole("combobox", { name: "Endpoint" });
+  const endpointSelect = screen.getByRole("combobox", { name: "目标 Endpoint" });
   await user.click(endpointSelect);
   await user.click(screen.getByRole("option", { name: "DeepSeek / 默认 Endpoint" }));
   expect(endpointSelect).toHaveTextContent("DeepSeek / 默认 Endpoint");
@@ -48,7 +54,7 @@ it("shows an Endpoint label while submitting its stable ID", async () => {
 
   await user.type(screen.getByLabelText("上游模型 ID"), "deepseek-chat");
   await user.type(screen.getByLabelText("显示名称"), "DeepSeek Chat");
-  await user.click(screen.getByRole("button", { name: "保存模型绑定" }));
+  await user.click(screen.getByRole("button", { name: "创建模型绑定" }));
 
   expect(hookMocks.create).toHaveBeenCalledWith({
     endpointId: "endpoint_01",
@@ -60,9 +66,9 @@ it("shows an Endpoint label while submitting its stable ID", async () => {
 it("discovers upstream models and fills the selected model ID and name", async () => {
   const user = userEvent.setup();
   hookMocks.discover.mockResolvedValue({ models: [{ id: "deepseek-chat" }, { id: "deepseek-reasoner" }] });
-  render(<CreateModelBindingForm endpoints={[endpoint]} onCreated={vi.fn()} />);
+  render(<CreateModelBindingForm endpoints={[endpoint]} onCancel={vi.fn()} onCreated={vi.fn()} />);
 
-  await user.click(screen.getByRole("combobox", { name: "Endpoint" }));
+  await user.click(screen.getByRole("combobox", { name: "目标 Endpoint" }));
   await user.click(await screen.findByRole("option", { name: "DeepSeek / 默认 Endpoint" }));
   expect(screen.getByRole("combobox", { name: "Credential" })).toHaveTextContent("主账号 · 主 Key");
   await user.click(screen.getByRole("button", { name: "获取上游模型" }));
@@ -77,4 +83,15 @@ it("discovers upstream models and fills the selected model ID and name", async (
 
   expect(screen.getByLabelText("上游模型 ID")).toHaveValue("deepseek-reasoner");
   expect(screen.getByLabelText("显示名称")).toHaveValue("deepseek-reasoner");
+});
+
+it("offers an explicit cancel action without creating a binding", async () => {
+  const user = userEvent.setup();
+  const onCancel = vi.fn();
+  render(<CreateModelBindingForm endpoints={[endpoint]} onCancel={onCancel} onCreated={vi.fn()} />);
+
+  await user.click(screen.getByRole("button", { name: "取消" }));
+
+  expect(onCancel).toHaveBeenCalledOnce();
+  expect(hookMocks.create).not.toHaveBeenCalled();
 });

@@ -34,7 +34,11 @@ language: zh-CN
 主操作：
 
 - 同步 models.dev；
-- 添加模型绑定。
+- 添加模型绑定（使用居中 Dialog，聚焦完成模型发现与绑定配置）。
+
+“添加模型绑定”保持单步流程，按目标 Endpoint、可选上游模型发现、上游模型 ID 与显示名称的顺序组织。Dialog 使用真实 Trigger，关闭后焦点返回主操作；Header 与 Footer 固定，表单主体在 1024px 工作面内独立滚动，并持续提供“取消 / 创建模型绑定”。
+
+Endpoint 加载、失败或为空时仍允许打开 Dialog，并在原位展示加载、重试或前置条件说明，不使用无解释的禁用按钮。模型发现失败和创建失败都保留手工输入；发现结果只能填充模型 ID 与空白或仍跟随旧 ID 的显示名称。
 
 同步使用 Dialog 展示来源、预计变更、覆盖规则和进度；不应无提示覆盖本地字段。
 
@@ -76,7 +80,7 @@ language: zh-CN
 - 最近请求与错误；
 - 手动覆盖与禁用。
 
-详情属于上下文审阅和轻量编辑，使用宽版 Sheet；复杂能力 Probe 进入独立任务或 Dialog。
+详情属于上下文审阅和轻量编辑，使用宽版 Sheet 或侧边 Inspector；复杂能力 Probe 进入独立任务或 Dialog。
 
 ## 7. 状态
 
@@ -88,6 +92,6 @@ language: zh-CN
 
 ## 8. 当前交付
 
-当前页面交付 Endpoint 级绑定列表和创建表单。Endpoint 选项来自连接目录并显示 Provider / Endpoint 名称，不回显内部 ID。选择 Endpoint 后，用户可显式选择绑定且未禁用的 Credential，请求可配置的模型目录路径，并从 OpenAI-compatible `data[].id` 结果中选择模型；选择后自动填充上游模型 ID 和空白显示名称。
+当前页面交付 Endpoint 级绑定列表，以及带固定 Footer 和状态说明的单步创建 Dialog。Endpoint 选项来自连接目录并显示 Provider / Endpoint 名称，不回显内部 ID。选择 Endpoint 后，用户可显式选择绑定且未禁用的 Credential，请求可配置的模型目录路径，并从 OpenAI-compatible `data[].id` 结果中选择模型；选择后自动填充上游模型 ID 和空白显示名称。
 
 模型发现由 Gateway 解密 Provider Credential 并发起受限上游请求，浏览器不持有完整 Secret。上游不可用、鉴权失败、响应过大或格式不兼容时保留手工输入，不创建耐久同步任务，也不清空已经编辑的字段。新绑定显示为“未验证”，能力与价格明确显示为 unknown。筛选、详情 Sheet、models.dev 同步、能力和价格编辑尚未交付。

@@ -5,7 +5,16 @@ import { Controller, useForm } from "react-hook-form";
 
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { DialogFooter } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import * as SelectUI from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
@@ -23,9 +32,11 @@ type FormValue = z.infer<typeof FormSchema>;
 
 export function CreateModelBindingForm({
   endpoints,
+  onCancel,
   onCreated,
 }: {
   readonly endpoints: readonly EndpointOption[];
+  readonly onCancel: () => void;
   readonly onCreated: () => void;
 }) {
   const mutation = useCreateModelBinding();
@@ -44,81 +55,99 @@ export function CreateModelBindingForm({
   });
 
   return (
-    <form className="flex flex-col gap-5" onSubmit={event => void submit(event)}>
-      <FieldGroup>
-        <Controller
-          control={form.control}
-          name="endpointId"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid || undefined}>
-              <FieldLabel htmlFor="model-endpoint">Endpoint</FieldLabel>
-              <SelectUI.Select
-                items={endpointItems}
-                value={field.value}
-                onValueChange={(value) => {
-                  if (value !== null)
-                    field.onChange(value);
+    <form className="flex min-h-0 flex-1 flex-col" onSubmit={event => void submit(event)}>
+      <div className="min-h-0 overflow-y-auto px-6 pb-6">
+        <FieldSet>
+          <FieldLegend>绑定目标与模型标识</FieldLegend>
+          <FieldDescription>先选择 Endpoint；随后可从上游目录填充，也可直接手工输入。</FieldDescription>
+          <FieldGroup>
+            <Controller
+              control={form.control}
+              name="endpointId"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid || undefined}>
+                  <FieldLabel htmlFor="model-endpoint">目标 Endpoint</FieldLabel>
+                  <SelectUI.Select
+                    items={endpointItems}
+                    value={field.value}
+                    onValueChange={(value) => {
+                      if (value !== null)
+                        field.onChange(value);
+                    }}
+                  >
+                    <SelectUI.SelectTrigger id="model-endpoint" className="w-full" aria-invalid={fieldState.invalid} onBlur={field.onBlur}>
+                      <SelectUI.SelectValue placeholder="选择接收该模型的 Endpoint" />
+                    </SelectUI.SelectTrigger>
+                    <SelectUI.SelectContent>
+                      <SelectUI.SelectGroup>
+                        {endpoints.map(endpoint => (
+                          <SelectUI.SelectItem key={endpoint.id} value={endpoint.id}>{endpoint.label}</SelectUI.SelectItem>
+                        ))}
+                      </SelectUI.SelectGroup>
+                    </SelectUI.SelectContent>
+                  </SelectUI.Select>
+                  <FieldDescription>绑定只对这个 Endpoint 生效，不跨协议或 Provider 复用。</FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+
+            {selectedEndpoint !== undefined && (
+              <UpstreamModelDiscoveryField
+                key={selectedEndpoint.id}
+                endpoint={selectedEndpoint}
+                upstreamModelId={upstreamModelId}
+                onSelectModel={(value) => {
+                  const currentName = form.getValues("name");
+                  const currentModelId = form.getValues("upstreamModelId");
+                  form.setValue("upstreamModelId", value, { shouldValidate: true });
+                  if (currentName.trim() === "" || currentName === currentModelId)
+                    form.setValue("name", value, { shouldValidate: true });
                 }}
-              >
-                <SelectUI.SelectTrigger id="model-endpoint" className="w-full" aria-invalid={fieldState.invalid} onBlur={field.onBlur}>
-                  <SelectUI.SelectValue placeholder="选择接收该模型的 Endpoint" />
-                </SelectUI.SelectTrigger>
-                <SelectUI.SelectContent>
-                  <SelectUI.SelectGroup>
-                    {endpoints.map(endpoint => (
-                      <SelectUI.SelectItem key={endpoint.id} value={endpoint.id}>{endpoint.label}</SelectUI.SelectItem>
-                    ))}
-                  </SelectUI.SelectGroup>
-                </SelectUI.SelectContent>
-              </SelectUI.Select>
-              <FieldDescription>绑定只对这个 Endpoint 生效，不跨协议或 Provider 复用。</FieldDescription>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
-          )}
-        />
-        {selectedEndpoint !== undefined && (
-          <UpstreamModelDiscoveryField
-            key={selectedEndpoint.id}
-            endpoint={selectedEndpoint}
-            upstreamModelId={upstreamModelId}
-            onSelectModel={(value) => {
-              const currentName = form.getValues("name");
-              const currentModelId = form.getValues("upstreamModelId");
-              form.setValue("upstreamModelId", value, { shouldValidate: true });
-              if (currentName.trim() === "" || currentName === currentModelId)
-                form.setValue("name", value, { shouldValidate: true });
-            }}
-          />
-        )}
-        <Field data-invalid={form.formState.errors.upstreamModelId !== undefined || undefined}>
-          <FieldLabel htmlFor="upstream-model-id">上游模型 ID</FieldLabel>
-          <Input
-            id="upstream-model-id"
-            aria-invalid={form.formState.errors.upstreamModelId !== undefined}
-            placeholder="例如：deepseek-chat"
-            {...form.register("upstreamModelId")}
-          />
-          <FieldError errors={[form.formState.errors.upstreamModelId]} />
-        </Field>
-        <Field data-invalid={form.formState.errors.name !== undefined || undefined}>
-          <FieldLabel htmlFor="model-name">显示名称</FieldLabel>
-          <Input
-            id="model-name"
-            aria-invalid={form.formState.errors.name !== undefined}
-            placeholder="例如：DeepSeek Chat"
-            {...form.register("name")}
-          />
-          <FieldDescription>当前仅保存明确模型绑定；能力、上下文和价格仍为未知。</FieldDescription>
-          <FieldError errors={[form.formState.errors.name]} />
-        </Field>
-      </FieldGroup>
-      {mutation.isError && <FieldError>{describeApiError(mutation.error, "无法创建模型绑定")}</FieldError>}
-      <div className="flex justify-end">
+              />
+            )}
+
+            <FieldGroup className="sm:grid sm:grid-cols-2">
+              <Field data-invalid={form.formState.errors.upstreamModelId !== undefined || undefined}>
+                <FieldLabel htmlFor="upstream-model-id">上游模型 ID</FieldLabel>
+                <Input
+                  id="upstream-model-id"
+                  aria-invalid={form.formState.errors.upstreamModelId !== undefined}
+                  placeholder="例如：deepseek-chat"
+                  {...form.register("upstreamModelId")}
+                />
+                <FieldDescription>Provider 接口实际接收的模型标识。</FieldDescription>
+                <FieldError errors={[form.formState.errors.upstreamModelId]} />
+              </Field>
+              <Field data-invalid={form.formState.errors.name !== undefined || undefined}>
+                <FieldLabel htmlFor="model-name">显示名称</FieldLabel>
+                <Input
+                  id="model-name"
+                  aria-invalid={form.formState.errors.name !== undefined}
+                  placeholder="例如：DeepSeek Chat"
+                  {...form.register("name")}
+                />
+                <FieldDescription>仅用于控制面识别，不改写上游请求。</FieldDescription>
+                <FieldError errors={[form.formState.errors.name]} />
+              </Field>
+            </FieldGroup>
+
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="text-sm font-medium">创建后的状态</p>
+              <p className="mt-1 text-sm text-muted-foreground">新绑定标记为“未验证”；能力、上下文和价格保持未知，直到获得明确证据。</p>
+            </div>
+          </FieldGroup>
+        </FieldSet>
+        {mutation.isError && <FieldError className="mt-5">{describeApiError(mutation.error, "无法创建模型绑定")}</FieldError>}
+      </div>
+
+      <DialogFooter className="mx-0 mb-0 shrink-0 px-6 py-4">
+        <Button type="button" variant="outline" disabled={mutation.isPending} onClick={onCancel}>取消</Button>
         <Button type="submit" disabled={mutation.isPending || endpoints.length === 0}>
           {mutation.isPending && <Spinner data-icon="inline-start" aria-label="创建中" />}
-          保存模型绑定
+          创建模型绑定
         </Button>
-      </div>
+      </DialogFooter>
     </form>
   );
 }
@@ -151,8 +180,9 @@ function UpstreamModelDiscoveryField({
 
   return (
     <Field>
-      <FieldLabel>从上游模型目录填充（可选）</FieldLabel>
-      <div className="flex flex-col gap-3 rounded-lg border p-3">
+      <FieldLabel>上游模型发现（可选）</FieldLabel>
+      <FieldDescription>使用当前 Endpoint 的 Credential 读取模型目录；失败时仍可手工输入。</FieldDescription>
+      <div className="flex flex-col gap-3 rounded-lg border bg-muted/20 p-4">
         {credentialItems.length === 0
           ? <FieldDescription>当前 Endpoint 没有可用 Credential，可继续手工输入模型 ID。</FieldDescription>
           : (
@@ -175,7 +205,7 @@ function UpstreamModelDiscoveryField({
                   </Field>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <FieldDescription>仅解析 OpenAI-compatible `data[].id`；失败时不会清空手工输入。</FieldDescription>
+                  <FieldDescription>仅解析 OpenAI-compatible `data[].id`。</FieldDescription>
                   <Button type="button" variant="outline" disabled={discovery.isPending || credentialId === "" || !/^\/(?!\/)/u.test(modelsPath)} onClick={() => void discover()}>
                     {discovery.isPending && <Spinner data-icon="inline-start" aria-label="获取中" />}
                     获取上游模型

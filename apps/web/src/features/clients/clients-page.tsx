@@ -6,6 +6,14 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/product/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -23,7 +31,7 @@ import { useGatewayClients } from "./hooks";
 
 type ClientWithSecret = components["schemas"]["GatewayClientWithSecret"];
 
-type ClientSheetState
+type ModalState
   = | { readonly kind: "create" }
     | {
       readonly kind: "secret";
@@ -39,7 +47,7 @@ export function ClientsPage({
   readonly clientId: string | undefined;
   readonly onClientIdChange: (clientId: string | undefined, options?: { readonly replace?: boolean }) => void;
 }) {
-  const [sheetState, setSheetState] = useState<ClientSheetState>(null);
+  const [modalState, setModalState] = useState<ModalState>(null);
   const query = useGatewayClients();
   const selectedClient = query.data?.find(client => client.id === clientId);
 
@@ -49,15 +57,18 @@ export function ClientsPage({
     onClientIdChange(undefined, { replace: true });
   }, [clientId, onClientIdChange, query.data, selectedClient]);
 
-  const closeSheet = () => {
-    if (sheetState?.kind === "secret" && sheetState.returnTo.kind === "detail") {
-      const returnClientId = sheetState.returnTo.clientId;
-      setSheetState(null);
+  const closeModal = () => {
+    if (modalState?.kind === "secret" && modalState.returnTo.kind === "detail") {
+      const returnClientId = modalState.returnTo.clientId;
+      setModalState(null);
       if (clientId !== returnClientId)
         onClientIdChange(returnClientId, { replace: true });
       return;
     }
-    setSheetState(null);
+    setModalState(null);
+  };
+
+  const closeDetailSheet = () => {
     if (clientId !== undefined)
       onClientIdChange(undefined, { replace: true });
   };
@@ -65,15 +76,13 @@ export function ClientsPage({
   const startCreate = () => {
     if (clientId !== undefined)
       onClientIdChange(undefined, { replace: true });
-    setSheetState({ kind: "create" });
+    setModalState({ kind: "create" });
   };
 
   const selectClient = (nextClientId: string) => {
-    setSheetState(null);
+    setModalState(null);
     onClientIdChange(nextClientId);
   };
-
-  const sheetOpen = sheetState !== null || selectedClient !== undefined;
 
   return (
     <div className="flex flex-col gap-7">
@@ -81,34 +90,80 @@ export function ClientsPage({
         title="客户端"
         description="为每个 Harness 实例签发独立 Gateway Client Key。"
         actions={(
-          <Button onClick={startCreate}>
-            <Plus data-icon="inline-start" />
-            添加客户端
-          </Button>
+          <Dialog
+            open={modalState?.kind === "create"}
+            onOpenChange={(open) => {
+              if (open)
+                startCreate();
+              else
+                closeModal();
+            }}
+          >
+            <DialogTrigger render={<Button />}>
+              <Plus data-icon="inline-start" />
+              添加客户端
+            </DialogTrigger>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-lg">
+              <DialogHeader className="px-6 pt-6 pb-5">
+                <DialogTitle>添加 Gateway 客户端</DialogTitle>
+                <DialogDescription>为一个 Harness 实例签发独立 Key；完整 Key 创建后只显示一次。</DialogDescription>
+              </DialogHeader>
+              {modalState?.kind === "create" && (
+                <CreateClientForm
+                  onCancel={closeModal}
+                  onCreated={result => setModalState({ kind: "secret", result, returnTo: { kind: "list" } })}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         )}
       />
 
-      <Sheet
-        open={sheetOpen}
+      <Dialog
+        open={modalState?.kind === "secret"}
         onOpenChange={(open) => {
           if (!open)
-            closeSheet();
+            closeModal();
+        }}
+      >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl">
+          {modalState?.kind === "secret" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  保存
+                  {" "}
+                  {modalState.result.client.name}
+                  {" "}
+                  的 Gateway Key
+                </DialogTitle>
+                <DialogDescription>完整 Key 关闭后无法再次查看；日志、普通导出和客户端列表都不会保留它。</DialogDescription>
+              </DialogHeader>
+              <div className="pt-2">
+                <ClientKeyRevealContent
+                  result={modalState.result}
+                  closeLabel={modalState.returnTo.kind === "detail" ? "我已保存，返回详情" : "我已保存，关闭"}
+                  onClose={closeModal}
+                />
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Sheet
+        open={selectedClient !== undefined && modalState === null}
+        onOpenChange={(open) => {
+          if (!open)
+            closeDetailSheet();
         }}
       >
         <SheetContent className="overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-xl">
-          {sheetState?.kind === "create" && (
-            <CreateClientSheet
-              onCreated={result => setSheetState({ kind: "secret", result, returnTo: { kind: "list" } })}
-            />
-          )}
-          {sheetState?.kind === "secret" && (
-            <ClientSecretSheet result={sheetState.result} returnTo={sheetState.returnTo.kind} onClose={closeSheet} />
-          )}
-          {sheetState === null && selectedClient !== undefined && (
+          {selectedClient !== undefined && (
             <ClientDetailSheet
               key={selectedClient.id}
               client={selectedClient}
-              onRotated={result => setSheetState({
+              onRotated={result => setModalState({
                 kind: "secret",
                 result,
                 returnTo: { clientId: selectedClient.id, kind: "detail" },
@@ -136,48 +191,6 @@ export function ClientsPage({
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function CreateClientSheet({ onCreated }: { readonly onCreated: (result: ClientWithSecret) => void }) {
-  return (
-    <>
-      <SheetHeader>
-        <SheetTitle>添加 Gateway 客户端</SheetTitle>
-        <SheetDescription>创建后只显示一次完整 Key，请在离开完成状态前保存。</SheetDescription>
-      </SheetHeader>
-      <div className="p-4 pt-0">
-        <CreateClientForm onCreated={onCreated} />
-      </div>
-    </>
-  );
-}
-
-function ClientSecretSheet({ result, returnTo, onClose }: {
-  readonly result: ClientWithSecret;
-  readonly returnTo: "detail" | "list";
-  readonly onClose: () => void;
-}) {
-  return (
-    <>
-      <SheetHeader>
-        <SheetTitle>
-          保存
-          {" "}
-          {result.client.name}
-          {" "}
-          的 Gateway Key
-        </SheetTitle>
-        <SheetDescription>完整 Key 关闭后无法再次查看；日志、普通导出和客户端列表都不会保留它。</SheetDescription>
-      </SheetHeader>
-      <div className="p-4 pt-0">
-        <ClientKeyRevealContent
-          result={result}
-          closeLabel={returnTo === "detail" ? "我已保存，返回详情" : "我已保存，关闭"}
-          onClose={onClose}
-        />
-      </div>
-    </>
   );
 }
 

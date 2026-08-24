@@ -29,16 +29,18 @@ language: zh-CN
 
 ## 3. 创建客户端
 
-使用 Dialog，步骤保持短：
+使用居中 Dialog，步骤保持短：
 
 1. 名称；
 2. Harness Profile；
-3. 可用路由范围；
+3. 确认由 Profile 派生的入口协议；
 4. 创建。
+
+Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 / 创建客户端”Footer。选择 Profile 后，在表单内显示只读 Profile 摘要和允许协议，不增加第二个协议输入。加载、错误和提交状态都保留在 Dialog 内；服务端失败不清空名称或 Profile。
 
 入口协议由 Harness Profile 的允许协议派生，并在目录中单独以 Badge 只读展示，不重复显示 Harness 名称，也不与 Profile 形成第二个可编辑状态。名称最多 100 个字符；目录中超长名称单行截断，并通过悬停标题显示完整值，不能挤压状态 Badge。
 
-创建完成后进入独立完成状态，展示：
+创建完成后进入独立居中完成 Dialog，展示：
 
 - 一次性完整 Gateway Key；
 - 复制按钮；
@@ -79,7 +81,7 @@ language: zh-CN
 ## 6. 安全显示
 
 - 列表只显示前缀与后 4 位；
-- 复制完整 Key 仅存在于创建/轮换完成状态；
+- 复制完整 Key 仅存在于创建/轮换完成状态的居中 Dialog 中；
 - 诊断、CSV、备份和截图不包含完整 Key；
 - Gateway Client Key 不用于登录控制面；
 - Provider Credential 不出现在客户端页。
@@ -90,7 +92,7 @@ language: zh-CN
 
 ## 8. 当前交付
 
-当前页面交付 Harness Profile 选择、派生协议的客户端创建、目录摘要，以及由 `clientId` Search Param 控制的客户端详情 Sheet。无效 `clientId` 会从 URL 删除，不自动选择首个客户端；详情可在刷新后恢复，并集中展示基本信息、可用 Key 摘要、折叠历史 Key、确认轮换、确认撤销和配置入口。
+当前页面交付带只读 Profile 摘要和明确 Footer 的客户端创建 Dialog、目录摘要、由 `clientId` 控制的客户端详情 Sheet，以及轮换/创建后的一次性 Secret 居中 Dialog。无效 `clientId` 会从 URL 删除，不自动选择首个客户端；详情可在刷新后恢复，并集中展示基本信息、可用 Key 摘要、折叠历史 Key、确认轮换、确认撤销和配置入口。
 
 详情生成按入口协议匹配的 Cursor、Codex CLI、Claude Code 或 cURL 配置模板，模板只包含 `YOUR_GATEWAY_CLIENT_KEY` 占位符。Gateway 无法从已保存摘要恢复现有完整 Key；用户可显式轮换 Key，并在一次性完成态复制新 Key 与完整配置。轮换完成态关闭后返回原客户端详情，创建完成态关闭后返回列表。
 

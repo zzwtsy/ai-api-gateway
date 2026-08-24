@@ -49,6 +49,10 @@ test("Select Portal 在 Sidebar 与 Inset 之上", async ({ page }) => {
   await page.setExtraHTTPHeaders({ authorization: "Bearer admin_dev_local" });
   await page.goto("/connections");
   await page.getByRole("button", { name: "添加连接" }).click();
+  await page.getByLabel("连接名称").fill("Portal 测试连接");
+  await page.getByLabel("Provider 标识").fill("portal-test");
+  await page.getByLabel("Provider API Key").fill("provider-portal-test-key");
+  await page.getByRole("button", { name: "下一步：Endpoint" }).click();
   await page.getByRole("combobox", { name: "协议" }).click();
 
   const popup = page.locator("[data-slot=\"select-content\"][data-open]");

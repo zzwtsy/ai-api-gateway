@@ -10,7 +10,12 @@ const hookMocks = vi.hoisted(() => ({
 
 vi.mock("./hooks", () => hookMocks);
 vi.mock("./create-model-binding-form", () => ({
-  CreateModelBindingForm: () => <div>模型绑定表单</div>,
+  CreateModelBindingForm: ({ onCancel }: { onCancel: () => void }) => (
+    <div>
+      模型绑定表单
+      <button type="button" onClick={onCancel}>取消</button>
+    </div>
+  ),
 }));
 
 const endpoints = [{
@@ -41,7 +46,23 @@ describe("models page", () => {
 
     await user.click(screen.getByRole("button", { name: "添加模型绑定" }));
     expect(screen.getByText("模型绑定表单")).toBeVisible();
-    expect(screen.getByText(/新绑定先标记为“未验证”/u)).toBeVisible();
+    expect(screen.getByText(/选择目标 Endpoint/u)).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "取消" }));
+    expect(screen.queryByRole("heading", { name: "添加模型绑定" })).not.toBeInTheDocument();
+  });
+
+  it("explains the Endpoint prerequisite instead of disabling the create action", async () => {
+    const user = userEvent.setup();
+    renderPage([]);
+
+    const createButton = screen.getByRole("button", { name: "添加模型绑定" });
+    expect(createButton).toBeEnabled();
+    await user.click(createButton);
+
+    expect(screen.getByText("没有可绑定的 Endpoint")).toBeVisible();
+    expect(screen.getByText(/请先在连接页创建上游 Endpoint/u)).toBeVisible();
+    expect(screen.getByRole("button", { name: "取消" })).toBeVisible();
   });
 
   it("renders endpoint-level bindings without inventing price or capability data", () => {
@@ -69,11 +90,11 @@ describe("models page", () => {
   });
 });
 
-function renderPage() {
+function renderPage(endpointOptions: typeof endpoints | [] = endpoints) {
   return render(
     <ModelsPage
       endpointError={null}
-      endpoints={endpoints}
+      endpoints={endpointOptions}
       endpointsLoading={false}
       onRetryEndpoints={vi.fn()}
     />,

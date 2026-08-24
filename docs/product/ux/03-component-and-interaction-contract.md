@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-24
 language: zh-CN
 ---
 
@@ -20,14 +20,14 @@ language: zh-CN
 | 临时反馈 | `Sonner` |
 | 加载 | `Skeleton`, `Spinner` |
 | 空状态 | `Empty` |
-| 短任务 | `Dialog` |
-| 上下文详情 / 编辑 | `Sheet` |
+| 短任务 / 创建 / 轮换 / 凭据展示 | `Dialog` |
+| 辅助工具 / 全局筛选 / 报文检查 | `Sheet` |
 | 高风险确认 | `AlertDialog` |
 | 表单 | `FieldSet`, `FieldLegend`, `FieldGroup`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError` |
 | 输入组合 | `InputGroup`, `InputGroupInput`, `InputGroupAddon` |
 | 选择 | `Select`, `Combobox`, `ToggleGroup`, `Switch`, `Checkbox`, `RadioGroup` |
 | 分隔 | `Separator` |
-| 长内容 | `ScrollArea`, `Resizable`（请求 Master–Detail） |
+| 长内容 / 工作台 | `ScrollArea`, `Resizable`（请求 Master–Detail） |
 | 图表 | shadcn `Chart` + Recharts |
 
 ## 2. 组件使用规则
@@ -94,16 +94,15 @@ language: zh-CN
 
 表单应先阻断可确定的错误，再允许提交。路由协议不一致、空 Secret、非法 URL、悬空引用属于阻断错误；兼容性部分支持可作为警告并要求显式确认。
 
-## 7. Dialog、Sheet 与独立页面
+## 7. 交互容器分层体系（Dialog、Master–Detail、Sheet 与独立页面）
 
-| 模式 | 使用场景 | 禁止场景 |
-| --- | --- | --- |
-| Dialog | 1–3 个步骤的短任务；添加客户端；同步模型 | 长表单、需要频繁查阅背景数据 |
-| Sheet | 记录详情；添加账号；模型与客户端上下文编辑 | 复杂路由编辑、全页设置 |
-| AlertDialog | 删除、撤销 Key、覆盖配置、暴露 Secret | 普通保存成功 |
-| 独立页面 | 路由编辑、长流程、耐久任务 | 简单单字段编辑 |
-
-Sheet 默认 500px，宽版 640px。Sheet 内必须有固定 Header、可滚动 Body、固定 Footer。
+| 容器模式 | 适用场景 | 严格禁止场景 | 视线与空间考量 |
+| --- | --- | --- | --- |
+| **Dialog (居中模态)** | 1–3 步短任务；添加客户端；添加 Endpoint / 账号；Key 轮换；一次性 Secret 与配置展示；快速连通性测试 | 多分区复杂配置、长表单、需要频繁比对背景数据的长时间任务 | 居中（`max-w-lg` 或 `max-w-xl`），视线自然落在中轴黄金区域，任务结束即关闭，无单侧视觉偏航。 |
+| **Master–Detail (双栏工作台)** | 请求排障、连接检视等高频数据比对、上下文审阅与深度排障 | 简单的一次性轻量任务 | 无遮罩左右分栏，左侧主列表 + 右侧 Inspector，支持无感切换与键盘导航。 |
+| **Sheet (侧滑抽屉)** | 辅助性非阻断工具；全局高级筛选面板；宽幅只读 Raw Payload / 日志报文检视 | 作为主创建表单、一次性 Secret 弹层；在单个 Sheet 内部嵌套多步骤状态轮播 | 默认 500px（宽版 640px）。固定 Header、滚动 Body、固定 Footer。避免在桌面大屏上滥用导致背景阻断与偏头疲劳。 |
+| **AlertDialog** | 删除、撤销 Key、覆盖配置、暴露 Secret 等高风险不可逆确认 | 普通保存成功、常规操作 | 紧凑居中警告，强制用户明确意图。 |
+| **独立页面** | 路由编辑、长流程配置、规则多分区编排 | 简单单字段编辑或短任务 | 独占视口，承载复杂结构化业务流。 |
 
 ## 8. 反馈层级
 

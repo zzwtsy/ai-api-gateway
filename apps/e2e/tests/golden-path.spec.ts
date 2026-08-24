@@ -26,7 +26,8 @@ test("product pages expose current behavior without development fixture defaults
   await expect(page.getByText("管理上游 Provider Endpoint、协议和连接状态。")).toBeVisible();
   await expect(page.getByText(/账号与凭据将作为/u)).toHaveCount(0);
   await page.getByRole("button", { name: "添加连接" }).click();
-  await expect(page.getByLabel("名称", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("连接名称")).toHaveValue("");
   await expect(page.getByLabel("Provider 标识")).toHaveValue("");
-  await expect(page.getByLabel("上游 Base URL")).toHaveValue("");
+  await expect(page.getByText("Provider 与访问凭据")).toBeVisible();
+  await expect(page.getByLabel("上游 Base URL")).toHaveCount(0);
 });

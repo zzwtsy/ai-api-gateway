@@ -27,11 +27,12 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
   await expect(page.locator("vite-error-overlay")).toHaveCount(0);
 
   await page.getByRole("button", { name: "添加连接" }).click();
-  await page.getByLabel("名称", { exact: true }).fill(connectionName);
+  await page.getByLabel("连接名称").fill(connectionName);
   await page.getByLabel("Provider 标识").fill(`milestone-a-${runId}`);
-  await page.getByLabel("上游 Base URL").fill(providerOrigin);
   await page.getByLabel("Provider API Key").fill(providerSecret);
-  await page.getByRole("button", { name: "保存连接" }).click();
+  await page.getByRole("button", { name: "下一步：Endpoint" }).click();
+  await page.getByLabel("上游 Base URL").fill(providerOrigin);
+  await page.getByRole("button", { name: "创建连接" }).click();
 
   await expect(page.getByText(connectionName, { exact: true }).last()).toBeVisible();
   await expect(page.getByRole("tab", { name: "概览" })).toHaveAttribute("aria-selected", "true");
@@ -164,14 +165,14 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
 
   await page.goto("/models");
   await page.getByRole("button", { name: "添加模型绑定" }).click();
-  await page.getByRole("combobox", { name: "Endpoint" }).click();
+  await page.getByRole("combobox", { name: "目标 Endpoint" }).click();
   await page.getByRole("option", { name: `${connectionName} / 默认 Endpoint` }).click();
   await page.getByRole("button", { name: "获取上游模型" }).click();
   await page.getByRole("combobox", { name: "选择上游模型" }).click();
   await page.getByRole("option", { name: "demo-model", exact: true }).click();
   await expect(page.getByLabel("上游模型 ID")).toHaveValue("demo-model");
   await page.getByLabel("显示名称").fill("里程碑 A 演示模型");
-  await page.getByRole("button", { name: "保存模型绑定" }).click();
+  await page.getByRole("button", { name: "创建模型绑定" }).click();
 
   await expect(page.getByText("里程碑 A 演示模型", { exact: true })).toBeVisible();
   await expect(page.getByText("未验证", { exact: true })).toBeVisible();

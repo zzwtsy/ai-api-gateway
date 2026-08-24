@@ -10,14 +10,14 @@ import { StatusBadge } from "@/components/product/status-badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { describeApiError } from "@/lib/api-runtime/client";
@@ -130,23 +130,23 @@ export function EndpointDirectory({ connection }: { readonly connection: Connect
           </TableBody>
         </Table>
       </div>
-      <Sheet open={addEndpointOpen} onOpenChange={setAddEndpointOpen}>
-        <SheetContent className="overflow-y-auto sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>添加 Endpoint</SheetTitle>
-            <SheetDescription>
+      <Dialog open={addEndpointOpen} onOpenChange={setAddEndpointOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>添加 Endpoint</DialogTitle>
+            <DialogDescription>
               为
               {" "}
               {connection.name}
               {" "}
               增加另一个协议入口，并显式选择可用于该 Endpoint 的 Credential。
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-4 pb-4">
+            </DialogDescription>
+          </DialogHeader>
+          <div className="pt-2">
             <AddEndpointForm connection={connection} onCreated={() => setAddEndpointOpen(false)} />
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -37,6 +37,15 @@ language: zh-CN
 
 “添加账号”是页面主操作，位于 Page Header；具体 Provider 上下文中也可在账号 Tab 提供次级入口。
 
+### 4.1 创建连接
+
+“添加连接”使用两步居中 Dialog，避免把 Provider、Endpoint 和 Credential 的全部字段同时堆叠：
+
+1. **Provider**：选择可选模板，填写连接名称、Provider 标识和 Provider API Key；
+2. **Endpoint**：配置协议、Base URL、请求路径，以及默认账号和 Credential 名称。
+
+“下一步”只校验第一步字段；返回上一步、服务端失败和协议切换都保留已输入内容。模板可以补全两步字段，但用户手工修改请求路径后，协议切换不得再次覆盖。Footer 持续提供取消、上一步和当前主操作；Dialog 在 1024px 工作面内保持完整边界，内容超高时只滚动表单主体，Header 与 Footer 保持可见。
+
 ## 5. Tabs
 
 ### 5.1 概览
@@ -50,13 +59,13 @@ language: zh-CN
 
 每个 Endpoint 显示协议、Base URL、请求路径、流式支持和状态。不同协议 Endpoint 必须分开，不能只展示一个通用 Base URL。
 
-“添加 Endpoint”使用 Sheet，默认继承当前 Provider 的 Base URL 和鉴权方式，协议切换联动推荐请求路径，用户手工修改路径后不再覆盖。提交时必须显式绑定当前 Provider 下至少一个未禁用 Credential；没有可用 Credential 时禁用入口并解释原因。
+“添加 Endpoint”使用居中 Dialog，默认继承当前 Provider 的 Base URL 和鉴权方式，协议切换联动推荐请求路径，用户手工修改路径后不再覆盖。提交时必须显式绑定当前 Provider 下至少一个未禁用 Credential；没有可用 Credential 时禁用入口并解释原因。
 
 ### 5.3 账号
 
 显示 Account 与 Credential：优先级组、Masked Key、状态、冷却剩余、最近错误、最后使用、测试与禁用。
 
-添加账号使用 Sheet：
+添加账号使用居中 Dialog：
 
 - 账号名称；
 - API Key；
@@ -97,12 +106,12 @@ Header、Query、有限 Body Patch、Timeout、Proxy 等低频设置。默认折
 
 当前页面交付名称型 Provider 目录，以及“概览 / Endpoints / 账号 / 模型 / 兼容性”五个详情 Tab。概览只展示配置状态和已有对象数量，不把启用状态推断为健康或兼容；模型 Tab 只展示属于当前连接 Endpoint 的真实模型绑定，模型查询失败不会遮蔽其他 Tab。
 
-选中连接写入 `connectionId` Search 参数；非默认详情 Tab 写入 `tab`，默认概览省略该参数。刷新和分享 URL 可恢复连接与 Tab 上下文，缺失或无效连接 ID 会规范化到首项，无效 Tab 会规范化到概览，创建成功后立即切换到新连接。
+选中连接写入 `connectionId` Search 参数；非默认详情 Tab 写入 `tab`，默认概览省略该参数。刷新和分享 URL 可恢复连接与 Tab 上下文，缺失或无效连接 ID 会规范化到首项，无效 Tab 会规范化到概览。页面 Header 的两步创建 Dialog 原子创建 Provider、默认 Endpoint、账号和 Credential，成功后关闭并立即切换到新连接。
 
-Endpoints Tab 可为当前 Provider 原子添加另一个协议 Endpoint，并把选中的可用 Credential 绑定到新 Endpoint。账号 Tab 展示账号与 Masked Credential 的聚合详情，并提供 Credential 轮换、确认禁用和显式最小连通性测试。
+Endpoints Tab 可为当前 Provider 原子添加另一个协议 Endpoint，并把选中的可用 Credential 绑定到新 Endpoint。账号 Tab 展示账号与 Masked Credential 的聚合详情，并提供 Credential 轮换、确认禁用和显式最小连通性测试（采用居中 Dialog 聚焦反馈）。
 
 最小测试表单必须选择绑定 Endpoint、输入真实模型，并在提交按钮附近持续显示可能计费的提示。结果只证明一次最小非流式请求的分类、HTTP 状态和模型，不代表流式输出、Usage 或字段兼容性。
 
-“兼容性”Tab 的空状态提供“开始完整测试”入口，已有事实时在 Tab 末尾提供低频“重新测试”入口；详情 Header 不重复展示该操作。启动 Sheet 必须选择 Endpoint、绑定且未禁用的 Credential 和真实模型，并说明它会发送多次可能计费的上游请求。接受任务后 Sheet 显示当前检查和完成数量；关闭 Sheet 不取消任务，兼容性 Tab 继续轮询并显示耐久进度。刷新或分享带 `tab=compatibility` 的 URL 后，运行中状态、失败原因和已完成结果都从服务端恢复。
+“兼容性”Tab 的空状态提供“开始完整测试”入口，已有事实时在 Tab 末尾提供低频“重新测试”入口；详情 Header 不重复展示该操作。启动浮层必须选择 Endpoint、绑定且未禁用的 Credential 和真实模型，并说明它会发送多次可能计费的上游请求。接受任务后显示当前检查和完成数量；关闭浮层不取消任务，兼容性 Tab 继续轮询并显示耐久进度。刷新或分享带 `tab=compatibility` 的 URL 后，运行中状态、失败原因和已完成结果都从服务端恢复。
 
 兼容性 Tab 按 Endpoint 与 Harness Profile 展示 Profile 汇总结论，并以表格显示能力、支持等级、实测模型、验证时间和脱敏可观察事实。`unknown`、`unsupported`、`degraded` 与无数据分别显示；完整 Credential、原始请求和原始响应不进入页面。健康指标和高级 Tab 仍属于后续交付。

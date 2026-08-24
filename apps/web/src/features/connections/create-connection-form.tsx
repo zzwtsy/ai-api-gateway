@@ -1,26 +1,21 @@
-import type { Control } from "react-hook-form";
+import type { FormEvent } from "react";
+import type { ConnectionFormValue } from "./create-connection-form-fields";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
-import { describeApiError } from "@/lib/api-runtime/client";
+import { DialogFooter } from "@/components/ui/dialog";
 
-import { connectionProtocolDefaultPaths, connectionProtocolItems } from "./connection-protocol-options";
+import { Spinner } from "@/components/ui/spinner";
+import { connectionProtocolDefaultPaths } from "./connection-protocol-options";
+import {
+  ConnectionEndpointFields,
+  ConnectionProviderFields,
+} from "./create-connection-form-fields";
 import { useCreateConnection } from "./hooks";
-import { findPresetBySlug, PROVIDER_PRESETS } from "./presets";
+import { findPresetBySlug } from "./presets";
 
 const FormSchema = z.object({
   name: z.string().trim().min(1, "请输入连接名称"),
@@ -32,20 +27,21 @@ const FormSchema = z.object({
   credentialName: z.string().trim().min(1, "请输入凭据名称"),
   secret: z.string().min(1, "请输入 API Key"),
 });
+const ProviderStepSchema = FormSchema.pick({ name: true, providerSlug: true, secret: true });
 
-type FormValue = z.infer<typeof FormSchema>;
+type FormStep = "provider" | "endpoint";
+type ProviderStepField = keyof z.infer<typeof ProviderStepSchema>;
 
-const presetItems = [
-  { value: "custom", label: "自定义 / 私有部署" },
-  ...PROVIDER_PRESETS.map(preset => ({ value: preset.slug, label: preset.name })),
-];
-
-export function CreateConnectionForm({ onCreated }: { readonly onCreated: (connectionId: string) => void }) {
+export function CreateConnectionForm({ onCancel, onCreated }: {
+  readonly onCancel: () => void;
+  readonly onCreated: (connectionId: string) => void;
+}) {
   const mutation = useCreateConnection();
   const [selectedPresetSlug, setSelectedPresetSlug] = useState<string>("custom");
+  const [step, setStep] = useState<FormStep>("provider");
   const requestPathIsCustomRef = useRef(false);
 
-  const form = useForm<FormValue>({
+  const form = useForm<ConnectionFormValue>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       name: "",
@@ -94,181 +90,105 @@ export function CreateConnectionForm({ onCreated }: { readonly onCreated: (conne
     onCreated(connection.id);
   });
 
+  const goToEndpoint = () => {
+    const result = ProviderStepSchema.safeParse(form.getValues());
+    form.clearErrors();
+    if (result.success) {
+      setStep("endpoint");
+      return;
+    }
+    let firstInvalidField: ProviderStepField | undefined;
+    for (const issue of result.error.issues) {
+      const field = issue.path[0];
+      if (field !== "name" && field !== "providerSlug" && field !== "secret")
+        continue;
+      firstInvalidField ??= field;
+      form.setError(field, { message: issue.message, type: "manual" });
+    }
+    if (firstInvalidField !== undefined)
+      form.setFocus(firstInvalidField);
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (step === "provider") {
+      event.preventDefault();
+      goToEndpoint();
+      return;
+    }
+    void submit(event);
+  };
+
   return (
-    <form className="flex flex-col gap-5" onSubmit={event => void submit(event)}>
-      <FieldGroup>
-        <PresetField selectedSlug={selectedPresetSlug} onSelect={handlePresetSelect} />
+    <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
+      <div className="min-h-0 overflow-y-auto px-6 pb-6">
+        <ConnectionStepIndicator step={step} />
 
-        <Field data-invalid={form.formState.errors.name !== undefined || undefined}>
-          <FieldLabel htmlFor="connection-name">名称</FieldLabel>
-          <Input
-            id="connection-name"
-            aria-invalid={form.formState.errors.name !== undefined}
-            placeholder="例如：DeepSeek"
-            {...form.register("name")}
-          />
-          <FieldError errors={[form.formState.errors.name]} />
-        </Field>
-
-        <Field data-invalid={form.formState.errors.providerSlug !== undefined || undefined}>
-          <FieldLabel htmlFor="connection-provider">Provider 标识</FieldLabel>
-          <Input
-            id="connection-provider"
-            aria-invalid={form.formState.errors.providerSlug !== undefined}
-            placeholder="例如：deepseek"
-            {...form.register("providerSlug")}
-          />
-          <FieldError errors={[form.formState.errors.providerSlug]} />
-        </Field>
-
-        <Field data-invalid={form.formState.errors.secret !== undefined || undefined}>
-          <FieldLabel htmlFor="connection-secret">Provider API Key</FieldLabel>
-          <Input
-            id="connection-secret"
-            type="password"
-            autoComplete="off"
-            aria-invalid={form.formState.errors.secret !== undefined}
-            placeholder="sk-..."
-            {...form.register("secret")}
-          />
-          <FieldDescription>API Key 将在服务端使用 AES-256-GCM 加密存储，不进入日志与前端持久化。</FieldDescription>
-          <FieldError errors={[form.formState.errors.secret]} />
-        </Field>
-
-        <ProtocolField
-          control={form.control}
-          onProtocolChange={(protocol) => {
-            if (!requestPathIsCustomRef.current)
-              form.setValue("requestPath", connectionProtocolDefaultPaths[protocol], { shouldValidate: true });
-          }}
-        />
-
-        <Field data-invalid={form.formState.errors.baseUrl !== undefined || undefined}>
-          <FieldLabel htmlFor="connection-url">上游 Base URL</FieldLabel>
-          <Input
-            id="connection-url"
-            aria-invalid={form.formState.errors.baseUrl !== undefined}
-            placeholder="https://api.deepseek.com"
-            {...form.register("baseUrl")}
-          />
-          <FieldError errors={[form.formState.errors.baseUrl]} />
-        </Field>
-
-        <Field data-invalid={form.formState.errors.requestPath !== undefined || undefined}>
-          <FieldLabel htmlFor="connection-path">请求路径</FieldLabel>
-          <Input
-            id="connection-path"
-            {...form.register("requestPath", {
-              onChange: () => {
-                requestPathIsCustomRef.current = true;
-              },
-            })}
-          />
-          <FieldDescription>切换协议时更新推荐路径；手工修改后不再自动覆盖。</FieldDescription>
-          <FieldError errors={[form.formState.errors.requestPath]} />
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="connection-account">账号名称</FieldLabel>
-          <Input id="connection-account" {...form.register("accountName")} />
-          <FieldError errors={[form.formState.errors.accountName]} />
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="connection-credential">凭据名称</FieldLabel>
-          <Input id="connection-credential" {...form.register("credentialName")} />
-          <FieldError errors={[form.formState.errors.credentialName]} />
-        </Field>
-      </FieldGroup>
-
-      {mutation.isError && (
-        <FieldError>{describeApiError(mutation.error, "无法创建连接")}</FieldError>
-      )}
-
-      <div className="flex justify-end">
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending && (
-            <Spinner data-icon="inline-start" aria-label="加载中" />
-          )}
-          保存连接
-        </Button>
+        {step === "provider"
+          ? (
+              <ConnectionProviderFields
+                errors={form.formState.errors}
+                register={form.register}
+                selectedPresetSlug={selectedPresetSlug}
+                onPresetSelect={handlePresetSelect}
+              />
+            )
+          : (
+              <ConnectionEndpointFields
+                control={form.control}
+                errors={form.formState.errors}
+                register={form.register}
+                mutationError={mutation.error}
+                mutationIsError={mutation.isError}
+                onProtocolChange={(protocol) => {
+                  if (!requestPathIsCustomRef.current)
+                    form.setValue("requestPath", connectionProtocolDefaultPaths[protocol], { shouldValidate: true });
+                }}
+                onRequestPathChange={() => {
+                  requestPathIsCustomRef.current = true;
+                }}
+              />
+            )}
       </div>
+
+      <DialogFooter className="mx-0 mb-0 shrink-0 px-6 py-4">
+        {step === "provider"
+          ? (
+              <>
+                <Button key="cancel" type="button" variant="outline" onClick={onCancel}>取消</Button>
+                <Button key="next" type="button" onClick={goToEndpoint}>下一步：Endpoint</Button>
+              </>
+            )
+          : (
+              <>
+                <Button key="previous" type="button" variant="outline" disabled={mutation.isPending} onClick={() => setStep("provider")}>上一步</Button>
+                <Button key="create" type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending && <Spinner data-icon="inline-start" aria-label="创建中" />}
+                  创建连接
+                </Button>
+              </>
+            )}
+      </DialogFooter>
     </form>
   );
 }
 
-function PresetField({
-  onSelect,
-  selectedSlug,
-}: {
-  readonly onSelect: (slug: string) => void;
-  readonly selectedSlug: string;
-}) {
+function ConnectionStepIndicator({ step }: { readonly step: FormStep }) {
   return (
-    <Field>
-      <FieldLabel htmlFor="preset-select">快速选择常用厂商模板（可选）</FieldLabel>
-      <Select items={presetItems} value={selectedSlug} onValueChange={value => value !== null && onSelect(value)}>
-        <SelectTrigger id="preset-select" className="w-full">
-          <SelectValue placeholder="选择预设厂商以快速填入配置" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="custom">自定义 / 私有部署</SelectItem>
-            {PROVIDER_PRESETS.map(preset => (
-              <SelectItem key={preset.slug} value={preset.slug}>
-                {preset.name}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <FieldDescription>选择主流厂商将自动补全协议、Base URL 和请求路径。</FieldDescription>
-    </Field>
-  );
-}
-
-function ProtocolField({ control, onProtocolChange }: {
-  readonly control: Control<FormValue>;
-  readonly onProtocolChange: (protocol: FormValue["protocol"]) => void;
-}) {
-  return (
-    <Controller
-      control={control}
-      name="protocol"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid || undefined}>
-          <FieldLabel htmlFor="connection-protocol">协议</FieldLabel>
-          <Select
-            items={connectionProtocolItems}
-            value={field.value}
-            onValueChange={(value) => {
-              if (value !== null) {
-                field.onChange(value);
-                onProtocolChange(value);
-              }
-            }}
-          >
-            <SelectTrigger
-              id="connection-protocol"
-              className="w-full"
-              aria-invalid={fieldState.invalid}
-              onBlur={field.onBlur}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {connectionProtocolItems.map(item => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
+    <ol className="mb-6 grid grid-cols-2 gap-2" aria-label="创建连接步骤">
+      <li
+        aria-current={step === "provider" ? "step" : undefined}
+        className={step === "provider" ? "rounded-lg border border-primary/30 bg-primary/5 p-3" : "rounded-lg border p-3 text-muted-foreground"}
+      >
+        <span className="block text-xs font-medium">步骤 1</span>
+        <span className="text-sm font-medium text-foreground">Provider</span>
+      </li>
+      <li
+        aria-current={step === "endpoint" ? "step" : undefined}
+        className={step === "endpoint" ? "rounded-lg border border-primary/30 bg-primary/5 p-3" : "rounded-lg border p-3 text-muted-foreground"}
+      >
+        <span className="block text-xs font-medium">步骤 2</span>
+        <span className="text-sm font-medium text-foreground">Endpoint</span>
+      </li>
+    </ol>
   );
 }

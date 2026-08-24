@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Box, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -6,14 +7,16 @@ import { ModelBindingTable } from "@/components/product/model-binding-table";
 import { PageHeader } from "@/components/product/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { describeApiError } from "@/lib/api-runtime/client";
 
@@ -41,7 +44,7 @@ export function ModelsPage({
   readonly endpointsLoading: boolean;
   readonly onRetryEndpoints: () => Promise<unknown>;
 }) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const query = useModelBindings();
 
   return (
@@ -50,30 +53,30 @@ export function ModelsPage({
         title="模型"
         description="管理每个 Endpoint 上可明确调用的上游模型绑定。"
         actions={(
-          <Button onClick={() => setSheetOpen(true)} disabled={endpoints?.length === 0}>
-            <Plus data-icon="inline-start" />
-            添加模型绑定
-          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger render={<Button />}>
+              <Plus data-icon="inline-start" />
+              添加模型绑定
+            </DialogTrigger>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+              <DialogHeader className="px-6 pt-6 pb-5">
+                <DialogTitle>添加模型绑定</DialogTitle>
+                <DialogDescription>选择目标 Endpoint，并指定 Provider 实际接收的模型标识。</DialogDescription>
+              </DialogHeader>
+              {dialogOpen && (
+                <EndpointFormState
+                  endpoints={endpoints}
+                  error={endpointError}
+                  loading={endpointsLoading}
+                  onCancel={() => setDialogOpen(false)}
+                  onCreated={() => setDialogOpen(false)}
+                  onRetry={onRetryEndpoints}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         )}
       />
-
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="overflow-y-auto sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>添加模型绑定</SheetTitle>
-            <SheetDescription>新绑定先标记为“未验证”，不会推断能力或价格。</SheetDescription>
-          </SheetHeader>
-          <div className="p-4">
-            <EndpointFormState
-              endpoints={endpoints}
-              error={endpointError}
-              loading={endpointsLoading}
-              onCreated={() => setSheetOpen(false)}
-              onRetry={onRetryEndpoints}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
 
       <Card>
         <CardHeader>
@@ -99,38 +102,63 @@ function EndpointFormState({
   endpoints,
   error,
   loading,
+  onCancel,
   onCreated,
   onRetry,
 }: {
   readonly endpoints: readonly EndpointOption[] | undefined;
   readonly error: unknown;
   readonly loading: boolean;
+  readonly onCancel: () => void;
   readonly onCreated: () => void;
   readonly onRetry: () => Promise<unknown>;
 }) {
   if (endpoints === undefined && error !== null) {
     return (
-      <DataErrorState
-        title="无法加载 Endpoint"
-        description={describeApiError(error, "模型绑定需要一个已配置的 Endpoint。")}
-        onRetry={onRetry}
-      />
+      <EndpointFormFallback onCancel={onCancel}>
+        <DataErrorState
+          title="无法加载 Endpoint"
+          description={describeApiError(error, "模型绑定需要一个已配置的 Endpoint。")}
+          onRetry={onRetry}
+        />
+      </EndpointFormFallback>
     );
   }
-  if (loading || endpoints === undefined)
-    return <Skeleton className="h-48" />;
+  if (loading || endpoints === undefined) {
+    return (
+      <EndpointFormFallback onCancel={onCancel}>
+        <Skeleton className="h-48" />
+      </EndpointFormFallback>
+    );
+  }
   if (endpoints.length === 0) {
     return (
-      <Empty className="min-h-48 border-0">
-        <EmptyHeader>
-          <EmptyMedia variant="icon"><Box /></EmptyMedia>
-          <EmptyTitle>没有可绑定的 Endpoint</EmptyTitle>
-          <EmptyDescription>请先在连接页创建上游 Endpoint。</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <EndpointFormFallback onCancel={onCancel}>
+        <Empty className="min-h-48 border-0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><Box /></EmptyMedia>
+            <EmptyTitle>没有可绑定的 Endpoint</EmptyTitle>
+            <EmptyDescription>请先在连接页创建上游 Endpoint，再返回添加模型绑定。</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </EndpointFormFallback>
     );
   }
-  return <CreateModelBindingForm endpoints={endpoints} onCreated={onCreated} />;
+  return <CreateModelBindingForm endpoints={endpoints} onCancel={onCancel} onCreated={onCreated} />;
+}
+
+function EndpointFormFallback({ children, onCancel }: {
+  readonly children: ReactNode;
+  readonly onCancel: () => void;
+}) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 overflow-y-auto px-6 pb-6">{children}</div>
+      <DialogFooter className="mx-0 mb-0 shrink-0 px-6 py-4">
+        <Button type="button" variant="outline" onClick={onCancel}>取消</Button>
+      </DialogFooter>
+    </div>
+  );
 }
 
 function ModelDirectory({

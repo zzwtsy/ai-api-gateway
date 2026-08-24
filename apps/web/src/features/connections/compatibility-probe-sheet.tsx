@@ -9,10 +9,16 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { describeApiError } from "@/lib/api-runtime/client";
 
@@ -61,15 +67,15 @@ export function CompatibilityProbeSheet({
     label: `${accountName} · ${credential.name} · ${credential.maskedDisplay}`,
   }));
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="overflow-y-auto data-[side=right]:sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>完整兼容性测试</SheetTitle>
-          <SheetDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>完整兼容性测试</DialogTitle>
+          <DialogDescription>
             按 Endpoint、Harness 和模型保存实测事实；关闭此面板不会取消后台任务。
-          </SheetDescription>
-        </SheetHeader>
-        <div className="p-4">
+          </DialogDescription>
+        </DialogHeader>
+        <div className="pt-2">
           {run === null
             ? (
                 <form
@@ -149,8 +155,8 @@ export function CompatibilityProbeSheet({
                 <ProbeRunStatus run={run} onClose={() => onOpenChange(false)} onReset={onReset} />
               )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -194,7 +200,7 @@ function ProbeRunStatus({ run, onClose, onReset }: {
       <Alert>
         <FlaskConical />
         <AlertTitle>{run.status === "queued" ? "测试等待执行" : "正在测试兼容性"}</AlertTitle>
-        <AlertDescription>关闭 Sheet 后任务继续执行，可在兼容性 Tab 查看实时进度。</AlertDescription>
+        <AlertDescription>关闭弹窗后任务继续执行，可在兼容性 Tab 查看实时进度。</AlertDescription>
       </Alert>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between text-sm">

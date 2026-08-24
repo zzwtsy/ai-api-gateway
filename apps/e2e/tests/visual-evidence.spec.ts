@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test";
+
 import { execFile } from "node:child_process";
 import { mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -135,14 +137,56 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
     });
 
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.getByRole("button", { name: "添加连接" }).click();
-    await expect(page.getByLabel("名称", { exact: true })).toHaveValue("");
+    const addConnectionButton = page.getByRole("button", { name: "添加连接" });
+    await addConnectionButton.click();
+    await expect(page.getByLabel("连接名称")).toHaveValue("");
     await expect(page.getByLabel("Provider 标识")).toHaveValue("");
-    await expect(page.getByLabel("上游 Base URL")).toHaveValue("");
+    await expect(page.getByText("Provider 与访问凭据")).toBeVisible();
+    await expectOverlayInsideViewport(page);
     await page.screenshot({
-      path: path.join(outputDirectory, "connections-empty-form-1440x1000.png"),
+      path: path.join(outputDirectory, "connections-create-provider-1440x1000.png"),
       animations: "disabled",
     });
+    await page.getByLabel("连接名称").fill("UI 证据连接");
+    await page.getByLabel("Provider 标识").fill("ui-evidence");
+    await page.getByLabel("Provider API Key").fill("provider-ui-evidence-key");
+    await page.getByRole("button", { name: "下一步：Endpoint" }).click();
+    await expect(page.getByLabel("上游 Base URL")).toHaveValue("");
+    await expect(page.getByText("请输入合法的 URL")).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(outputDirectory, "connections-create-endpoint-1440x1000.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expectOverlayInsideViewport(page);
+    await page.screenshot({
+      path: path.join(outputDirectory, "connections-create-endpoint-1024x768.png"),
+      animations: "disabled",
+    });
+    await page.keyboard.press("Escape");
+    await expect(addConnectionButton).toBeFocused();
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/models");
+    const addModelButton = page.getByRole("button", { name: "添加模型绑定" });
+    await addModelButton.click();
+    await page.getByRole("combobox", { name: "目标 Endpoint" }).click();
+    await page.getByRole("option", { name: "本地模拟上游 / 默认 Endpoint" }).click();
+    await expect(page.getByText("上游模型发现（可选）")).toBeVisible();
+    await expect(page.getByText("创建后的状态")).toBeVisible();
+    await expectOverlayInsideViewport(page);
+    await page.screenshot({
+      path: path.join(outputDirectory, "models-form-1280x900.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expectOverlayInsideViewport(page);
+    await page.screenshot({
+      path: path.join(outputDirectory, "models-form-1024x768.png"),
+      animations: "disabled",
+    });
+    await page.keyboard.press("Escape");
+    await expect(addModelButton).toBeFocused();
 
     const modelResponse = await request.post(`${gatewayOrigin}/admin/api/v1/models`, {
       headers,
@@ -173,15 +217,24 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       animations: "disabled",
     });
 
-    await page.setViewportSize({ width: 1024, height: 768 });
-    await page.getByRole("button", { name: "添加客户端" }).first().click();
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const addClientButton = page.getByRole("button", { name: "添加客户端" }).first();
+    await addClientButton.click();
     await expect(page.getByLabel("客户端名称")).toBeVisible();
+    await expectOverlayInsideViewport(page);
+    await page.screenshot({
+      path: path.join(outputDirectory, "clients-form-1280x900.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expectOverlayInsideViewport(page);
     await page.screenshot({
       path: path.join(outputDirectory, "clients-form-1024x768.png"),
       animations: "disabled",
     });
 
     await page.keyboard.press("Escape");
+    await expect(addClientButton).toBeFocused();
     const clientResponse = await request.post(`${gatewayOrigin}/admin/api/v1/clients`, {
       headers,
       data: {
@@ -299,11 +352,13 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
         "Connection detail omits the duplicate full compatibility test action at 1280px and 1024px",
         "Compatibility Probe progress remains closeable and both progress and durable model-scoped facts render at 1280px and 1024px",
         "Endpoint model bindings render as unverified with capability and price explicitly unknown",
-        "The Clients empty and creation states render without exposing a complete Gateway Key",
+        "The Model creation flow preserves optional discovery and manual entry inside the viewport at 1280px and 1024px",
+        "The two-step Connection creation flow remains inside the viewport at 1440px and 1024px",
+        "The Clients empty and creation states render inside the viewport without exposing a complete Gateway Key",
         "The Clients directory displays only derived protocol badges, without a duplicate Harness badge, at 1280px and 1024px",
         "The Client detail Sheet renders a non-secret protocol-specific configuration template at 1280px and 1024px",
         "Overview and Connections describe current product behavior without development roadmap copy",
-        "The connection form does not prefill development fixture names or URLs",
+        "The connection form does not prefill development fixture names, identifiers or URLs",
         "Request Workbench uses side-by-side geometry at 1440px and stacked geometry at 1280px and 1024px",
         "Request List error and retry action remain inside the Master region at 1440px",
       ],
@@ -318,10 +373,15 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
           "compatibility-progress-1024x768.png",
           "compatibility-complete-1280x900.png",
           "compatibility-complete-1024x768.png",
-          "connections-empty-form-1440x1000.png",
+          "connections-create-provider-1440x1000.png",
+          "connections-create-endpoint-1440x1000.png",
+          "connections-create-endpoint-1024x768.png",
           "models-1280x900.png",
           "models-1024x768.png",
+          "models-form-1280x900.png",
+          "models-form-1024x768.png",
           "clients-empty-1280x900.png",
+          "clients-form-1280x900.png",
           "clients-form-1024x768.png",
           "clients-directory-1280x900.png",
           "clients-directory-1024x768.png",
@@ -378,4 +438,16 @@ interface GitSourceState {
   readonly dirty: boolean;
   readonly statusFingerprint: string;
   readonly directoryKey: string;
+}
+
+async function expectOverlayInsideViewport(page: Page): Promise<void> {
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect.poll(async () => dialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.left >= 0
+      && rect.right <= element.ownerDocument.documentElement.clientWidth
+      && rect.top >= 0
+      && rect.bottom <= element.ownerDocument.documentElement.clientHeight;
+  })).toBe(true);
 }

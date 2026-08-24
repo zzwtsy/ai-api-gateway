@@ -14,12 +14,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { describeApiError } from "@/lib/api-runtime/client";
 
@@ -34,16 +34,16 @@ export function ConnectionDetailCredentialSheets({ actions }: { readonly actions
   const disable = actions.sheets.disable;
   return (
     <>
-      <Sheet open={probe.credential !== null} onOpenChange={open => !open && probe.onCancel()}>
-        <SheetContent className="overflow-y-auto sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>最小连通性测试</SheetTitle>
-            <SheetDescription>
+      <Dialog open={probe.credential !== null} onOpenChange={open => !open && probe.onCancel()}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>最小连通性测试</DialogTitle>
+            <DialogDescription>
               发送一次真实的最小非流式请求；结果不代表完整兼容性。
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           {probe.credential !== null && (
-            <div className="p-4">
+            <div className="pt-2">
               <CredentialProbePanel
                 credential={probe.credential}
                 endpointNames={probe.endpointNames}
@@ -58,19 +58,19 @@ export function ConnectionDetailCredentialSheets({ actions }: { readonly actions
               />
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
-      <Sheet open={rotate.open} onOpenChange={open => !open && rotate.onCancel()}>
-        <SheetContent className="overflow-y-auto sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>轮换 Provider 凭据</SheetTitle>
-            <SheetDescription>
+      <Dialog open={rotate.open} onOpenChange={open => !open && rotate.onCancel()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>轮换 Provider 凭据</DialogTitle>
+            <DialogDescription>
               输入新的 API Key；旧凭据将被立即替换并安全加密存储。
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
           {rotate.open && (
-            <div className="p-4">
+            <div className="pt-2">
               <CredentialRotatePanel
                 error={rotate.error}
                 onCancel={rotate.onCancel}
@@ -81,8 +81,8 @@ export function ConnectionDetailCredentialSheets({ actions }: { readonly actions
               />
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={disable.credential !== null} onOpenChange={open => !open && disable.onCancel()}>
         <AlertDialogContent>

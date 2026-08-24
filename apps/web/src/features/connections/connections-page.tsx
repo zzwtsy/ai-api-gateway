@@ -16,19 +16,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { describeApiError } from "@/lib/api-runtime/client";
 import { cn } from "@/lib/utils";
@@ -53,7 +54,7 @@ export function ConnectionsPage({
   ) => void;
   readonly onConnectionTabChange: (tab: ConnectionDetailTab) => void;
 }) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const query = useConnections();
   const selectedConnection = query.data?.find(connection => connection.id === connectionId)
     ?? query.data?.[0];
@@ -72,31 +73,31 @@ export function ConnectionsPage({
         title="连接"
         description="管理上游 Provider Endpoint、协议和连接状态。"
         actions={(
-          <Button onClick={() => setSheetOpen(true)}>
-            <Plus data-icon="inline-start" />
-            添加连接
-          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger render={<Button />}>
+              <Plus data-icon="inline-start" />
+              添加连接
+            </DialogTrigger>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+              <DialogHeader className="px-6 pt-6 pb-5">
+                <DialogTitle>添加连接</DialogTitle>
+                <DialogDescription>
+                  分两步连接 Provider 并配置默认 Endpoint；Secret 不会进入浏览器持久化。
+                </DialogDescription>
+              </DialogHeader>
+              {dialogOpen && (
+                <CreateConnectionForm
+                  onCancel={() => setDialogOpen(false)}
+                  onCreated={(createdConnectionId) => {
+                    onConnectionIdChange(createdConnectionId);
+                    setDialogOpen(false);
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         )}
       />
-
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="overflow-y-auto sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>添加上游 Endpoint</SheetTitle>
-            <SheetDescription>
-              连接元数据保存在控制面；Provider Secret 不会进入浏览器持久化。
-            </SheetDescription>
-          </SheetHeader>
-          <div className="p-4">
-            <CreateConnectionForm
-              onCreated={(createdConnectionId) => {
-                onConnectionIdChange(createdConnectionId);
-                setSheetOpen(false);
-              }}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
 
       {query.data?.length === 0
         ? (
