@@ -3,7 +3,7 @@
   "pages": [
     {
       "id": "overview",
-      "path": "/overview",
+      "path": "/",
       "navGroup": "监控",
       "label": "概览",
       "purpose": "确认系统状态、使用量与待处理问题",

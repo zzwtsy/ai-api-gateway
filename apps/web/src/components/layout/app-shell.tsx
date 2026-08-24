@@ -19,16 +19,25 @@ import {
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const navigation = [
-  { to: "/", label: "概览", icon: Gauge },
-  { to: "/connections", label: "连接", icon: Plug },
-  { to: "/requests", label: "请求", icon: ScrollText },
-] as const;
+const navigationIcons = {
+  gauge: Gauge,
+  connections: Plug,
+  requests: ScrollText,
+} as const;
 
-export function AppShell() {
+interface NavigationPage {
+  readonly icon: keyof typeof navigationIcons;
+  readonly id: string;
+  readonly label: string;
+  readonly navGroup: string;
+  readonly path: string;
+}
+
+export function AppShell({ pages }: { readonly pages: readonly NavigationPage[] }) {
   const pathname = useRouterState({ select: state => state.location.pathname });
-  const pageTitle = navigation.find(({ to }) => isRouteActive(pathname, to))?.label
+  const pageTitle = pages.find(({ path }) => isRouteActive(pathname, path))?.label
     ?? "控制面";
+  const navigationGroups = groupNavigation(pages);
 
   return (
     <TooltipProvider>
@@ -54,25 +63,32 @@ export function AppShell() {
             </SidebarMenu>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>工作区</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {navigation.map(({ to, label, icon: Icon }) => (
-                    <SidebarMenuItem key={to}>
-                      <SidebarMenuButton
-                        isActive={isRouteActive(pathname, to)}
-                        tooltip={label}
-                        render={<Link to={to} activeOptions={{ exact: to === "/" }} />}
-                      >
-                        <Icon />
-                        <span>{label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            {navigationGroups.map(group => (
+              <SidebarGroup key={group.label}>
+                <SidebarGroupLabel className="group-data-[collapsible=icon]:pointer-events-none">
+                  {group.label}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.pages.map(({ path, label, icon }) => {
+                      const Icon = navigationIcons[icon];
+                      return (
+                        <SidebarMenuItem key={path}>
+                          <SidebarMenuButton
+                            isActive={isRouteActive(pathname, path)}
+                            tooltip={label}
+                            render={<Link to={path} activeOptions={{ exact: path === "/" }} />}
+                          >
+                            <Icon />
+                            <span>{label}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>
@@ -103,7 +119,7 @@ export function AppShell() {
             <div className="h-4 w-px bg-border" aria-hidden="true" />
             <p data-slot="topbar-title" className="text-sm font-medium">{pageTitle}</p>
           </header>
-          <div className="min-h-0 flex-1 overflow-auto px-8 py-7">
+          <div className="min-h-0 flex-1 overflow-auto px-(--aigw-layout-page-gutter-compact) pt-(--aigw-layout-page-top-padding) pb-(--aigw-layout-page-bottom-padding) aigw-minimum:px-(--aigw-layout-page-gutter-medium) aigw-desktop:px-(--aigw-layout-page-gutter-desktop)">
             <Outlet />
           </div>
         </SidebarInset>
@@ -112,8 +128,18 @@ export function AppShell() {
   );
 }
 
-function isRouteActive(pathname: string, to: (typeof navigation)[number]["to"]): boolean {
-  return to === "/" ? pathname === "/" : pathname.startsWith(to);
+function isRouteActive(pathname: string, path: string): boolean {
+  return path === "/" ? pathname === "/" : pathname.startsWith(path);
+}
+
+function groupNavigation(pages: readonly NavigationPage[]) {
+  const groups = new Map<string, NavigationPage[]>();
+  for (const page of pages) {
+    const group = groups.get(page.navGroup) ?? [];
+    group.push(page);
+    groups.set(page.navGroup, group);
+  }
+  return [...groups].map(([label, groupPages]) => ({ label, pages: groupPages }));
 }
 
 function readSidebarDefaultOpen(): boolean {

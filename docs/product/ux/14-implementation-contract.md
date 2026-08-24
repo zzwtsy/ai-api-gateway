@@ -58,6 +58,8 @@ src/
 
 `App` 只负责全局 Provider 与 Router 装配，不承载页面实现。`QueryClient` 是单例，并注入 TanStack Router Context，使 Route Loader 可以复用 Feature 的 OpenAPI Query Options 执行 `ensureQueryData`/Prefetch，而不是建立第二套 Loader Cache。路由必须使用 `@tanstack/router-plugin/vite` 文件路由，Route 文件保持薄：URL、Search Params、Loader、Layout 与 Feature 页面装配留在 `routes/`；业务 UI/Query/Form 留在 Feature。跨 Feature 页面组合放在 Route 或 `routes/-*` 忽略目录，不能通过一个 Feature 反向导入另一个 Feature。
 
+`page-contracts.json` 拥有产品目标页面全集；`routes/-page-manifest.ts` 只拥有当前已交付且进入导航的页面集合。App Shell 从 Manifest 派生导航、分组、当前标题和 Active 状态。静态合同 Gate 校验已交付页面的 ID、Path、中文标签、导航分组、生成路由和已落地布局 Token；计划页面可以只存在于产品合同中，不得提前进入已交付导航。
+
 ## 3. shadcn 约束
 
 - 添加组件前先检查已安装组件并读取当前官方文档；
@@ -123,7 +125,9 @@ Query Key 必须包含所有影响结果的筛选、分页、排序和 Scope。M
 - 409：配置版本冲突，显示当前版本并允许重新加载；
 - 422：字段或配置编译错误，定位具体 Field/Section；
 - 5xx/网络：保留用户草稿并提供重试；
-- 部分失败：按区块呈现，不清空整页；
+- 首次查询失败：显示持久错误和显式重试，不得归一成成功空状态；
+- 有缓存的刷新失败：保留最后一次成功数据，在拥有该查询的区域显示非阻断警告；
+- 部分失败：按 List、Inspector 或其他查询所有权分区呈现，不清空整页；
 - `unknown`、无数据、未验证和数值 0 必须分开。
 
 ## 7. API View Model
@@ -137,7 +141,7 @@ type RequestResult
     | { kind: "failed"; errorClass: string };
 ```
 
-状态映射集中管理，避免页面各自解释 HTTP Code、Attempt 和 Cost 状态而产生不一致文案。
+状态映射集中管理，避免页面各自解释 HTTP Code、Attempt 和 Cost 状态而产生不一致文案。只负责显示投影的 View Model 不导入 React、TanStack Query 或浏览器 API，并以 Node 环境单元测试覆盖完整枚举、顺序及 `null`/`0` 边界。
 
 ## 8. 表格与虚拟化
 
@@ -164,7 +168,7 @@ type RequestResult
 
 `components/ui` 是官方 Registry 所有面，不接受手工 Patch 或 Formatter 改写。产品状态组件位于 `components/product`，App Shell 差异通过官方 Sidebar 的 Props 和组合表达。
 
-机器可读值见 [`design-tokens.json`](design-tokens.json)。Token 变化必须同步规范、当前截图和视觉回归证据。
+机器可读值见 [`design-tokens.json`](design-tokens.json)。浏览器实现通过 CSS Custom Properties 消费已落地 Token，`verify:web-contracts` 校验页面 Gutter、页面 Padding、Request 最小宽度和响应式断点没有漂移。Token 变化必须同步规范、当前截图和视觉回归证据。
 
 ## 11. 测试
 
@@ -173,7 +177,7 @@ type RequestResult
 - 单元：状态映射、格式化、匹配解释和 Cost Unknown；
 - 组件：表格筛选、Inspector Tab、Sheet/Dialog Form；
 - 集成：连接 → 路由规则 → 客户端 → 测试 Request；
-- E2E：核心闭环、键盘、URL 恢复、Error/Partial；
+- E2E：核心闭环、键盘、URL 恢复、Error/Partial、局部故障隔离和稳定区域 ARIA 语义；
 - 视觉：1440 × 1000、1280 宽、1024 × 768；
 - 可访问性：axe 或等价自动检查，加键盘人工检查；
 - Artifact：对 Vite Build 产物运行浏览器 Golden Journey。
@@ -190,3 +194,4 @@ type RequestResult
 - 在日志、URL、导出或 Query Cache 暴露 Secret；
 - 手工修改 OpenAPI 生成客户端；
 - 让一个 Feature 直接导入另一个 Feature。
+- 用运行时 Registry 或第二份手写路由清单替代文件路由、产品合同与静态 Page Manifest 的明确所有权。

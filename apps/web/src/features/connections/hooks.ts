@@ -13,6 +13,7 @@ function connectionsQueryOptions() {
 export function useConnections() {
   return useQuery({
     ...connectionsQueryOptions(),
+    retry: false,
     select: response => response.data,
   });
 }

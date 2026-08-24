@@ -45,6 +45,13 @@ test("CI Static and Docs modes both own project version verification", async () 
   }
 });
 
+test("quick and docs modes both own Web contract freshness", async () => {
+  const input = await actualInput();
+  for (const mode of ["quick", "docs"]) {
+    assert.ok(input.gatesFor(mode).some(gate => gate.id === "web-contracts"));
+  }
+});
+
 test("CI rejects Action references that fall back to the Node 20 runtime", async () => {
   const input = await actualInput();
   const ciSource = input.ciSource

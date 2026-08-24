@@ -82,6 +82,7 @@ flowchart LR
 | `data-plane` | `core` | `apps/gateway/src/data-plane/credentials/static-authenticator.ts → apps/gateway/src/core/crypto/gateway-key.ts`<br>`apps/gateway/src/data-plane/dependencies.ts → apps/gateway/src/core/requests/contracts.ts`<br>`apps/gateway/src/data-plane/dependencies.ts → apps/gateway/src/core/time/clock.ts` |
 | `db` | `core` | `apps/gateway/src/db/client.ts → apps/gateway/src/core/logging/logger.ts` |
 | `entry` | `app` | `apps/gateway/src/index.ts → apps/gateway/src/app/lifecycle.ts` |
+
 ## Web 模块依赖
 
 ```mermaid
@@ -98,6 +99,7 @@ flowchart LR
   n_726f757465547265652e67656e2e7473["routeTree.gen.ts"]
   n_726f75746573["routes"]
   n_74657374["test"]
+  n_6170706c69636174696f6e --> n_636f6d706f6e656e7473
   n_6170706c69636174696f6e --> n_696e6465782e637373
   n_6170706c69636174696f6e --> n_6c6962
   n_6170706c69636174696f6e --> n_726f757465547265652e67656e2e7473
@@ -119,17 +121,18 @@ flowchart LR
 
 | From | To | 代表性 Import |
 | --- | --- | --- |
+| `application` | `components` | `apps/web/src/router.tsx → apps/web/src/components/product/route-error-state.tsx` |
 | `application` | `index.css` | `apps/web/src/main.tsx → apps/web/src/index.css` |
 | `application` | `lib` | `apps/web/src/app.tsx → apps/web/src/lib/query-client.ts`<br>`apps/web/src/router.tsx → apps/web/src/lib/query-client.ts` |
 | `application` | `routeTree.gen.ts` | `apps/web/src/router.tsx → apps/web/src/routeTree.gen.ts` |
 | `components` | `hooks` | `apps/web/src/components/ui/sidebar.tsx → apps/web/src/hooks/use-mobile.ts` |
-| `components` | `lib` | `apps/web/src/components/product/status-badge.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/badge.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/button.tsx → apps/web/src/lib/utils.ts` |
+| `components` | `lib` | `apps/web/src/components/product/data-error-state.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/product/status-badge.tsx → apps/web/src/lib/utils.ts`<br>`apps/web/src/components/ui/alert.tsx → apps/web/src/lib/utils.ts` |
 | `feature:auth` | `components` | `apps/web/src/features/auth/login-page.tsx → apps/web/src/components/ui/button.tsx`<br>`apps/web/src/features/auth/login-page.tsx → apps/web/src/components/ui/card.tsx`<br>`apps/web/src/features/auth/login-page.tsx → apps/web/src/components/ui/field.tsx` |
 | `feature:auth` | `lib` | `apps/web/src/features/auth/login-page.tsx → apps/web/src/lib/auth-client.ts` |
-| `feature:connections` | `components` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/status-badge.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/ui/badge.tsx` |
+| `feature:connections` | `components` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/data-error-state.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/connections/connections-page.tsx → apps/web/src/components/product/status-badge.tsx` |
 | `feature:connections` | `lib` | `apps/web/src/features/connections/connections-page.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/connections/create-connection-form.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/connections/hooks.ts → apps/web/src/lib/api-runtime/client.ts` |
-| `feature:requests` | `components` | `apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/status-badge.tsx` |
-| `feature:requests` | `lib` | `apps/web/src/features/requests/hooks.ts → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/utils.ts` |
+| `feature:requests` | `components` | `apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/data-error-state.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/request-status.tsx` |
+| `feature:requests` | `lib` | `apps/web/src/features/requests/hooks.ts → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/utils.ts` |
 | `routes` | `components` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/ui/badge.tsx` |
 | `routes` | `feature:auth` | `apps/web/src/routes/login.tsx → apps/web/src/features/auth/login-page.tsx` |
 | `routes` | `feature:connections` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/connections/hooks.ts`<br>`apps/web/src/routes/_workspace/connections.tsx → apps/web/src/features/connections/connections-page.tsx` |

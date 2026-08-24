@@ -26,6 +26,34 @@ test("documentation-only changes do not select runtime gates", () => {
   assert.deepEqual(result.commands, ["pnpm check:docs"]);
 });
 
+test("visible Web and UX contract changes select Web and browser evidence", () => {
+  const result = selectEvidence([
+    "apps/web/src/components/layout/app-shell.tsx",
+    "apps/web/src/components/ui/alert.tsx",
+    "apps/web/src/features/requests/requests-page.tsx",
+    "apps/web/src/index.css",
+    "apps/web/src/routes/_workspace/requests.tsx",
+    "docs/product/ux/page-contracts.json",
+  ]);
+
+  assert.ok(result.surfaces.includes("web"));
+  assert.ok(result.surfaces.includes("e2e"));
+  assert.ok(result.surfaces.includes("docs"));
+  assert.ok(result.commands.includes("pnpm check:web"));
+  assert.ok(result.commands.includes("pnpm check:e2e"));
+});
+
+test("pure Web state modules keep the unit-level evidence boundary", () => {
+  const result = selectEvidence([
+    "apps/web/src/features/requests/hooks.ts",
+    "apps/web/src/features/requests/request-view-model.ts",
+    "apps/web/src/features/requests/request-view-model.test.ts",
+  ]);
+
+  assert.deepEqual(result.surfaces, ["web"]);
+  assert.deepEqual(result.commands, ["pnpm check:web"]);
+});
+
 test("known repository governance and request-recording paths never fall through to unknown", () => {
   const result = selectEvidence([
     ".github/pull_request_template.md",

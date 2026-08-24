@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-23
 language: zh-CN
 ---
 
@@ -19,7 +19,8 @@ language: zh-CN
 | DB Schema/Migration | Empty/Upgrade Migration + Testcontainers |
 | Request/Attempt | DB Integration + Timeline Snapshot |
 | Secret/Logging/Export | Redaction + Negative Scan + Dump Assertion |
-| Web Page | Component + URL State + Playwright Journey |
+| 可见 Web 页面、Route、布局、产品组件或 Theme | Component + URL State + ARIA/Geometry Playwright Journey |
+| 纯 Web Hook 或 View Model | Web Typecheck + Unit |
 | Build/Entry | tsc/Vite + plain Node + Docker Smoke |
 | Boundary | ESLint Boundary + Architecture Doc |
 | TypeScript Config | Single-version Gate + all Workspace Typecheck |

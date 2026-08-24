@@ -12,7 +12,8 @@ language: zh-CN
 - [ ] 历史 UI 文档、旧视觉稿和补丁式说明未混入活动文档树；
 - [ ] `pnpm docs:bundle` 能由 `docs/product/ux/` 生成前端单文件规范；
 - [ ] `design-tokens.json` 与实现 CSS 一致；
-- [ ] 页面名称、导航和主操作与 `page-contracts.json` 一致。
+- [ ] 已交付 Page Manifest 的页面名称、Path 与导航分组和 `page-contracts.json`、生成路由一致；
+- [ ] 产品合同中的计划页面不会被误判为已交付导航。
 
 ## 2. 产品语义
 
@@ -53,7 +54,8 @@ language: zh-CN
 - [ ] 首次为空与筛选为空分开；
 - [ ] error 可重试；
 - [ ] partial 保留成功内容；
-- [ ] stale 显示最后成功时间；
+- [ ] stale 保留最后成功数据并说明刷新失败；
+- [ ] Request List 与 Inspector 任一失败时，另一侧仍可独立使用；
 - [ ] disabled 显示原因；
 - [ ] unknown 显式显示；
 - [ ] Toast 不承载必须阅读的信息。
@@ -61,8 +63,9 @@ language: zh-CN
 ## 6. 响应式
 
 - [ ] 1440 × 1000 无裁切与文档级水平溢出；
-- [ ] 1280 宽保留全部核心任务；
-- [ ] 1024 × 768 展开与折叠状态均无内容裁切；
+- [ ] Request Master–Detail 在 1440px 以不小于 620px / 390px 的双栏显示；
+- [ ] 1280 宽保留全部核心任务，Request Master–Detail 按阅读顺序上下排列；
+- [ ] 1024 × 768 展开与折叠状态均无内容裁切，Request Master–Detail 保持上下排列；
 - [ ] `<768px` Sidebar Sheet 打开、关闭、焦点和遮罩 Smoke 通过；
 - [ ] 次要列按断点隐藏，核心列保留；
 - [ ] 路由编辑预览在窄视口顺序降级；
@@ -102,3 +105,5 @@ language: zh-CN
 8. Settings 开放式行布局；
 9. Badge / Alert 状态色；
 10. 1024px 折叠行为。
+
+可见页面、路由、布局、产品组件、shadcn Primitive 或 Theme 的变更必须同时有 `check:web` 与真实浏览器 E2E；纯 Hook 和纯 View Model 使用 Web Typecheck 与单元测试。

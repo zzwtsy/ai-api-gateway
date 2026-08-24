@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-CHANGE-EVIDENCE-001
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-23
 language: zh-CN
 ---
 
@@ -43,13 +43,15 @@ pnpm evidence:select --base origin/main --json
 - `data`：数据面路由、凭据、传输、观测和记录；
 - `protocol`：协议 Handler、Fixture 和字节语义；
 - `database`：Drizzle Schema、Migration 和持久化；
-- `web`：页面、Feature、组件和浏览器状态；
+- `web`：页面、Feature、组件、产品页面合同、布局 Token 和浏览器状态；
 - `artifact`：构建入口、Docker、发布内容和运行脚本；
 - `docs`：现行规范、Decision、Agent 规则和生成投影；
 - `security`：Secret、认证、加密、导出和日志；
 - `unknown`：策略尚未识别的路径。
 
 `unknown` 不是“无需验证”，而是保守升级为 `pnpm check:all`，直到为该路径补充明确策略和自测。
+
+可见 `.tsx`、Route、App Shell、产品组件、shadcn Primitive、Theme、`page-contracts.json` 和 `design-tokens.json` 同时映射到 `web` 与 `e2e`，因为 Typecheck、Unit 和 Build 不能证明真实浏览器中的语义、命中区域或几何关系。纯 Hook、纯 View Model 及其单元测试只映射到 `web`，避免把无浏览器行为的逻辑变化升级为 E2E。
 
 ## 4. 风险信号
 

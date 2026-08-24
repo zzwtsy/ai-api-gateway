@@ -47,6 +47,7 @@
     "verify:runtime-invariants": "node scripts/verify/runtime-invariants.ts",
     "verify:decisions": "node scripts/verify/decision-notes.ts",
     "verify:gate-contract": "node scripts/verify/gate-contract.ts",
+    "verify:web-contracts": "node scripts/verify/web-contracts.ts",
     "check:quick": "node scripts/check.ts quick",
     "check:control": "node scripts/check.ts control",
     "check:data": "node scripts/check.ts data",

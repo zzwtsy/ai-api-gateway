@@ -6,14 +6,19 @@ import { promisify } from "node:util";
 
 import { expect, test } from "@playwright/test";
 
+import { createRecordedRequest } from "./support/recorded-request.js";
+
 const recordEvidence = process.env.AIGW_RECORD_UI_EVIDENCE === "1";
-const gatewayOrigin = `http://127.0.0.1:${process.env.AIGW_E2E_GATEWAY_PORT ?? "3001"}`;
+const gatewayPort = process.env.AIGW_E2E_GATEWAY_PORT ?? "3001";
+const providerPort = process.env.AIGW_E2E_PROVIDER_PORT ?? "4010";
+const webPort = process.env.AIGW_E2E_WEB_PORT ?? "5173";
+const gatewayOrigin = `http://127.0.0.1:${gatewayPort}`;
 const repositoryRoot = path.resolve(import.meta.dirname, "../../..");
 const evidenceRoot = path.join(repositoryRoot, ".artifacts/ui-evidence");
-const scenario = "shadcn-blue-sidebar";
+const scenario = "web-ui-contract";
 const execFileAsync = promisify(execFile);
 
-test("记录 Blue/Inter Sidebar 规范截图", async ({ page, request }) => {
+test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, request }) => {
   test.skip(!recordEvidence, "仅在显式记录 UI 证据时生成截图");
   const sourceState = await readEvidenceSourceState();
   await mkdir(evidenceRoot, { recursive: true });
@@ -65,24 +70,50 @@ test("记录 Blue/Inter Sidebar 规范截图", async ({ page, request }) => {
       animations: "disabled",
     });
 
-    const gatewayResponse = await request.post(`${gatewayOrigin}/openai/v1/chat/completions`, {
-      headers: {
-        "authorization": "Bearer gw_dev_local_key",
-        "content-type": "application/json",
-      },
-      data: {
-        model: "demo-model",
-        stream: true,
-        messages: [{ role: "user", content: "hello" }],
-      },
-    });
-    expect(gatewayResponse.status()).toBe(200);
-    await gatewayResponse.text();
+    const model = "ui-evidence-model";
+    const { requestId } = await createRecordedRequest(request, model);
     await page.goto("/requests");
-    await page.getByText("demo-model").first().click();
+    await page.getByRole("link", { name: new RegExp(model, "u") }).click();
+    await expect(page).toHaveURL(new RegExp(`[?&]requestId=${requestId}(?:&|$)`, "u"));
     await expect(page.getByText("第 1 次尝试")).toBeVisible();
     await page.screenshot({
       path: path.join(outputDirectory, "requests-1440x1000.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(page.getByRole("region", { name: "逻辑请求" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "请求详情" })).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "requests-stacked-1280x900.png"),
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expect(page.getByText("第 1 次尝试")).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "requests-stacked-1024x768.png"),
+      animations: "disabled",
+    });
+
+    await page.route(/\/admin\/api\/v1\/requests(?:\?.*)?$/u, route => route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: false,
+        code: "COMMON_INTERNAL_ERROR",
+        message: "服务器内部错误",
+        data: null,
+        error: { type: "internal" },
+        meta: { requestId: "req_ui_evidence_error" },
+      }),
+    }));
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/requests");
+    await expect(page.getByText("无法加载逻辑请求")).toBeVisible();
+    await expect(page.getByRole("button", { name: "重新加载" })).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "requests-list-error-contained-1440x1000.png"),
       animations: "disabled",
     });
 
@@ -97,12 +128,18 @@ test("记录 Blue/Inter Sidebar 规范截图", async ({ page, request }) => {
       scenario,
       viewports: [
         { width: 1440, height: 1000, deviceScaleFactor: 1 },
+        { width: 1280, height: 900, deviceScaleFactor: 1 },
         { width: 1024, height: 768, deviceScaleFactor: 1 },
+      ],
+      commands: [
+        `AIGW_RECORD_UI_EVIDENCE=1 AIGW_E2E_GATEWAY_PORT=${gatewayPort} AIGW_E2E_PROVIDER_PORT=${providerPort} AIGW_E2E_WEB_PORT=${webPort} pnpm --filter @aigw/e2e exec playwright test tests/visual-evidence.spec.ts`,
       ],
       claims: [
         "Blue/Inter theme and official inset Sidebar render in the real Web app",
         "Sidebar expanded and collapsed layouts remain visible at the verified desktop viewports",
         "Connections and Request detail render against the real in-memory Gateway and Mock Provider",
+        "Request Workbench uses side-by-side geometry at 1440px and stacked geometry at 1280px and 1024px",
+        "Request List error and retry action remain inside the Master region at 1440px",
       ],
       artifacts: {
         screenshots: [
@@ -110,6 +147,9 @@ test("记录 Blue/Inter Sidebar 规范截图", async ({ page, request }) => {
           "overview-collapsed-1024x768.png",
           "connections-1440x1000.png",
           "requests-1440x1000.png",
+          "requests-stacked-1280x900.png",
+          "requests-stacked-1024x768.png",
+          "requests-list-error-contained-1440x1000.png",
         ],
       },
       unverified: sourceState.dirty

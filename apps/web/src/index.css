@@ -6,6 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    --breakpoint-aigw-desktop: 1440px;
+    --breakpoint-aigw-minimum: 1280px;
     --font-heading: var(--font-sans);
     --font-sans: 'Inter Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -53,6 +55,13 @@
 }
 
 :root {
+    --aigw-layout-page-gutter-desktop: 24px;
+    --aigw-layout-page-gutter-medium: 20px;
+    --aigw-layout-page-gutter-compact: 16px;
+    --aigw-layout-page-top-padding: 22px;
+    --aigw-layout-page-bottom-padding: 32px;
+    --aigw-layout-request-master-min: 620px;
+    --aigw-layout-request-inspector-min: 390px;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);

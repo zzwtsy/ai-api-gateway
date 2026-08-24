@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { pageManifest } from "@/routes/-page-manifest";
+
 import { AppShell } from "./app-shell";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -32,14 +34,17 @@ describe("app shell", () => {
   });
 
   it("shows the active route and current page title", () => {
-    render(<AppShell />);
+    render(<AppShell pages={pageManifest} />);
 
     expect(screen.getByText("请求", { selector: "[data-slot=\"topbar-title\"]" })).toBeVisible();
     expect(screen.getByRole("link", { name: "请求" })).toHaveAttribute("data-active");
+    expect(screen.getByText("监控")).toBeVisible();
+    expect(screen.getByText("配置")).toBeVisible();
+    expect(screen.queryByText("工作区")).not.toBeInTheDocument();
   });
 
   it("toggles from the Chinese control, persists, and restores the cookie state", () => {
-    const firstRender = render(<AppShell />);
+    const firstRender = render(<AppShell pages={pageManifest} />);
     const sidebar = firstRender.container.querySelector("[data-slot=\"sidebar\"][data-state]");
     expect(sidebar).toHaveAttribute("data-state", "expanded");
 
@@ -48,7 +53,7 @@ describe("app shell", () => {
     expect(document.cookie).toContain("sidebar_state=false");
     firstRender.unmount();
 
-    const secondRender = render(<AppShell />);
+    const secondRender = render(<AppShell pages={pageManifest} />);
     expect(secondRender.container.querySelector("[data-slot=\"sidebar\"][data-state]"))
       .toHaveAttribute("data-state", "collapsed");
 

@@ -7,6 +7,7 @@ export function useRequests() {
     ...api.queryOptions("get", "/admin/api/v1/requests", {
       params: { query: { limit: 50 } },
     }),
+    retry: false,
     refetchInterval: 5_000,
     select: response => response.data,
   });
@@ -19,6 +20,7 @@ export function useRequest(id: string | undefined) {
       params: { path: { requestId } },
     }),
     enabled: id !== undefined,
+    retry: false,
     select: response => response.data,
   });
 }

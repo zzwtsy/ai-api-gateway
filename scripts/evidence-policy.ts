@@ -34,6 +34,8 @@ const rules = [
   rule("protocol", "协议处理、Fixture 或协议合同发生变化", /^(?:apps\/gateway\/src\/data-plane\/protocols\/|apps\/gateway\/tests\/contract\/data-plane|fixtures\/protocols\/)/u),
   rule("database", "数据库 Schema、Migration 或持久化适配器发生变化", /^(?:apps\/gateway\/src\/db\/|apps\/gateway\/drizzle\/|apps\/gateway\/src\/app\/adapters\/postgres-|apps\/gateway\/tests\/integration\/)/u),
   rule("web", "Web 产品行为或 API 消费发生变化", /^apps\/web\//u),
+  rule("web", "Web 产品页面合同或布局 Token 发生变化", /^docs\/product\/ux\/(?:page-contracts|design-tokens)\.json$/u),
+  rule("e2e", "可见 Web 表面、路由或 Theme 发生变化", /^(?:apps\/web\/src\/(?:index\.css|router\.tsx|routes\/(?!.*\.(?:test|spec)\.)|components\/(?:layout|product|ui)\/(?!.*\.(?:test|spec)\.)|features\/.*(?<!\.(?:test|spec))\.tsx)|docs\/product\/ux\/(?:page-contracts|design-tokens)\.json$)/u),
   rule("e2e", "浏览器或 Mock Provider 旅程发生变化", /^apps\/e2e\//u),
   rule("artifact", "启动、生命周期、容器或构建产物发生变化", /^(?:Dockerfile|docker-compose\.yml|\.dockerignore|apps\/gateway\/src\/(?:index\.ts|app\/lifecycle\.ts|app\/shutdown-controller(?:\.test)?\.ts)|scripts\/artifact\/)/u),
   rule("docs", "规范、Decision、Agent 指令或 Skill 发生变化", /^(?:README(?:\.en)?\.md|CHANGELOG\.md|CONTRIBUTING\.md|SECURITY\.md|AGENTS\.md|CLAUDE\.md|docs\/|ai\/|\.agents\/|\.github\/(?!workflows\/))/u),

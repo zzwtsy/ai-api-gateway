@@ -118,6 +118,7 @@ function quickVerificationGates(): Gate[] {
     rootScript("boundaries", "架构依赖边界", "verify:boundaries"),
     rootScript("imports", "相对导入完整性", "verify:imports"),
     rootScript("runtime-invariants", "模块运行时不变量所有权", "verify:runtime-invariants"),
+    rootScript("web-contracts", "Web 页面、路由与布局合同", "verify:web-contracts"),
     rootScript("secret-safety", "Secret 静态安全", "verify:secret-safety"),
   ];
 }
@@ -253,6 +254,7 @@ function docsOnlyGates(): Gate[] {
     rootScript("project-version", "项目版本投影", "verify:project-version"),
     rootScript("decision-notes", "Decision Note 生命周期与格式", "verify:decisions"),
     rootScript("module-graph", "生成模块依赖图新鲜度", "docs:module-graph:check"),
+    rootScript("web-contracts", "Web 页面、路由与布局合同", "verify:web-contracts"),
     rootScript("docs", "中文规范与生成投影", "docs:check", { needs: ["decision-notes", "module-graph"] }),
     rootScript("agent-assets", "Agent 与 Skill 资产", "verify:agent-assets", { needs: ["docs"] }),
     rootScript("secret-safety", "Secret 静态安全", "verify:secret-safety"),

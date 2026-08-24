@@ -27,6 +27,7 @@
     "upstreamRepository": "shadcn-ui/ui",
     "upstreamCommit": "1773ecfeeb4a04366978d353e69b5c7ded78dcb2",
     "components": [
+      "alert",
       "badge",
       "button",
       "card",
@@ -48,6 +49,7 @@
     ],
     "localPatches": {},
     "componentDigests": {
+      "alert": "126a26b401ab2cd3f3855551d012b5dca7a96b7d6984a921add3ce2d441af4b6",
       "badge": "968b0403af74a785c9408ca69a677235e49d0c80b2c27fb9858ad421a8778c7d",
       "button": "d14549ab3ba7a9d5d1f424c2599233bffa0b317121abf3b6efa2fb902d5e2781",
       "card": "d8113cbf964f8d1aadf2649d2944d8bbc6e3cfd49d36746f76868cbc4dde3cfe",

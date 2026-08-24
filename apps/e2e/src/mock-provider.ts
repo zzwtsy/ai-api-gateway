@@ -11,40 +11,47 @@ interface CapturedRequest {
 }
 
 let lastRequest: CapturedRequest | null = null;
+const requestsByModel = new Map<string, CapturedRequest>();
 
 const server = createServer((request, response) => {
   void handleRequest(request, response);
 });
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  if (request.url === "/health") {
+  const url = new URL(request.url ?? "/", "http://mock-provider.local");
+  if (url.pathname === "/health") {
     response.writeHead(200, { "content-type": "application/json" });
     response.end(JSON.stringify({ status: "ok" }));
     return;
   }
-  if (request.url === "/received") {
+  if (url.pathname === "/received") {
+    const model = url.searchParams.get("model");
     response.writeHead(200, { "content-type": "application/json" });
-    response.end(JSON.stringify(lastRequest));
+    response.end(JSON.stringify(model === null ? lastRequest : requestsByModel.get(model) ?? null));
     return;
   }
-  if (request.method !== "POST" || request.url !== "/v1/chat/completions") {
+  if (request.method !== "POST" || url.pathname !== "/v1/chat/completions") {
     response.writeHead(404);
     response.end();
     return;
   }
 
   const body = await readBody(request);
-  lastRequest = {
-    path: request.url,
+  const capturedRequest = {
+    path: url.pathname,
     authorization: request.headers.authorization,
     body,
   };
+  lastRequest = capturedRequest;
   if (request.headers.authorization !== "Bearer mock-provider-key") {
     sendJson(response, 401, { error: { message: "invalid provider credential" } });
     return;
   }
 
   const parsed = JSON.parse(body) as { model?: string; stream?: boolean };
+  if (parsed.model !== undefined) {
+    requestsByModel.set(parsed.model, capturedRequest);
+  }
   if (parsed.stream === true) {
     response.writeHead(200, {
       "content-type": "text/event-stream",
