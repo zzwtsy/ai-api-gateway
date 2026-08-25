@@ -120,8 +120,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: 安装 Playwright Chromium
-        run: pnpm --filter @aigw/e2e exec playwright install --with-deps chromium
+      - name: 安装 Playwright Chromium 与 Firefox
+        run: pnpm --filter @aigw/e2e exec playwright install --with-deps chromium firefox
       - run: pnpm check:ci:artifact --report .artifacts/gates/ci-artifact.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
