@@ -22,6 +22,8 @@ language: zh-CN
 
 ![界面基准总览](assets/contact-sheet.png)
 
+截图来源、精确 Commit、浏览器、视口和文件摘要见 [`assets/visual-evidence.json`](assets/visual-evidence.json)。视觉资产只证明所记录场景中的渲染结果，行为、键盘、URL 和滚动合同仍由 Component 与 Playwright 断言拥有。
+
 ## 2. Shell 结构
 
 ```text

@@ -5,6 +5,7 @@ import process from "node:process";
 import { promisify } from "node:util";
 
 import { collectProjectVersionViolations } from "../project-version-policy.ts";
+import { collectVisualEvidenceViolations } from "../visual-evidence-policy.ts";
 
 const execFileAsync = promisify(execFile);
 const root = path.resolve(import.meta.dirname, "../..");
@@ -129,6 +130,24 @@ for (const bundle of bundleManifest.bundles ?? []) {
 const uxReadme = await readFile(path.join(root, "docs/product/ux/README.md"), "utf8");
 if (/规范版本：v0\.3\.0/.test(uxReadme))
   failures.push("UX README still owns an obsolete independent version");
+
+const visualEvidenceManifest = JSON.parse(await readFile(
+  path.join(root, "docs/product/ux/assets/visual-evidence.json"),
+  "utf8",
+));
+const visualEvidenceAssetsDirectory = path.join(root, "docs/product/ux/assets");
+const visualEvidenceAssetNames = (await readdir(visualEvidenceAssetsDirectory))
+  .filter(name => name.endsWith(".png"));
+const visualEvidenceAssetFiles = Object.fromEntries(await Promise.all(
+  visualEvidenceAssetNames.map(async name => [
+    name,
+    await readFile(path.join(visualEvidenceAssetsDirectory, name)),
+  ] as const),
+));
+failures.push(...collectVisualEvidenceViolations({
+  manifest: visualEvidenceManifest,
+  assetFiles: visualEvidenceAssetFiles,
+}));
 
 try {
   await execFileAsync(process.execPath, ["scripts/docs/bundle-spec.ts", "--check"], { cwd: root, encoding: "utf8" });

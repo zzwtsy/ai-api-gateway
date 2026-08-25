@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "commit": "c21e67df52261b05fe50e1d645165b210aef5731",
+    "dirty": false,
+    "mode": "development",
+    "browser": "chromium",
+    "provider": "mock",
+    "scenario": "web-ui-contract",
+    "command": "AIGW_RECORD_UI_EVIDENCE=1 AIGW_E2E_GATEWAY_PORT=3311 AIGW_E2E_PROVIDER_PORT=4310 AIGW_E2E_WEB_PORT=5517 pnpm --filter @aigw/e2e exec playwright test tests/visual-evidence.spec.ts --project=chromium",
+    "metadata": ".artifacts/ui-evidence/c21e67df52261b05fe50e1d645165b210aef5731/web-ui-contract/metadata.json"
+  },
+  "assets": [
+    {
+      "file": "overview.png",
+      "sourceScreenshot": "overview-1440x1000.png",
+      "theme": "light",
+      "viewport": { "width": 1440, "height": 1000, "deviceScaleFactor": 1 },
+      "sha256": "7139a1a87ec8cf126f51a93ece519f059a8f34b4c7018a6d5e3056f989f8a8c1"
+    },
+    {
+      "file": "overview-compact-desktop.png",
+      "sourceScreenshot": "overview-collapsed-1024x768.png",
+      "theme": "light",
+      "viewport": { "width": 1024, "height": 768, "deviceScaleFactor": 1 },
+      "sha256": "195cbbb618efe5475f18bd84505dbc13564ecd2836fd91602fceebc2ad10f8b0"
+    },
+    {
+      "file": "requests.png",
+      "sourceScreenshot": "requests-1440x1000.png",
+      "theme": "light",
+      "viewport": { "width": 1440, "height": 1000, "deviceScaleFactor": 1 },
+      "sha256": "954c3d07beb0e3f75d8cc5e32d9bceddc868744880d07c609dc2648ead24e155"
+    },
+    {
+      "file": "connections.png",
+      "sourceScreenshot": "connections-1440x1000.png",
+      "theme": "light",
+      "viewport": { "width": 1440, "height": 1000, "deviceScaleFactor": 1 },
+      "sha256": "3afa4d799ed2959529c20c1f9a6a01994908bdb4d3c137200c68efa9f3351b7a"
+    },
+    {
+      "file": "models.png",
+      "sourceScreenshot": "models-inspector-1024x768.png",
+      "theme": "light",
+      "viewport": { "width": 1024, "height": 768, "deviceScaleFactor": 1 },
+      "sha256": "7a5aec8a9f2ea698cef7defce698262d1a07318d52615db47a346d1d922f5cc2"
+    },
+    {
+      "file": "clients.png",
+      "sourceScreenshot": "clients-inspector-1280x900.png",
+      "theme": "light",
+      "viewport": { "width": 1280, "height": 900, "deviceScaleFactor": 1 },
+      "sha256": "fba9cd08b6de5fbfbea62933f8d1b8f0c4fe7acc8bda6eab8dfdbfa4688f9663"
+    },
+    {
+      "file": "contact-sheet.png",
+      "sourceScreenshots": [
+        "overview-1440x1000.png",
+        "overview-dark-1440x1000.png",
+        "models-inspector-1024x768.png",
+        "clients-inspector-1280x900.png",
+        "connections-1440x1000.png",
+        "requests-1440x1000.png"
+      ],
+      "layout": "2 columns x 3 rows",
+      "sha256": "b683c75e46321eeceda6c9885d624154ca2ae91a665da36d87fea36f0827addd"
+    }
+  ]
+}
