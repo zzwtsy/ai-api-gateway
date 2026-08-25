@@ -221,7 +221,7 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
     });
 
     await page.goto(`/models?modelBindingId=${encodeURIComponent(modelPayload.data.id)}`);
-    await expect(page.getByRole("region", { name: "UI 证据模型" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "UI 证据模型" })).toBeVisible();
     await page.screenshot({
       path: path.join(outputDirectory, "models-inspector-1024x768.png"),
       animations: "disabled",
@@ -375,8 +375,8 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
         "The two-step Connection creation flow remains inside the viewport at 1440px and 1024px",
         "The Clients empty and creation states render inside the viewport without exposing a complete Gateway Key",
         "The Clients directory displays only derived protocol badges, without a duplicate Harness badge, at 1280px and 1024px",
-        "The non-modal Client Inspector renders a non-secret protocol-specific configuration template within the content viewport at 1280px and 1024px",
-        "The non-modal Model Inspector renders current Endpoint facts without inventing capability or price data at 1024px",
+        "The Client detail Sheet renders a non-secret protocol-specific configuration template without changing the directory layout at 1280px and 1024px",
+        "The Model detail Sheet renders current Endpoint facts without inventing capability or price data at 1024px",
         "Overview and Connections describe current product behavior without development roadmap copy",
         "The connection form does not prefill development fixture names, identifiers or URLs",
         "Request Workbench uses side-by-side geometry at 1440px and stacked geometry at 1280px and 1024px",

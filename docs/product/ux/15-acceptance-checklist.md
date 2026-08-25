@@ -69,7 +69,7 @@ language: zh-CN
 - [ ] Request Master–Detail 在 1440px 以不小于 620px / 390px 的双栏显示；
 - [ ] 1280 宽保留全部核心任务，Request Master–Detail 按阅读顺序上下排列；
 - [ ] 1024 × 768 展开与折叠状态均无内容裁切，Request Master–Detail 保持上下排列；
-- [ ] Clients/Models Inspector 在 1440px 并排，在 1280px 与 1024px 上下排列；外层不超过内容视口且 Body 独立滚动；
+- [ ] Clients/Models 详情 Sheet 在 1440px、1280px 与 1024px 均不改变目录几何或文档高度；Sheet 不超过视口且 Body 独立滚动；
 - [ ] `<768px` Sidebar Sheet 打开、关闭、焦点和遮罩 Smoke 通过；
 - [ ] 次要列按断点隐藏，核心列保留；
 - [ ] 路由编辑预览在窄视口顺序降级；

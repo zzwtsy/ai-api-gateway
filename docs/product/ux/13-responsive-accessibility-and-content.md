@@ -16,8 +16,8 @@ language: zh-CN
 | --- | --- |
 | `>=1600px` | 完整侧栏；显示更多表格列；详情面板可更宽 |
 | `1440–1599px` | 基准布局；隐藏少量次要列 |
-| `1280–1439px` | 侧栏可折叠；减小 Gutter；Request、Models、Clients Master–Detail 顺序降级为上下布局 |
-| `1024–1279px` | 侧栏可手动折叠为图标；使用紧凑 Gutter；Request、Models、Clients Master–Detail 保持上下布局 |
+| `1280–1439px` | 侧栏可折叠；减小 Gutter；Request Master–Detail 顺序降级为上下布局；Models、Clients 详情使用右侧 Sheet |
+| `1024–1279px` | 侧栏可手动折叠为图标；使用紧凑 Gutter；Request Master–Detail 保持上下布局；Models、Clients 详情 Sheet 不超过视口 |
 | `768–1023px` | 不作为产品承诺，只保持桌面布局兼容 |
 | `<768px` | 官方 Sidebar 降级为 Sheet，仅验证打开、关闭、焦点和遮罩 Smoke |
 
@@ -30,7 +30,7 @@ language: zh-CN
 - 连接目录缩窄，但不转换为卡片；
 - 请求 Master–Detail 只在 `1440px` 及以上使用双栏，并同时满足 620px Master 与 390px Inspector 最小宽度；
 - 请求 Master–Detail 在 `1280px` 和 `1024px` 使用 Master 在前、Inspector 在后的上下布局，不改变 URL 选择、阅读顺序或区域语义；
-- Models 与 Clients Inspector 使用相同断点和 DOM 顺序，外层不超过内容视口，长内容只滚动 Inspector Body；
+- Models 与 Clients 详情 Sheet 固定于视口，在窄视口占满可用宽度，Header 固定且长内容只滚动 Body；打开前后底层目录几何和文档高度保持不变；
 - 响应式切换使用 CSS Token 与断点，不使用 JavaScript 宽度求解器。
 
 以 WCAG 2.2 AA 为实现目标。在最低承诺桌面视口验证 200% Zoom，并以 320 CSS px 等效视口验证 Reflow；表格和代码块可以局部二维滚动，页面主体不得同时产生横向滚动。

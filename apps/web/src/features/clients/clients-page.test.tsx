@@ -92,18 +92,17 @@ describe("clients page", () => {
     expect(screen.queryByDisplayValue(createdResult.key)).not.toBeInTheDocument();
   });
 
-  it("covers UX-CLIENTS-INSPECTOR-LIFECYCLE: keeps Key metadata and lifecycle actions inside the non-modal Inspector", async () => {
+  it("covers UX-CLIENTS-DETAIL-SHEET-LIFECYCLE: keeps Key metadata and lifecycle actions inside the URL-owned Sheet", async () => {
     const user = userEvent.setup();
     hookMocks.useGatewayClients.mockReturnValue(readyQuery([client]));
     hookMocks.revoke.mockResolvedValue(undefined);
     renderClientsPage("client_01");
 
-    expect(screen.getByRole("region", { name: "Codex · 工作站" })).toBeVisible();
-    expect(screen.queryByRole("dialog", { name: "Codex · 工作站" })).not.toBeInTheDocument();
-    expect(screen.getByText("gw_codex_AbCd••••wxyz")).toBeVisible();
-    expect(screen.getByText("现有完整 Gateway Key 无法恢复")).toBeVisible();
-    expect(screen.getByText(/YOUR_GATEWAY_CLIENT_KEY/u)).toBeVisible();
-    expect(screen.queryByText(createdResult.key)).not.toBeInTheDocument();
+    const detailSheet = screen.getByRole("dialog", { name: "Codex · 工作站" });
+    expect(within(detailSheet).getByText("gw_codex_AbCd••••wxyz")).toBeVisible();
+    expect(within(detailSheet).getByText("现有完整 Gateway Key 无法恢复")).toBeVisible();
+    expect(within(detailSheet).getByText(/YOUR_GATEWAY_CLIENT_KEY/u)).toBeVisible();
+    expect(within(detailSheet).queryByText(createdResult.key)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "撤销" }));
     expect(hookMocks.revoke).not.toHaveBeenCalled();
@@ -111,7 +110,7 @@ describe("clients page", () => {
     expect(hookMocks.revoke).toHaveBeenCalledWith("key_01");
   });
 
-  it("closes the Inspector through the route owner", async () => {
+  it("closes the detail Sheet through the route owner", async () => {
     const user = userEvent.setup();
     hookMocks.useGatewayClients.mockReturnValue(readyQuery([client]));
     renderClientsPage("client_01");

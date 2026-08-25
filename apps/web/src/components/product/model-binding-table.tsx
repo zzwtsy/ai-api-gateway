@@ -61,7 +61,7 @@ export function ModelBindingTable({
                   type="button"
                   size="sm"
                   variant="outline"
-                  aria-controls="model-binding-inspector"
+                  aria-controls="model-binding-detail-sheet"
                   aria-expanded={binding.id === selectedBindingId}
                   onClick={() => onSelect(binding.id)}
                 >

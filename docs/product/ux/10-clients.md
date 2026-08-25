@@ -51,7 +51,7 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 
 关闭后完整 Key 无法再次查看。必须要求用户确认已复制，或允许立即下载仅含该 Key 的一次性安全文件，但普通导出永不包含完整 Key。
 
-## 4. 客户端详情 Inspector
+## 4. 客户端详情 Sheet
 
 包含：
 
@@ -63,7 +63,7 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 - 使用量和费用；
 - Key 轮换、撤销、禁用。
 
-详情使用由 `clientId` 恢复的非模态 Persistent Inspector。无效 ID 在目录成功加载后从 URL 删除，不自动选择首项。Inspector 外层不超过 App Shell 内容视口，Header 固定，Body 独立滚动；1440px 及以上与目录并排，1280px 与 1024px 按目录、Inspector 顺序上下排列。
+详情使用由 `clientId` 恢复的右侧 Sheet。无效 ID 在目录成功加载后从 URL 删除，不自动选择首项。Sheet 固定于视口，不改变目录宽度、位置或文档高度；Header 固定，Body 独立滚动。Escape、遮罩、关闭按钮和浏览器后退均可关闭；关闭后焦点返回原“查看详情”按钮。
 
 ## 5. Key 轮换
 
@@ -80,7 +80,7 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 
 轮换和撤销都必须先打开确认 Dialog。确认轮换前不创建新 Key；确认成功后新 Key 才立即生效，旧 Key 进入 24 小时重叠窗口。详情默认只展示可用 Key 摘要，历史 Key 折叠，避免轮换次数持续增加目录高度。
 
-轮换完成后一次性 Secret Dialog 返回原客户端详情，创建完成后返回列表；任一时刻只有一个 Modal Root。关闭 Inspector 后焦点返回原“查看详情”按钮。
+轮换完成后一次性 Secret Dialog 返回原客户端详情 Sheet，创建完成后返回列表；任一时刻只有一个 Modal Root。详情 Sheet 与确认 Dialog 不改变完整 Gateway Key 的一次性展示边界。
 
 ## 6. 安全显示
 

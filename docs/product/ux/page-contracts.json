@@ -186,7 +186,7 @@
       "label": "模型",
       "purpose": "管理 Endpoint 级模型绑定及当前可确认的元数据",
       "primaryAction": "添加模型绑定",
-      "layout": "dense-table + persistent-inspector",
+      "layout": "dense-table + url-owned-detail-sheet",
       "regions": [
         {
           "id": "model-directory",
@@ -207,7 +207,7 @@
           ]
         },
         {
-          "id": "model-inspector",
+          "id": "model-detail-sheet",
           "owner": "modelBindingId URL",
           "states": [
             {
@@ -220,7 +220,7 @@
               "urlOutcome": "有效 ID 可刷新恢复，无效 ID 被清除",
               "selectionOutcome": "不自动选择首项",
               "focusOutcome": "关闭后返回原查看详情按钮",
-              "scenarioIds": ["UX-MODELS-INSPECTOR-LIFECYCLE"]
+              "scenarioIds": ["UX-MODELS-DETAIL-SHEET-LIFECYCLE"]
             }
           ]
         },
@@ -236,7 +236,7 @@
               "preserves": ["模型目录", "modelBindingId"],
               "recovery": "取消、重试或创建成功",
               "urlOutcome": "不写入临时表单状态",
-              "selectionOutcome": "不改变 Inspector 选择",
+              "selectionOutcome": "不改变详情 Sheet 选择",
               "focusOutcome": "关闭后返回添加模型绑定按钮",
               "scenarioIds": ["UX-MODELS-CREATE-DIALOG"]
             }
@@ -287,7 +287,7 @@
       "label": "客户端",
       "purpose": "管理 Harness 实例与 Gateway Key 生命周期",
       "primaryAction": "添加客户端",
-      "layout": "dense-table + persistent-inspector",
+      "layout": "dense-table + url-owned-detail-sheet",
       "regions": [
         {
           "id": "client-directory",
@@ -308,7 +308,7 @@
           ]
         },
         {
-          "id": "client-inspector",
+          "id": "client-detail-sheet",
           "owner": "clientId URL",
           "states": [
             {
@@ -320,8 +320,8 @@
               "recovery": "选择、关闭、取消确认或清除无效 ID",
               "urlOutcome": "有效 ID 可刷新恢复，无效 ID 被清除",
               "selectionOutcome": "不自动选择首项",
-              "focusOutcome": "关闭 Inspector 返回查看详情；取消确认返回触发按钮",
-              "scenarioIds": ["UX-CLIENTS-INSPECTOR-LIFECYCLE"]
+              "focusOutcome": "关闭详情 Sheet 返回查看详情；取消确认返回触发按钮",
+              "scenarioIds": ["UX-CLIENTS-DETAIL-SHEET-LIFECYCLE"]
             }
           ]
         },
@@ -337,7 +337,7 @@
               "preserves": ["返回列表或原 clientId"],
               "recovery": "用户确认已保存并关闭",
               "urlOutcome": "完整 Secret 永不进入 URL",
-              "selectionOutcome": "轮换后返回原 Client Inspector",
+              "selectionOutcome": "轮换后返回原 Client 详情 Sheet",
               "focusOutcome": "关闭后返回有效页面上下文",
               "scenarioIds": ["UX-CLIENTS-SECRET-ONCE"]
             }

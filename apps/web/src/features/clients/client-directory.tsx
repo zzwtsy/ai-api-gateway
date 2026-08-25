@@ -121,7 +121,7 @@ function ClientRow({ client, onSelect, selected }: {
           type="button"
           size="sm"
           variant="outline"
-          aria-controls="client-inspector"
+          aria-controls="client-detail-sheet"
           aria-expanded={selected}
           onClick={() => onSelect(client.id)}
         >

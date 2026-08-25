@@ -231,12 +231,12 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
     { width: 1024, height: 768 },
   ]) {
     await page.setViewportSize(viewport);
-    await expectClientInspectorWithinContentViewport(page);
+    await expectClientDetailSheetInsideViewport(page);
     await expectNoDocumentOverflow(page);
   }
 
   await page.setViewportSize({ width: 700, height: 800 });
-  await expectClientInspectorWithinContentViewport(page);
+  await expectClientDetailSheetInsideViewport(page);
 
   await page.getByRole("button", { name: "关闭客户端详情" }).click();
   await expect.poll(() => new URL(page.url()).searchParams.get("clientId")).toBeNull();
@@ -268,20 +268,19 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
   expect(browserErrors).toEqual([]);
 });
 
-async function expectClientInspectorWithinContentViewport(page: Page): Promise<void> {
-  const inspector = page.getByRole("region", { name: /Codex · 里程碑 A/u });
-  await expect(inspector).toBeVisible();
-  const workspace = page.locator("[data-slot=\"workspace-content\"]");
-  await expect.poll(async () => {
-    const [inspectorBox, workspaceBox] = await Promise.all([
-      inspector.boundingBox(),
-      workspace.boundingBox(),
-    ]);
-    if (inspectorBox === null || workspaceBox === null)
+async function expectClientDetailSheetInsideViewport(page: Page): Promise<void> {
+  const detailSheet = page.getByRole("dialog", { name: /Codex · 里程碑 A/u });
+  await expect(detailSheet).toBeVisible();
+  await expect.poll(() => detailSheet.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const view = element.ownerDocument.defaultView;
+    if (view === null)
       return false;
-    return inspectorBox.width <= workspaceBox.width + 1
-      && inspectorBox.height <= workspaceBox.height + 1;
-  }).toBe(true);
+    return rect.left >= 0
+      && rect.right <= view.innerWidth + 1
+      && rect.top >= 0
+      && rect.bottom <= view.innerHeight + 1;
+  })).toBe(true);
 }
 
 async function expectOverlayInsideViewport(page: Page): Promise<void> {

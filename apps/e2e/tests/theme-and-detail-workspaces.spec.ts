@@ -87,44 +87,64 @@ test("UX-REFLOW-320: 已交付页面在 200% 等效宽度和 320 CSS px 下不�
   }
 });
 
-test("UX-MODELS-INSPECTOR-LIFECYCLE: 模型 Inspector 保持非模态 URL 工作台", async ({ page, request }) => {
+test("UX-MODELS-DETAIL-SHEET-LIFECYCLE: 模型详情不改变目录布局并由 URL 恢复", async ({ page, request }) => {
   const fixture = await createModelWorkspaceFixture(request);
-  const [firstBindingId, secondBindingId] = fixture.modelBindingIds;
+  const [firstBindingId] = fixture.modelBindingIds;
 
   for (const viewport of [
-    { width: 1440, height: 1000, sideBySide: true },
-    { width: 1280, height: 900, sideBySide: false },
-    { width: 1024, height: 768, sideBySide: false },
+    { width: 1440, height: 1000 },
+    { width: 1280, height: 900 },
+    { width: 1024, height: 768 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto(`/models?modelBindingId=${encodeURIComponent(firstBindingId)}`);
+    await page.goto("/models");
     const master = page.locator("[data-slot=\"models-master\"]");
-    const inspector = page.getByRole("region", { name: /主模型/u });
     await expect(master).toBeVisible();
-    await expect(inspector).toBeVisible();
-    await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expectWorkspaceGeometry(page, master, inspector, viewport.sideBySide);
+    const masterBoxBefore = await requiredBoundingBox(master);
+    const documentHeightBefore = await documentScrollHeight(page);
+
+    await page.locator(`#model-binding-detail-trigger-${firstBindingId}`).click();
+    await expect.poll(() => new URL(page.url()).searchParams.get("modelBindingId")).toBe(firstBindingId);
+    const detailSheet = page.getByRole("dialog", { name: /主模型/u });
+    await expect(detailSheet).toBeVisible();
+    await expectDetailSheetGeometry(page, detailSheet);
+    await expectBoundingBoxUnchanged(master, masterBoxBefore);
+    expect(await documentScrollHeight(page)).toBe(documentHeightBefore);
+
+    await page.keyboard.press("Escape");
+    await expect.poll(() => new URL(page.url()).searchParams.get("modelBindingId")).toBeNull();
+    await expect(page.locator(`#model-binding-detail-trigger-${firstBindingId}`)).toBeFocused();
   }
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(`/models?modelBindingId=${encodeURIComponent(firstBindingId)}`);
-  await page.locator(`#model-binding-detail-trigger-${secondBindingId}`).click();
-  await expect.poll(() => new URL(page.url()).searchParams.get("modelBindingId")).toBe(secondBindingId);
-  await page.goBack();
+  await page.goto("/models");
+  await page.locator(`#model-binding-detail-trigger-${firstBindingId}`).click();
   await expect.poll(() => new URL(page.url()).searchParams.get("modelBindingId")).toBe(firstBindingId);
+  await page.goBack();
+  await expect.poll(() => new URL(page.url()).searchParams.get("modelBindingId")).toBeNull();
+  await page.goForward();
+  await expect.poll(() => new URL(page.url()).searchParams.get("modelBindingId")).toBe(firstBindingId);
+  await expect(page.getByRole("dialog", { name: /主模型/u })).toBeVisible();
 });
 
-test("UX-CLIENTS-INSPECTOR-LIFECYCLE: 客户端 Inspector 单屏且正文内部滚动", async ({ page, request }) => {
+test("UX-CLIENTS-DETAIL-SHEET-LIFECYCLE: 客户端详情不撑高页面且正文内部滚动", async ({ page, request }) => {
   const fixture = await createClientWorkspaceFixture(request, { clientRotations: 7 });
   await page.setViewportSize({ width: 1024, height: 768 });
-  await page.goto(`/clients?clientId=${encodeURIComponent(fixture.clientId)}`);
+  await page.goto("/clients");
 
   const master = page.locator("[data-slot=\"clients-master\"]");
-  const inspector = page.getByRole("region", { name: /UX 客户端/u });
-  const body = inspector.locator("[data-slot=\"inspector-body\"]");
-  const header = inspector.locator("#client-inspector-title");
-  await expectWorkspaceGeometry(page, master, inspector, false);
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(master).toBeVisible();
+  const masterBoxBefore = await requiredBoundingBox(master);
+  const documentHeightBefore = await documentScrollHeight(page);
+  const detailTrigger = page.locator(`#client-detail-trigger-${fixture.clientId}`);
+  await detailTrigger.click();
+
+  const detailSheet = page.getByRole("dialog", { name: /UX 客户端/u });
+  const body = detailSheet.locator("[data-slot=\"detail-sheet-body\"]");
+  const header = detailSheet.getByRole("heading", { name: /UX 客户端/u });
+  await expectDetailSheetGeometry(page, detailSheet);
+  await expectBoundingBoxUnchanged(master, masterBoxBefore);
+  expect(await documentScrollHeight(page)).toBe(documentHeightBefore);
   await expect(page.getByText(fixture.clientSecret, { exact: true })).toHaveCount(0);
 
   const scrollState = await body.evaluate(element => ({
@@ -139,27 +159,49 @@ test("UX-CLIENTS-INSPECTOR-LIFECYCLE: 客户端 Inspector 单屏且正文内部�
   await body.evaluate(element => element.scrollTo({ top: element.scrollHeight }));
   await expect.poll(() => header.evaluate(element => Math.round(element.getBoundingClientRect().top)))
     .toBe(Math.round(headerTop));
+
+  await page.keyboard.press("Escape");
+  await expect.poll(() => new URL(page.url()).searchParams.get("clientId")).toBeNull();
+  await expect(detailTrigger).toBeFocused();
 });
 
-async function expectWorkspaceGeometry(
+async function expectDetailSheetGeometry(
   page: import("@playwright/test").Page,
-  master: import("@playwright/test").Locator,
-  inspector: import("@playwright/test").Locator,
-  sideBySide: boolean,
+  detailSheet: import("@playwright/test").Locator,
 ): Promise<void> {
-  const masterBox = await master.boundingBox();
-  const inspectorBox = await inspector.boundingBox();
-  const workspaceBox = await page.locator("[data-slot=\"workspace-content\"]").boundingBox();
-  expect(masterBox).not.toBeNull();
-  expect(inspectorBox).not.toBeNull();
-  expect(workspaceBox).not.toBeNull();
-  if (masterBox === null || inspectorBox === null || workspaceBox === null)
-    return;
-  if (sideBySide)
-    expect(inspectorBox.x).toBeGreaterThan(masterBox.x + masterBox.width - 2);
-  else
-    expect(inspectorBox.y).toBeGreaterThan(masterBox.y + masterBox.height - 2);
-  expect(inspectorBox.height).toBeLessThanOrEqual(workspaceBox.height + 1);
+  await expect.poll(async () => {
+    const sheetBox = await detailSheet.boundingBox();
+    const viewport = page.viewportSize();
+    if (sheetBox === null || viewport === null)
+      return false;
+    return sheetBox.x >= 0
+      && sheetBox.y >= 0
+      && sheetBox.x + sheetBox.width <= viewport.width + 1
+      && sheetBox.y + sheetBox.height <= viewport.height + 1;
+  }).toBe(true);
   const documentOverflow = await page.locator("html").evaluate(element => element.scrollWidth - element.clientWidth);
   expect(documentOverflow).toBeLessThanOrEqual(1);
+}
+
+async function expectBoundingBoxUnchanged(
+  locator: import("@playwright/test").Locator,
+  before: { readonly height: number; readonly width: number; readonly x: number; readonly y: number },
+): Promise<void> {
+  const after = await requiredBoundingBox(locator);
+  expect(Math.abs(after.x - before.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.width - before.width)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.height - before.height)).toBeLessThanOrEqual(1);
+}
+
+async function requiredBoundingBox(locator: import("@playwright/test").Locator) {
+  const box = await locator.boundingBox();
+  expect(box).not.toBeNull();
+  if (box === null)
+    throw new Error("目标元素没有可用的布局矩形");
+  return box;
+}
+
+async function documentScrollHeight(page: import("@playwright/test").Page): Promise<number> {
+  return page.locator("html").evaluate(element => element.scrollHeight);
 }

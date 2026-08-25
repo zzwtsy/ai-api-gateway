@@ -78,17 +78,16 @@ describe("models page", () => {
     expect(screen.getByText("能力与价格未知")).toBeVisible();
   });
 
-  it("opens a URL-owned non-modal Inspector with only current model facts", async () => {
+  it("opens a URL-owned detail Sheet with only current model facts", async () => {
     const user = userEvent.setup();
     hookMocks.useModelBindings.mockReturnValue(readyQuery([binding]));
     renderPage(endpoints, "binding_01");
 
-    const inspector = screen.getByRole("region", { name: "DeepSeek Chat" });
-    expect(within(inspector).getByText("DeepSeek / 默认 Endpoint")).toBeVisible();
-    expect(within(inspector).getByText(/未知不等于不支持或 0/u)).toBeVisible();
-    expect(screen.queryByRole("dialog", { name: "DeepSeek Chat" })).not.toBeInTheDocument();
+    const detailSheet = screen.getByRole("dialog", { name: "DeepSeek Chat" });
+    expect(within(detailSheet).getAllByText("DeepSeek / 默认 Endpoint")).toHaveLength(2);
+    expect(within(detailSheet).getByText(/未知不等于不支持或 0/u)).toBeVisible();
 
-    await user.click(within(inspector).getByRole("button", { name: "关闭模型详情" }));
+    await user.click(within(detailSheet).getByRole("button", { name: "关闭模型详情" }));
     expect(onModelBindingIdChange).toHaveBeenCalledWith(undefined, { replace: true });
   });
 
@@ -99,7 +98,7 @@ describe("models page", () => {
     await waitFor(() => {
       expect(onModelBindingIdChange).toHaveBeenCalledWith(undefined, { replace: true });
     });
-    expect(screen.queryByRole("region", { name: "DeepSeek Chat" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "DeepSeek Chat" })).not.toBeInTheDocument();
   });
 
   it("covers UX-MODELS-DIRECTORY-LIFECYCLE: keeps cached bindings visible after a refresh failure", () => {

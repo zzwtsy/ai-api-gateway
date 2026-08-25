@@ -16,6 +16,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { describeApiError } from "@/lib/api-runtime/client";
 
@@ -49,7 +57,7 @@ export function ModelsPage({
   readonly onRetryEndpoints: () => Promise<unknown>;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const focusAfterCloseRef = useRef<string | null>(null);
+  const detailFocusRef = useRef<string | null>(null);
   const query = useModelBindings();
   const selectedBinding = query.data?.find(binding => binding.id === modelBindingId);
 
@@ -60,19 +68,23 @@ export function ModelsPage({
   }, [modelBindingId, onModelBindingIdChange, query.data, selectedBinding]);
 
   useEffect(() => {
-    if (modelBindingId !== undefined || focusAfterCloseRef.current === null)
-      return;
-    const closedBindingId = focusAfterCloseRef.current;
-    focusAfterCloseRef.current = null;
-    document.getElementById(`model-binding-detail-trigger-${closedBindingId}`)?.focus();
+    if (modelBindingId !== undefined)
+      detailFocusRef.current = modelBindingId;
   }, [modelBindingId]);
 
   const endpointNames = new Map(endpoints?.map(endpoint => [endpoint.id, endpoint.label]));
-  const closeInspector = () => {
+  const closeDetailSheet = () => {
     if (modelBindingId === undefined)
       return;
-    focusAfterCloseRef.current = modelBindingId;
     onModelBindingIdChange(undefined, { replace: true });
+  };
+
+  const detailFinalFocus = () => {
+    const closedBindingId = detailFocusRef.current;
+    detailFocusRef.current = null;
+    return closedBindingId === null
+      ? null
+      : document.getElementById(`model-binding-detail-trigger-${closedBindingId}`);
   };
 
   return (
@@ -102,54 +114,62 @@ export function ModelsPage({
         </Dialog>
       </div>
 
-      <div className={selectedBinding === undefined
-        ? "min-h-0"
-        : "grid min-h-0 gap-6 aigw-desktop:grid-cols-[minmax(620px,1fr)_minmax(var(--aigw-layout-inspector-min),0.72fr)]"}
+      <Sheet
+        open={selectedBinding !== undefined}
+        onOpenChange={(open) => {
+          if (!open)
+            closeDetailSheet();
+        }}
       >
-        <Card data-slot="models-master" className="min-w-0">
-          <CardHeader>
-            <CardTitle>Endpoint 模型绑定</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ModelDirectory
-              bindings={query.data}
-              endpoints={endpoints}
-              error={query.isError ? query.error : null}
-              loading={query.isPending}
-              onRetry={query.refetch}
-              onSelect={onModelBindingIdChange}
-              selectedBindingId={modelBindingId}
-              stale={query.isRefetchError && query.data !== undefined}
-            />
-          </CardContent>
-        </Card>
-
-        {selectedBinding !== undefined && (
-          <Card
-            id="model-binding-inspector"
-            role="region"
-            aria-labelledby="model-binding-inspector-title"
-            className="max-h-[var(--aigw-layout-content-viewport-height)] min-h-0 min-w-0 gap-0 overflow-hidden"
-          >
-            <CardHeader className="shrink-0 border-b">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <CardTitle id="model-binding-inspector-title" className="truncate">{selectedBinding.name}</CardTitle>
+        <SheetContent
+          id="model-binding-detail-sheet"
+          showCloseButton={false}
+          finalFocus={detailFinalFocus}
+          className="gap-0 overflow-hidden data-[side=right]:w-full data-[side=right]:sm:max-w-xl"
+        >
+          {selectedBinding !== undefined && (
+            <>
+              <SheetHeader className="shrink-0 border-b">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <SheetTitle className="truncate">{selectedBinding.name}</SheetTitle>
+                    <SheetDescription>
+                      {endpointNames.get(selectedBinding.endpointId) ?? selectedBinding.endpointId}
+                    </SheetDescription>
+                  </div>
+                  <SheetClose render={<Button type="button" size="icon-sm" variant="ghost" aria-label="关闭模型详情" />}>
+                    <X />
+                  </SheetClose>
                 </div>
-                <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭模型详情" onClick={closeInspector}>
-                  <X />
-                </Button>
+              </SheetHeader>
+              <div data-slot="detail-sheet-body" className="min-h-0 flex-1 overflow-y-auto">
+                <ModelBindingDetail
+                  binding={selectedBinding}
+                  endpointName={endpointNames.get(selectedBinding.endpointId) ?? selectedBinding.endpointId}
+                />
               </div>
-            </CardHeader>
-            <div data-slot="inspector-body" className="min-h-0 overflow-y-auto">
-              <ModelBindingDetail
-                binding={selectedBinding}
-                endpointName={endpointNames.get(selectedBinding.endpointId) ?? selectedBinding.endpointId}
-              />
-            </div>
-          </Card>
-        )}
-      </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <Card data-slot="models-master" className="min-w-0">
+        <CardHeader>
+          <CardTitle>Endpoint 模型绑定</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ModelDirectory
+            bindings={query.data}
+            endpoints={endpoints}
+            error={query.isError ? query.error : null}
+            loading={query.isPending}
+            onRetry={query.refetch}
+            onSelect={onModelBindingIdChange}
+            selectedBindingId={modelBindingId}
+            stale={query.isRefetchError && query.data !== undefined}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

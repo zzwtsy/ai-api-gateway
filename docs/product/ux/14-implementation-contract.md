@@ -133,7 +133,7 @@ Query Key 必须包含所有影响结果的筛选、分页、排序和 Scope。M
 - 5xx/网络：保留用户草稿并提供重试；
 - 首次查询失败：显示持久错误和显式重试，不得归一成成功空状态；
 - 有缓存的刷新失败：保留最后一次成功数据，在拥有该查询的区域显示非阻断警告；
-- 部分失败：按 List、Inspector 或其他查询所有权分区呈现，不清空整页；
+- 部分失败：按 List、Inspector、详情 Sheet 或其他查询所有权分区呈现，不清空整页；
 - `unknown`、无数据、未验证和数值 0 必须分开。
 
 ## 7. API View Model
@@ -155,7 +155,7 @@ type RequestResult
 - 大表格使用 TanStack Virtual，同时保留可访问的表格语义或等价替代；
 - 列定义与格式器独立于页面容器；
 - URL 承载分页、排序、筛选和选中对象 ID；
-- 刷新后可恢复 Master–Detail 选中状态；
+- 刷新后可恢复 URL-owned 详情选中状态；
 - 列表查询不返回完整 Raw Payload；
 - 虚拟化不能破坏键盘导航、焦点恢复和行选择。
 
@@ -181,12 +181,12 @@ type RequestResult
 至少包括：
 
 - 单元：状态映射、格式化、匹配解释和 Cost Unknown；
-- 组件：表格筛选、Inspector 生命周期、Theme Dropdown Menu、Sheet/Dialog Form；
+- 组件：表格筛选、Inspector 与详情 Sheet 生命周期、Theme Dropdown Menu、Sheet/Dialog Form；
 - 集成：连接 → 路由规则 → 客户端 → 测试 Request；
 - E2E：核心闭环、键盘、URL 恢复、Error/Partial、局部故障隔离和稳定区域 ARIA 语义；
 - 视觉：1440 × 1000、1280 宽、1024 × 768，Light/Dark 分开记录；
 - 可访问性：axe 或等价自动检查，加键盘人工检查；
-- 浏览器：Chromium 执行主流程与视觉回归，Firefox 执行 Theme、Inspector、键盘、Reflow、Overlay 几何与 a11y 目标子集；
+- 浏览器：Chromium 执行主流程与视觉回归，Firefox 执行 Theme、Inspector、详情 Sheet、键盘、Reflow、Overlay 几何与 a11y 目标子集；
 - Artifact：对 Vite Build 产物运行浏览器 Golden Journey。
 
 ## 12. 禁止实现

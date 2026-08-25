@@ -4,7 +4,7 @@ import { Check, Copy, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 import { ClientConfigSnippets } from "./client-config-snippets";
 import { ClientDetail } from "./client-detail";
@@ -40,7 +48,7 @@ export function ClientsPage({
   readonly onClientIdChange: (clientId: string | undefined, options?: { readonly replace?: boolean }) => void;
 }) {
   const [modalState, setModalState] = useState<ModalState>(null);
-  const focusAfterCloseRef = useRef<string | null>(null);
+  const detailFocusRef = useRef<string | null>(null);
   const query = useGatewayClients();
   const selectedClient = query.data?.find(client => client.id === clientId);
 
@@ -51,11 +59,8 @@ export function ClientsPage({
   }, [clientId, onClientIdChange, query.data, selectedClient]);
 
   useEffect(() => {
-    if (clientId !== undefined || focusAfterCloseRef.current === null)
-      return;
-    const closedClientId = focusAfterCloseRef.current;
-    focusAfterCloseRef.current = null;
-    document.getElementById(`client-detail-trigger-${closedClientId}`)?.focus();
+    if (clientId !== undefined)
+      detailFocusRef.current = clientId;
   }, [clientId]);
 
   const closeModal = () => {
@@ -69,11 +74,19 @@ export function ClientsPage({
     setModalState(null);
   };
 
-  const closeInspector = () => {
-    if (clientId !== undefined) {
-      focusAfterCloseRef.current = clientId;
+  const closeDetailSheet = () => {
+    if (clientId !== undefined)
       onClientIdChange(undefined, { replace: true });
-    }
+  };
+
+  const detailFinalFocus = () => {
+    if (modalState !== null)
+      return false;
+    const closedClientId = detailFocusRef.current;
+    detailFocusRef.current = null;
+    return closedClientId === null
+      ? null
+      : document.getElementById(`client-detail-trigger-${closedClientId}`);
   };
 
   const startCreate = () => {
@@ -150,71 +163,94 @@ export function ClientsPage({
         </DialogContent>
       </Dialog>
 
-      <div className={selectedClient === undefined
-        ? "min-h-0"
-        : "grid min-h-0 gap-6 aigw-desktop:grid-cols-[minmax(620px,1fr)_minmax(var(--aigw-layout-inspector-min),0.72fr)]"}
+      <Sheet
+        open={selectedClient !== undefined && modalState === null}
+        onOpenChange={(open) => {
+          if (!open)
+            closeDetailSheet();
+        }}
       >
-        <Card data-slot="clients-master" className="min-w-0">
-          <CardHeader>
-            <CardTitle>Gateway 客户端</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ClientDirectory
-              clients={query.data}
-              error={query.isError ? query.error : null}
-              loading={query.isPending}
-              onRetry={query.refetch}
-              onSelect={selectClient}
-              onStartCreate={startCreate}
-              selectedClientId={clientId}
-              stale={query.isRefetchError && query.data !== undefined}
+        <SheetContent
+          id="client-detail-sheet"
+          showCloseButton={false}
+          finalFocus={detailFinalFocus}
+          className="gap-0 overflow-hidden data-[side=right]:w-full data-[side=right]:sm:max-w-xl"
+        >
+          {selectedClient !== undefined && (
+            <ClientDetailSheet
+              key={selectedClient.id}
+              client={selectedClient}
+              onRotated={result => setModalState({
+                kind: "secret",
+                result,
+                returnTo: { clientId: selectedClient.id, kind: "detail" },
+              })}
             />
-          </CardContent>
-        </Card>
+          )}
+        </SheetContent>
+      </Sheet>
 
-        {selectedClient !== undefined && modalState?.kind !== "create" && (
-          <ClientInspector
-            client={selectedClient}
-            onClose={closeInspector}
-            onRotated={result => setModalState({
-              kind: "secret",
-              result,
-              returnTo: { clientId: selectedClient.id, kind: "detail" },
-            })}
-          />
-        )}
-      </div>
+      <ClientDirectoryCard
+        clientId={clientId}
+        query={query}
+        onSelect={selectClient}
+        onStartCreate={startCreate}
+      />
     </div>
   );
 }
 
-function ClientInspector({ client, onClose, onRotated }: {
+function ClientDirectoryCard({ clientId, onSelect, onStartCreate, query }: {
+  readonly clientId: string | undefined;
+  readonly onSelect: (clientId: string) => void;
+  readonly onStartCreate: () => void;
+  readonly query: ReturnType<typeof useGatewayClients>;
+}) {
+  return (
+    <Card data-slot="clients-master" className="min-w-0">
+      <CardHeader>
+        <CardTitle>Gateway 客户端</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ClientDirectory
+          clients={query.data}
+          error={query.isError ? query.error : null}
+          loading={query.isPending}
+          onRetry={query.refetch}
+          onSelect={onSelect}
+          onStartCreate={onStartCreate}
+          selectedClientId={clientId}
+          stale={query.isRefetchError && query.data !== undefined}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+function ClientDetailSheet({ client, onRotated }: {
   readonly client: components["schemas"]["GatewayClient"];
-  readonly onClose: () => void;
   readonly onRotated: (result: ClientWithSecret) => void;
 }) {
   return (
-    <Card
-      id="client-inspector"
-      role="region"
-      aria-labelledby="client-inspector-title"
-      className="max-h-(--aigw-layout-content-viewport-height) min-h-0 min-w-0 gap-0 overflow-hidden"
-    >
-      <CardHeader className="shrink-0 border-b">
+    <>
+      <SheetHeader className="shrink-0 border-b">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <CardTitle id="client-inspector-title" className="truncate">{client.name}</CardTitle>
-            <CardDescription>{client.profile.name}</CardDescription>
+            <SheetTitle className="truncate">{client.name}</SheetTitle>
+            <SheetDescription>
+              Harness Profile：
+              {client.profile.name}
+            </SheetDescription>
           </div>
-          <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭客户端详情" onClick={onClose}>
+          <SheetClose render={<Button type="button" size="icon-sm" variant="ghost" aria-label="关闭客户端详情" />}>
             <X />
-          </Button>
+          </SheetClose>
         </div>
-      </CardHeader>
-      <div data-slot="inspector-body" className="min-h-0 overflow-y-auto pt-6">
+      </SheetHeader>
+      <div data-slot="detail-sheet-body" className="min-h-0 flex-1 overflow-y-auto pt-6">
         <ClientDetail key={client.id} client={client} onRotated={onRotated} />
       </div>
-    </Card>
+    </>
   );
 }
 

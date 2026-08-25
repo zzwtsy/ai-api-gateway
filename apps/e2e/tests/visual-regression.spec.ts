@@ -25,27 +25,27 @@ test("App Shell 的 Light 与 Dark 语义表面保持稳定", async ({ page }) =
   await expect(page).toHaveScreenshot("app-shell-dark.png", screenshotOptions());
 });
 
-test("Models Inspector 的稳定区域保持语义层级", async ({ page, request }) => {
+test("Models 详情 Sheet 的稳定区域保持语义层级", async ({ page, request }) => {
   const { bindingId } = await createModelFixture(request);
   await page.goto(`/models?modelBindingId=${encodeURIComponent(bindingId)}`);
 
-  const inspector = page.getByRole("region", { name: "视觉回归模型" });
-  await expect(inspector).toBeVisible();
-  await expect(inspector).toHaveScreenshot("models-inspector.png", {
+  const detailSheet = page.getByRole("dialog", { name: "视觉回归模型" });
+  await expect(detailSheet).toBeVisible();
+  await expect(detailSheet).toHaveScreenshot("models-inspector.png", {
     ...screenshotOptions(),
-    mask: dynamicModelValues(inspector),
+    mask: dynamicModelValues(detailSheet),
   });
 });
 
-test("Clients Inspector 的稳定区域保持单屏滚动结构", async ({ page, request }) => {
+test("Clients 详情 Sheet 的稳定区域保持单屏滚动结构", async ({ page, request }) => {
   const { clientId } = await createClientFixture(request);
   await page.goto(`/clients?clientId=${encodeURIComponent(clientId)}`);
 
-  const inspector = page.getByRole("region", { name: "视觉回归客户端" });
-  await expect(inspector).toBeVisible();
-  await expect(inspector).toHaveScreenshot("clients-inspector.png", {
+  const detailSheet = page.getByRole("dialog", { name: "视觉回归客户端" });
+  await expect(detailSheet).toBeVisible();
+  await expect(detailSheet).toHaveScreenshot("clients-inspector.png", {
     ...screenshotOptions(),
-    mask: dynamicClientValues(inspector),
+    mask: dynamicClientValues(detailSheet),
   });
 });
 

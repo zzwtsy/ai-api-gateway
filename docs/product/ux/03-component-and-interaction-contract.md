@@ -22,7 +22,7 @@ language: zh-CN
 | 加载 | `Skeleton`, `Spinner` |
 | 空状态 | `Empty` |
 | 短任务 / 创建 / 轮换 / 凭据展示 | `Dialog` |
-| 辅助工具 / 全局筛选 / 报文检查 | `Sheet` |
+| 上下文详情 / 辅助工具 / 全局筛选 / 报文检查 | `Sheet` |
 | 高风险确认 | `AlertDialog` |
 | 表单 | `FieldSet`, `FieldLegend`, `FieldGroup`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError` |
 | 输入组合 | `InputGroup`, `InputGroupInput`, `InputGroupAddon` |
@@ -100,12 +100,12 @@ language: zh-CN
 | 容器模式 | 适用场景 | 严格禁止场景 | 视线与空间考量 |
 | --- | --- | --- | --- |
 | **Dialog (居中模态)** | 1–3 步短任务；添加客户端；添加 Endpoint / 账号；Key 轮换；一次性 Secret 与配置展示；快速连通性测试 | 多分区复杂配置、长表单、需要频繁比对背景数据的长时间任务 | 居中（`max-w-lg` 或 `max-w-xl`），视线自然落在中轴黄金区域，任务结束即关闭，无单侧视觉偏航。 |
-| **Master–Detail (双栏工作台)** | 请求排障、连接检视、模型与客户端详情等高频数据比对、上下文审阅与深度排障 | 简单的一次性轻量任务 | 无遮罩左右分栏，左侧主列表 + 右侧 Inspector，支持无感切换与键盘导航。 |
-| **Sheet (侧滑抽屉)** | 辅助性非阻断工具；全局高级筛选面板；宽幅只读 Raw Payload / 日志报文检视 | 作为主创建表单、一次性 Secret 弹层；在单个 Sheet 内部嵌套多步骤状态轮播 | 默认 500px（宽版 640px）。固定 Header、滚动 Body、固定 Footer。避免在桌面大屏上滥用导致背景阻断与偏头疲劳。 |
+| **Master–Detail (双栏工作台)** | 请求排障、连接检视等需要持续比对目录与详情的高频深度工作 | 简单的一次性轻量任务；打开后会迫使目录降级为不稳定上下堆叠的详情 | 无遮罩左右分栏，左侧主列表 + 右侧 Inspector，支持连续切换与键盘导航。 |
+| **Sheet (侧滑抽屉)** | 客户端与模型的临时上下文详情；全局高级筛选面板；宽幅只读 Raw Payload / 日志报文检视 | 作为主创建表单、一次性 Secret 弹层；在单个 Sheet 内部嵌套多步骤状态轮播 | 默认 500px（宽版 640px）。固定 Header、滚动 Body；不参与底层页面布局，通过遮罩和进入/退出过渡明确层级。 |
 | **AlertDialog** | 删除、撤销 Key、覆盖配置、暴露 Secret 等高风险不可逆确认 | 普通保存成功、常规操作 | 紧凑居中警告，强制用户明确意图。 |
 | **独立页面** | 路由编辑、长流程配置、规则多分区编排 | 简单单字段编辑或短任务 | 独占视口，承载复杂结构化业务流。 |
 
-Persistent Inspector 使用命名 `region`，不提供遮罩、焦点陷阱或背景滚动锁。外层高度不得超过 App Shell 内容视口，Header 固定，Body 是唯一纵向滚动 Owner；1440px 及以上并排，1280px 与 1024px 按 Master、Inspector 的 DOM 顺序上下排列。
+Persistent Inspector 使用命名 `region`，不提供遮罩、焦点陷阱或背景滚动锁。Request 等持续比对工作区的外层高度不得超过 App Shell 内容视口，Header 固定，Body 是唯一纵向滚动 Owner。Clients 与 Models 详情使用命名 `dialog` 的 URL-owned Sheet；打开前后目录 Bounding Box 与文档高度保持不变，Sheet 不超过视口，关闭后焦点返回原“查看详情”按钮。
 
 ## 8. 反馈层级
 
