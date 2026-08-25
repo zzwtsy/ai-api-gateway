@@ -3,7 +3,6 @@ import type { components } from "@/api/schema";
 import { Check, Copy, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { PageHeader } from "@/components/product/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -90,38 +89,34 @@ export function ClientsPage({
 
   return (
     <div className="flex min-h-0 flex-col gap-7">
-      <PageHeader
-        title="客户端"
-        description="为每个 Harness 实例签发独立 Gateway Client Key。"
-        actions={(
-          <Dialog
-            open={modalState?.kind === "create"}
-            onOpenChange={(open) => {
-              if (open)
-                startCreate();
-              else
-                closeModal();
-            }}
-          >
-            <DialogTrigger render={<Button />}>
-              <Plus data-icon="inline-start" />
-              添加客户端
-            </DialogTrigger>
-            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-lg">
-              <DialogHeader className="px-6 pt-6 pb-5">
-                <DialogTitle>添加 Gateway 客户端</DialogTitle>
-                <DialogDescription>为一个 Harness 实例签发独立 Key；完整 Key 创建后只显示一次。</DialogDescription>
-              </DialogHeader>
-              {modalState?.kind === "create" && (
-                <CreateClientForm
-                  onCancel={closeModal}
-                  onCreated={result => setModalState({ kind: "secret", result, returnTo: { kind: "list" } })}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-        )}
-      />
+      <div className="flex justify-end">
+        <Dialog
+          open={modalState?.kind === "create"}
+          onOpenChange={(open) => {
+            if (open)
+              startCreate();
+            else
+              closeModal();
+          }}
+        >
+          <DialogTrigger render={<Button />}>
+            <Plus data-icon="inline-start" />
+            添加客户端
+          </DialogTrigger>
+          <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-lg">
+            <DialogHeader className="px-6 pt-6 pb-5">
+              <DialogTitle>添加 Gateway 客户端</DialogTitle>
+              <DialogDescription>完整 Key 仅显示一次。</DialogDescription>
+            </DialogHeader>
+            {modalState?.kind === "create" && (
+              <CreateClientForm
+                onCancel={closeModal}
+                onCreated={result => setModalState({ kind: "secret", result, returnTo: { kind: "list" } })}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <Dialog
         open={modalState?.kind === "secret"}
@@ -141,7 +136,7 @@ export function ClientsPage({
                   {" "}
                   的 Gateway Key
                 </DialogTitle>
-                <DialogDescription>完整 Key 关闭后无法再次查看；日志、普通导出和客户端列表都不会保留它。</DialogDescription>
+                <DialogDescription>完整 Key 关闭后无法再次查看。</DialogDescription>
               </DialogHeader>
               <div className="pt-2">
                 <ClientKeyRevealContent
@@ -162,7 +157,6 @@ export function ClientsPage({
         <Card data-slot="clients-master" className="min-w-0">
           <CardHeader>
             <CardTitle>Gateway 客户端</CardTitle>
-            <CardDescription>控制面登录与 Gateway Client Key 使用不同的身份边界。</CardDescription>
           </CardHeader>
           <CardContent>
             <ClientDirectory
@@ -210,11 +204,7 @@ function ClientInspector({ client, onClose, onRotated }: {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <CardTitle id="client-inspector-title" className="truncate">{client.name}</CardTitle>
-            <CardDescription>
-              {client.profile.name}
-              {" "}
-              客户端详情与 Gateway Key 生命周期。
-            </CardDescription>
+            <CardDescription>{client.profile.name}</CardDescription>
           </div>
           <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭客户端详情" onClick={onClose}>
             <X />

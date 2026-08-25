@@ -61,7 +61,6 @@ export function ConnectionProviderFields({
   return (
     <FieldSet>
       <FieldLegend>Provider 与访问凭据</FieldLegend>
-      <FieldDescription>选择模板可减少重复输入；自定义部署仍可逐项配置。</FieldDescription>
       <FieldGroup>
         <PresetField selectedSlug={selectedPresetSlug} onSelect={onPresetSelect} />
 
@@ -100,7 +99,7 @@ export function ConnectionProviderFields({
             placeholder="sk-..."
             {...register("secret")}
           />
-          <FieldDescription>仅提交给 Gateway，并在服务端使用 AES-256-GCM 加密存储。</FieldDescription>
+          <FieldDescription>Secret 仅提交给 Gateway，不会保存在浏览器中。</FieldDescription>
           <FieldError errors={[errors.secret]} />
         </Field>
       </FieldGroup>
@@ -126,7 +125,6 @@ export function ConnectionEndpointFields({
   return (
     <FieldSet>
       <FieldLegend>默认 Endpoint 与凭据名称</FieldLegend>
-      <FieldDescription>创建连接时同步建立一个可立即使用的 Endpoint、账号和 Credential。</FieldDescription>
       <FieldGroup>
         <FieldGroup className="sm:grid sm:grid-cols-2">
           <ProtocolField control={control} onProtocolChange={onProtocolChange} />
@@ -194,7 +192,7 @@ function PresetField({
       <FieldLabel htmlFor="preset-select">Provider 模板（可选）</FieldLabel>
       <Select items={presetItems} value={selectedSlug} onValueChange={value => value !== null && onSelect(value)}>
         <SelectTrigger id="preset-select" className="w-full">
-          <SelectValue placeholder="选择预设厂商以快速填入配置" />
+          <SelectValue placeholder="选择 Provider 模板" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -207,7 +205,6 @@ function PresetField({
           </SelectGroup>
         </SelectContent>
       </Select>
-      <FieldDescription>选择后自动填写连接名称、标识、协议、Base URL 和请求路径。</FieldDescription>
     </Field>
   );
 }

@@ -70,7 +70,6 @@ export function CredentialProbePanel({
         <Field data-invalid={error !== null || undefined}>
           <FieldLabel htmlFor="probe-model">请求模型</FieldLabel>
           <Input id="probe-model" aria-invalid={error !== null} value={model} onChange={event => onModelChange(event.target.value)} placeholder="输入该 Endpoint 接受的真实模型 ID" />
-          <FieldDescription>结果会按鉴权、限流、上游拒绝或不可用分类。</FieldDescription>
           {error !== null && <FieldError>{describeApiError(error, "无法执行 Credential 测试")}</FieldError>}
         </Field>
       </FieldGroup>
@@ -123,7 +122,7 @@ export function CredentialRotatePanel({ error, onCancel, onSecretChange, onSubmi
         <Field data-invalid={error !== null || undefined}>
           <FieldLabel htmlFor="rotated-provider-secret">新的 Provider Secret</FieldLabel>
           <Input id="rotated-provider-secret" type="password" autoComplete="off" aria-invalid={error !== null} value={secret} onChange={event => onSecretChange(event.target.value)} />
-          <FieldDescription>保存后旧 Secret 立即被替换，完整值不会出现在响应或列表中。</FieldDescription>
+          <FieldDescription>保存后旧 Secret 立即失效；完整值不会再次显示。</FieldDescription>
           {error !== null && <FieldError>{describeApiError(error, "无法轮换凭据")}</FieldError>}
         </Field>
       </FieldGroup>

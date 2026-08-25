@@ -2,12 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { MousePointerClickIcon, SendIcon } from "lucide-react";
 
 import { DataErrorState } from "@/components/product/data-error-state";
-import { PageHeader } from "@/components/product/page-header";
 import { RequestStatus } from "@/components/product/request-status";
 import { StatusBadge } from "@/components/product/status-badge";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -35,10 +36,6 @@ export function RequestsPage({ requestId }: { readonly requestId: string | undef
 
   return (
     <div className="flex flex-col gap-7">
-      <PageHeader
-        title="请求"
-        description="从一次逻辑请求解释路由版本、上游尝试和最终结果。"
-      />
       <div
         data-slot="request-workbench"
         className="grid min-h-[610px] overflow-hidden rounded-xl border aigw-desktop:grid-cols-[minmax(var(--aigw-layout-request-master-min),1.3fr)_minmax(var(--aigw-layout-request-inspector-min),0.7fr)]"
@@ -113,11 +110,14 @@ function RequestList({
       <Empty className="min-h-[420px] border-0">
         <EmptyHeader>
           <EmptyMedia variant="icon"><SendIcon /></EmptyMedia>
-          <EmptyTitle>还没有逻辑请求</EmptyTitle>
+          <EmptyTitle>还没有请求</EmptyTitle>
           <EmptyDescription>
-            使用开发网关客户端密钥发送一次 OpenAI Chat 请求后，这里会出现完整诊断链。
+            配置客户端并发送请求后，可在这里查看诊断信息。
           </EmptyDescription>
         </EmptyHeader>
+        <EmptyContent>
+          <Link to="/clients" className={buttonVariants({ variant: "outline" })}>配置客户端</Link>
+        </EmptyContent>
       </Empty>
     );
   }
@@ -198,9 +198,6 @@ function RequestInspector({
         <EmptyHeader>
           <EmptyMedia variant="icon"><MousePointerClickIcon /></EmptyMedia>
           <EmptyTitle>选择一条请求</EmptyTitle>
-          <EmptyDescription>
-            查看最终结果、实际目标和上游尝试。
-          </EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -291,7 +288,7 @@ function RequestInspector({
             {" "}
             {view.observation.bytesLabel}
             {" "}
-            字节。完整 Secret 不会出现在此处。
+            字节
           </span>
         </section>
       </div>

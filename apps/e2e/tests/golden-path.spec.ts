@@ -13,17 +13,18 @@ test("OpenAI Chat request reaches the provider and appears as one Request with o
   await expect(page.getByText("bootstrap-provider-credential")).toBeVisible();
 });
 
-test("product pages expose current behavior without development fixture defaults", async ({ page }) => {
+test("product pages keep implementation explanations and development fixtures out of task flows", async ({ page }) => {
   await page.setExtraHTTPHeaders({ authorization: "Bearer admin_dev_local" });
   await page.goto("/");
 
-  await expect(page.getByText("请求转发链路", { exact: true })).toBeVisible();
-  await expect(page.getByText(/保持入口协议并透明转发流式响应/u)).toBeVisible();
+  await expect(page.getByText("最近请求", { exact: true })).toBeVisible();
+  await expect(page.getByText("请求转发链路", { exact: true })).toHaveCount(0);
   await expect(page.getByText(/TypeScript 6 单版本/u)).toHaveCount(0);
   await expect(page.getByText(/留给后续功能/u)).toHaveCount(0);
 
   await page.goto("/connections");
-  await expect(page.getByText("管理上游 Provider Endpoint、协议和连接状态。")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "连接" })).toBeVisible();
+  await expect(page.getByText(/数据面不会跨协议转换/u)).toHaveCount(0);
   await expect(page.getByText(/账号与凭据将作为/u)).toHaveCount(0);
   await page.getByRole("button", { name: "添加连接" }).click();
   await expect(page.getByLabel("连接名称")).toHaveValue("");

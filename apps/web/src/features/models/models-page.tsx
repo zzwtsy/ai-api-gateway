@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { DataErrorState } from "@/components/product/data-error-state";
 import { ModelBindingTable } from "@/components/product/model-binding-table";
-import { PageHeader } from "@/components/product/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -78,34 +77,30 @@ export function ModelsPage({
 
   return (
     <div className="flex min-h-0 flex-col gap-7">
-      <PageHeader
-        title="模型"
-        description="管理每个 Endpoint 上可明确调用的上游模型绑定。"
-        actions={(
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger render={<Button />}>
-              <Plus data-icon="inline-start" />
-              添加模型绑定
-            </DialogTrigger>
-            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
-              <DialogHeader className="px-6 pt-6 pb-5">
-                <DialogTitle>添加模型绑定</DialogTitle>
-                <DialogDescription>选择目标 Endpoint，并指定 Provider 实际接收的模型标识。</DialogDescription>
-              </DialogHeader>
-              {dialogOpen && (
-                <EndpointFormState
-                  endpoints={endpoints}
-                  error={endpointError}
-                  loading={endpointsLoading}
-                  onCancel={() => setDialogOpen(false)}
-                  onCreated={() => setDialogOpen(false)}
-                  onRetry={onRetryEndpoints}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-        )}
-      />
+      <div className="flex justify-end">
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger render={<Button />}>
+            <Plus data-icon="inline-start" />
+            添加模型绑定
+          </DialogTrigger>
+          <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+            <DialogHeader className="px-6 pt-6 pb-5">
+              <DialogTitle>添加模型绑定</DialogTitle>
+              <DialogDescription>指定 Endpoint 和上游模型 ID。</DialogDescription>
+            </DialogHeader>
+            {dialogOpen && (
+              <EndpointFormState
+                endpoints={endpoints}
+                error={endpointError}
+                loading={endpointsLoading}
+                onCancel={() => setDialogOpen(false)}
+                onCreated={() => setDialogOpen(false)}
+                onRetry={onRetryEndpoints}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <div className={selectedBinding === undefined
         ? "min-h-0"
@@ -114,7 +109,6 @@ export function ModelsPage({
         <Card data-slot="models-master" className="min-w-0">
           <CardHeader>
             <CardTitle>Endpoint 模型绑定</CardTitle>
-            <CardDescription>同一模型在不同 Endpoint 上保持独立记录。</CardDescription>
           </CardHeader>
           <CardContent>
             <ModelDirectory
@@ -141,7 +135,6 @@ export function ModelsPage({
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <CardTitle id="model-binding-inspector-title" className="truncate">{selectedBinding.name}</CardTitle>
-                  <CardDescription>当前 Endpoint 级模型绑定事实。</CardDescription>
                 </div>
                 <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭模型详情" onClick={closeInspector}>
                   <X />
@@ -254,7 +247,7 @@ function ModelDirectory({
         <EmptyHeader>
           <EmptyMedia variant="icon"><Box /></EmptyMedia>
           <EmptyTitle>尚未创建模型绑定</EmptyTitle>
-          <EmptyDescription>把真实上游模型 ID 绑定到已配置的 Endpoint。</EmptyDescription>
+          <EmptyDescription>使用“添加模型绑定”创建第一条记录。</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );

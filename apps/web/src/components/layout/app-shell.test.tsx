@@ -38,7 +38,7 @@ describe("app shell", () => {
   it("shows the active route and current page title", () => {
     renderAppShell();
 
-    expect(screen.getByText("请求", { selector: "[data-slot=\"topbar-title\"]" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: "请求" })).toBeVisible();
     expect(screen.getByRole("link", { name: "请求" })).toHaveAttribute("data-active");
     expect(screen.getByText("监控")).toBeVisible();
     expect(screen.getByText("配置")).toBeVisible();

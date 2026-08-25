@@ -66,7 +66,7 @@ export function ConnectionDetailCredentialSheets({ actions }: { readonly actions
           <DialogHeader>
             <DialogTitle>轮换 Provider 凭据</DialogTitle>
             <DialogDescription>
-              输入新的 API Key；旧凭据将被立即替换并安全加密存储。
+              保存后旧凭据立即失效。
             </DialogDescription>
           </DialogHeader>
           {rotate.open && (

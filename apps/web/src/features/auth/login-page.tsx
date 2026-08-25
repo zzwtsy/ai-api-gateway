@@ -7,9 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -30,7 +27,7 @@ export function LoginPage() {
     const result = await authClient.signIn.email({ email, password });
     setPending(false);
     if (result.error) {
-      setError(result.error.message ?? "登录失败");
+      setError(result.error.message ?? "登录失败，请检查邮箱和密码后重试。");
       return;
     }
     await navigate({ to: "/" });
@@ -44,17 +41,10 @@ export function LoginPage() {
         </div>
         <div>
           <h1 className="text-xl font-semibold">控制面登录</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            生产环境使用 Better Auth 会话；开发环境可使用受限的控制面令牌。
-          </p>
         </div>
       </div>
       <Card>
-        <CardHeader>
-          <CardTitle>管理员账号</CardTitle>
-          <CardDescription>首次部署后运行 `pnpm db:bootstrap` 创建账号。</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <form className="flex flex-col gap-5" onSubmit={event => void submit(event)}>
             <FieldGroup>
               <Field data-invalid={error !== null || undefined}>

@@ -133,7 +133,6 @@ export function AddEndpointForm({ connection, onCreated }: {
                   </label>
                 ))}
               </div>
-              <FieldDescription>只列出当前 Provider 下未禁用的 Credential。</FieldDescription>
               <FieldError errors={[fieldState.error]} />
             </Field>
           )}

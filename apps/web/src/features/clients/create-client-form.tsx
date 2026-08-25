@@ -105,7 +105,7 @@ export function CreateClientForm({ onCancel, onCreated }: {
               maxLength={100}
               {...form.register("name")}
             />
-            <FieldDescription>每个 Harness 实例使用独立客户端，便于单独撤销和归因。</FieldDescription>
+            <FieldDescription>建议每个 Harness 实例使用独立客户端。</FieldDescription>
             <FieldError errors={[form.formState.errors.name]} />
           </Field>
           <Controller
@@ -133,7 +133,7 @@ export function CreateClientForm({ onCancel, onCreated }: {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-                <FieldDescription>Profile 决定允许的入口协议，创建后无需重复配置。</FieldDescription>
+                <FieldDescription>Profile 决定允许的入口协议。</FieldDescription>
                 <FieldError errors={[fieldState.error]} />
               </Field>
             )}
@@ -147,7 +147,6 @@ export function CreateClientForm({ onCancel, onCreated }: {
                   <Badge key={protocol} variant="outline">{clientProtocolLabel(protocol)}</Badge>
                 ))}
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">Gateway 保持入口协议，不进行跨协议转换。</p>
             </div>
           )}
         </FieldGroup>

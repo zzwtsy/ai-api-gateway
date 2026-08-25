@@ -11,19 +11,18 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-import { PageHeader } from "@/components/product/page-header";
 import { RequestStatus } from "@/components/product/request-status";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -65,11 +64,6 @@ export function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-7">
-      <PageHeader
-        title="概览"
-        description="确认 Gateway 是否健康，并快速进入需要处理的问题。"
-      />
-
       {isInitialSetup && <OnboardingGuide />}
 
       <section className="grid grid-cols-2 gap-7 border-y py-5 aigw-desktop:grid-cols-4">
@@ -94,47 +88,23 @@ export function OverviewPage() {
         />
       </section>
 
-      <div className="grid gap-6 aigw-desktop:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>最近请求</CardTitle>
-            <CardDescription>
-              逻辑请求与上游尝试分开记录，重试不会虚增请求数。
-            </CardDescription>
-            <CardAction>
-              <Link
-                to="/requests"
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
-              >
-                查看全部
-                <ArrowRight data-icon="inline-end" />
-              </Link>
-            </CardAction>
-          </CardHeader>
-          <CardContent>
-            <RecentRequests loading={requests.isLoading} items={items} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>请求转发链路</CardTitle>
-            <CardDescription>
-              OpenAI Chat Completions 保持入口协议并透明转发流式响应。
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="rounded-lg border bg-muted/35 p-4 text-xs leading-6">
-              <code className="break-all">POST /openai/v1/chat/completions</code>
-              <div className="mt-2 text-muted-foreground">
-                Gateway Key → 同协议路由 → 上游 Endpoint → 流式响应 → Request / Attempt
-              </div>
-            </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              请求与上游尝试分别记录；响应开始后保持已选目标，便于解释实际路由结果。
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>最近请求</CardTitle>
+          <CardAction>
+            <Link
+              to="/requests"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              查看全部
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <RecentRequests loading={requests.isLoading} items={items} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -147,9 +117,7 @@ function OnboardingGuide() {
           <Sparkles className="size-4 text-primary" />
           <CardTitle className="text-base">快速起步向导</CardTitle>
         </div>
-        <CardDescription className="text-foreground/70">
-          完成以下 3 步，即可在本地 IDE 与 CLI 工具中接入网关。
-        </CardDescription>
+        <p className="text-sm text-foreground/70">按顺序完成以下设置。</p>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-2 rounded-lg border bg-background p-4">
@@ -157,9 +125,6 @@ function OnboardingGuide() {
             <Plug className="size-4 text-primary" />
             <span>1. 接入上游厂商</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            支持 DeepSeek、OpenAI、Anthropic 等预设，一键填入并保存 API Key。
-          </p>
           <div className="mt-auto pt-2">
             <Link
               to="/connections"
@@ -176,9 +141,6 @@ function OnboardingGuide() {
             <Boxes className="size-4 text-primary" />
             <span>2. 确认可用模型</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            查看已配置 Endpoint 上可调用的模型绑定与能力状态。
-          </p>
           <div className="mt-auto pt-2">
             <Link
               to="/models"
@@ -195,9 +157,6 @@ function OnboardingGuide() {
             <KeyRound className="size-4 text-primary" />
             <span>3. 签发接入密钥</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            为 Cursor、Codex 等生成独立 Gateway Key 与一键接入配置代码。
-          </p>
           <div className="mt-auto pt-2">
             <Link
               to="/clients"
@@ -230,9 +189,12 @@ function RecentRequests({
           <EmptyMedia variant="icon"><SendIcon /></EmptyMedia>
           <EmptyTitle>还没有请求记录</EmptyTitle>
           <EmptyDescription>
-            发送第一条测试请求后，这里会出现路由与延迟信息。
+            配置客户端并发送请求后，这里会显示路由与延迟。
           </EmptyDescription>
         </EmptyHeader>
+        <EmptyContent>
+          <Link to="/clients" className={buttonVariants({ variant: "outline", size: "sm" })}>配置客户端</Link>
+        </EmptyContent>
       </Empty>
     );
   }

@@ -11,9 +11,10 @@ const onModelBindingIdChange = vi.fn();
 
 vi.mock("./hooks", () => hookMocks);
 vi.mock("./create-model-binding-form", () => ({
-  CreateModelBindingForm: ({ onCancel }: { onCancel: () => void }) => (
+  CreateModelBindingForm: ({ endpoints, onCancel }: { endpoints: readonly { label: string }[]; onCancel: () => void }) => (
     <div>
       模型绑定表单
+      <span>{endpoints[0]?.label}</span>
       <button type="button" onClick={onCancel}>取消</button>
     </div>
   ),
@@ -48,7 +49,7 @@ describe("models page", () => {
 
     await user.click(screen.getByRole("button", { name: "添加模型绑定" }));
     expect(screen.getByText("模型绑定表单")).toBeVisible();
-    expect(screen.getByText(/选择目标 Endpoint/u)).toBeVisible();
+    expect(screen.getByText("DeepSeek / 默认 Endpoint")).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "取消" }));
     expect(screen.queryByRole("heading", { name: "添加模型绑定" })).not.toBeInTheDocument();
@@ -84,7 +85,7 @@ describe("models page", () => {
 
     const inspector = screen.getByRole("region", { name: "DeepSeek Chat" });
     expect(within(inspector).getByText("DeepSeek / 默认 Endpoint")).toBeVisible();
-    expect(within(inspector).getByText(/未知不等于不支持或数值为 0/u)).toBeVisible();
+    expect(within(inspector).getByText(/未知不等于不支持或 0/u)).toBeVisible();
     expect(screen.queryByRole("dialog", { name: "DeepSeek Chat" })).not.toBeInTheDocument();
 
     await user.click(within(inspector).getByRole("button", { name: "关闭模型详情" }));

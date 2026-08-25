@@ -31,11 +31,11 @@ describe("overview page", () => {
     hookMocks.useRequests.mockReturnValue({ data: [], isLoading: false });
   });
 
-  it("covers UX-OVERVIEW-READY: describes the current request path without development progress copy", () => {
+  it("covers UX-OVERVIEW-READY: keeps implementation explanations out of the product overview", () => {
     render(<OverviewPage />);
 
-    expect(screen.getByText("请求转发链路")).toBeVisible();
-    expect(screen.getByText(/保持入口协议并透明转发流式响应/u)).toBeVisible();
+    expect(screen.getByText("最近请求")).toBeVisible();
+    expect(screen.queryByText("请求转发链路")).not.toBeInTheDocument();
     expect(screen.queryByText(/TypeScript 6 单版本/u)).not.toBeInTheDocument();
     expect(screen.queryByText(/留给后续功能/u)).not.toBeInTheDocument();
   });

@@ -59,7 +59,6 @@ export function CreateModelBindingForm({
       <div className="min-h-0 overflow-y-auto px-6 pb-6">
         <FieldSet>
           <FieldLegend>绑定目标与模型标识</FieldLegend>
-          <FieldDescription>先选择 Endpoint；随后可从上游目录填充，也可直接手工输入。</FieldDescription>
           <FieldGroup>
             <Controller
               control={form.control}
@@ -134,7 +133,7 @@ export function CreateModelBindingForm({
 
             <div className="rounded-lg border bg-muted/30 p-4">
               <p className="text-sm font-medium">创建后的状态</p>
-              <p className="mt-1 text-sm text-muted-foreground">新绑定标记为“未验证”；能力、上下文和价格保持未知，直到获得明确证据。</p>
+              <p className="mt-1 text-sm text-muted-foreground">新绑定标记为“未验证”；能力与价格保持未知。</p>
             </div>
           </FieldGroup>
         </FieldSet>

@@ -31,7 +31,7 @@ export function ModelBindingDetail({ binding, endpointName }: {
         <div className="rounded-lg border p-4">
           <Badge variant="secondary">未知</Badge>
           <p className="mt-2 text-sm text-muted-foreground">
-            当前绑定没有已验证的能力、上下文窗口或价格数据；未知不等于不支持或数值为 0。
+            尚无已验证的能力、上下文窗口或价格数据。未知不等于不支持或 0。
           </p>
         </div>
       </section>

@@ -161,8 +161,8 @@ describe("connection detail views", () => {
   it("renders only known configuration facts in the overview", () => {
     renderConnectionDetail("overview");
 
-    expect(screen.getByText("配置状态不等于兼容性结论")).toBeVisible();
-    expect(screen.getByText(/流式、Usage 和字段兼容性尚未经过完整测试/u)).toBeVisible();
+    expect(screen.getByText("“启用”不代表兼容")).toBeVisible();
+    expect(screen.getByText(/请在“兼容性”中测试流式、Usage 和字段支持/u)).toBeVisible();
     expect(screen.queryByRole("button", { name: "完整兼容性测试" })).not.toBeInTheDocument();
     expect(screen.queryByText("sk-••••abcd")).not.toBeInTheDocument();
   });

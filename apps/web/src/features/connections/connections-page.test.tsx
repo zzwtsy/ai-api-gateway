@@ -108,7 +108,7 @@ describe("connections page states", () => {
 
     renderConnectionsPage();
 
-    expect(screen.getByText("使用“添加连接”创建第一个上游 Endpoint。")).toBeVisible();
+    expect(screen.getByText("尚未添加连接")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "添加连接" }));
     expect(screen.getByLabelText("连接名称")).toHaveValue("");
     expect(screen.getByLabelText("Provider 标识")).toHaveValue("");

@@ -5,20 +5,17 @@ import { PlugZapIcon, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DataErrorState } from "@/components/product/data-error-state";
-import { PageHeader } from "@/components/product/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -69,35 +66,28 @@ export function ConnectionsPage({
 
   return (
     <div className="flex flex-col gap-7">
-      <PageHeader
-        title="连接"
-        description="管理上游 Provider Endpoint、协议和连接状态。"
-        actions={(
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger render={<Button />}>
-              <Plus data-icon="inline-start" />
-              添加连接
-            </DialogTrigger>
-            <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
-              <DialogHeader className="px-6 pt-6 pb-5">
-                <DialogTitle>添加连接</DialogTitle>
-                <DialogDescription>
-                  分两步连接 Provider 并配置默认 Endpoint；Secret 不会进入浏览器持久化。
-                </DialogDescription>
-              </DialogHeader>
-              {dialogOpen && (
-                <CreateConnectionForm
-                  onCancel={() => setDialogOpen(false)}
-                  onCreated={(createdConnectionId) => {
-                    onConnectionIdChange(createdConnectionId);
-                    setDialogOpen(false);
-                  }}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-        )}
-      />
+      <div className="flex justify-end">
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger render={<Button />}>
+            <Plus data-icon="inline-start" />
+            添加连接
+          </DialogTrigger>
+          <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+            <DialogHeader className="px-6 pt-6 pb-5">
+              <DialogTitle>添加连接</DialogTitle>
+            </DialogHeader>
+            {dialogOpen && (
+              <CreateConnectionForm
+                onCancel={() => setDialogOpen(false)}
+                onCreated={(createdConnectionId) => {
+                  onConnectionIdChange(createdConnectionId);
+                  setDialogOpen(false);
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {query.data?.length === 0
         ? (
@@ -106,10 +96,8 @@ export function ConnectionsPage({
                 <Empty className="min-h-52 border-0">
                   <EmptyHeader>
                     <EmptyMedia variant="icon"><PlugZapIcon /></EmptyMedia>
-                    <EmptyTitle>尚未创建控制面连接</EmptyTitle>
-                    <EmptyDescription>
-                      使用“添加连接”创建第一个上游 Endpoint。
-                    </EmptyDescription>
+                    <EmptyTitle>尚未添加连接</EmptyTitle>
+                    <EmptyDescription>使用“添加连接”配置第一个 Provider Endpoint。</EmptyDescription>
                   </EmptyHeader>
                 </Empty>
               </CardContent>
@@ -123,7 +111,6 @@ export function ConnectionsPage({
                     <CardTitle>Provider 目录</CardTitle>
                     <Badge variant="secondary">{query.data?.length ?? "—"}</Badge>
                   </div>
-                  <CardDescription>协议是硬边界；数据面不会跨协议转换。</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 p-0">
                   <ConnectionDirectory

@@ -14,7 +14,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -58,10 +57,7 @@ export function AppShell({ pages }: { readonly pages: readonly NavigationPage[] 
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <Activity className="size-4" />
                   </span>
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate font-semibold">AI API Gateway</span>
-                    <span className="truncate text-xs text-muted-foreground">个人控制面</span>
-                  </span>
+                  <span className="truncate font-semibold">AI API Gateway</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -102,26 +98,14 @@ export function AppShell({ pages }: { readonly pages: readonly NavigationPage[] 
                   <span>管理员登录</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Gateway 在线" render={<div />}>
-                  <Activity className="text-success-foreground" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="font-medium">Gateway 在线</span>
-                    <span className="truncate text-[11px] text-muted-foreground">
-                      Node 模块化单体 · 路由版本 v1
-                    </span>
-                  </span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
-          <SidebarRail />
         </Sidebar>
         <SidebarInset className="min-w-0 overflow-hidden border">
           <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
             <SidebarTrigger aria-label="切换侧边栏" title="切换侧边栏" />
             <div className="h-4 w-px bg-border" aria-hidden="true" />
-            <p data-slot="topbar-title" className="min-w-0 flex-1 truncate text-sm font-medium">{pageTitle}</p>
+            <h1 data-slot="topbar-title" className="min-w-0 flex-1 truncate text-sm font-medium">{pageTitle}</h1>
             <ThemeSelect />
           </header>
           <div data-slot="workspace-content" className="min-h-0 flex-1 overflow-auto px-(--aigw-layout-page-gutter-compact) pt-(--aigw-layout-page-top-padding) pb-(--aigw-layout-page-bottom-padding) aigw-minimum:px-(--aigw-layout-page-gutter-medium) aigw-desktop:px-(--aigw-layout-page-gutter-desktop)">

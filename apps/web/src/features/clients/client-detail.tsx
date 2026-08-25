@@ -75,10 +75,7 @@ export function ClientDetail({
       <ClientOverview client={client} />
       <Separator />
       <section aria-labelledby="client-keys-heading" className="flex flex-col gap-3">
-        <div>
-          <h3 id="client-keys-heading" className="font-heading text-sm font-medium">Gateway Key</h3>
-          <p className="mt-1 text-xs text-muted-foreground">列表只保留脱敏标识和生命周期状态。</p>
-        </div>
+        <h3 id="client-keys-heading" className="font-heading text-sm font-medium">Gateway Key</h3>
         {currentKeys.length === 0 && <p className="rounded-lg border p-3 text-sm text-muted-foreground">当前没有可用 Gateway Key。</p>}
         {currentKeys.length > 0 && (
           <ul className="flex flex-col divide-y rounded-lg border">
@@ -114,15 +111,12 @@ export function ClientDetail({
       </section>
       <Separator />
       <section aria-labelledby="client-config-heading" className="flex flex-col gap-4">
-        <div>
-          <h3 id="client-config-heading" className="font-heading text-sm font-medium">Harness 配置</h3>
-          <p className="mt-1 text-xs text-muted-foreground">复制模板后替换占位符，或轮换 Key 生成一次性完整配置。</p>
-        </div>
+        <h3 id="client-config-heading" className="font-heading text-sm font-medium">Harness 配置</h3>
         <Alert>
           <Info />
           <AlertTitle>现有完整 Gateway Key 无法恢复</AlertTitle>
           <AlertDescription>
-            Gateway 只保存不可逆摘要。下方模板不含 Secret；需要完整配置时必须轮换 Key。
+            下方模板不含 Secret；需要完整配置时请轮换 Key。
           </AlertDescription>
         </Alert>
         <ClientConfigSnippets protocol={client.allowedProtocols[0]} />

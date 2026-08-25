@@ -50,9 +50,9 @@ export function ConnectionOverview({ connection }: { readonly connection: Connec
       </dl>
       <Alert>
         <Info />
-        <AlertTitle>配置状态不等于兼容性结论</AlertTitle>
+        <AlertTitle>“启用”不代表兼容</AlertTitle>
         <AlertDescription>
-          当前只展示已保存对象与最小连通性结果；流式、Usage 和字段兼容性尚未经过完整测试。
+          请在“兼容性”中测试流式、Usage 和字段支持。
         </AlertDescription>
       </Alert>
     </section>
@@ -139,7 +139,7 @@ export function EndpointDirectory({ connection }: { readonly connection: Connect
               {" "}
               {connection.name}
               {" "}
-              增加另一个协议入口，并显式选择可用于该 Endpoint 的 Credential。
+              添加协议入口。
             </DialogDescription>
           </DialogHeader>
           <div className="pt-2">
@@ -241,7 +241,6 @@ export function ConnectionModelDirectory({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h3 id="connection-models-title" className="text-sm font-medium">模型绑定</h3>
-          <p className="text-xs text-muted-foreground">只显示当前连接 Endpoint 上明确保存的模型。</p>
         </div>
         <Link to="/models" className={buttonVariants({ variant: "outline", size: "sm" })}>
           管理全部模型

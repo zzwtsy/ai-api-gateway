@@ -33,7 +33,7 @@ export function ClientConfigSnippets({
     <div className="flex flex-col gap-3 rounded-lg border bg-muted/20 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          {apiKey === undefined ? "Harness 配置模板（不含 Key）" : "Harness 接入配置指南"}
+          {apiKey === undefined ? "配置模板" : "接入配置"}
         </span>
         <div className="flex flex-wrap gap-1">
           {snippets.map(snippet => (
@@ -64,7 +64,7 @@ export function ClientConfigSnippets({
             onClick={() => void handleCopy(activeSnippet.id, activeSnippet.code)}
           >
             {copyResult?.id === activeSnippet.id && copyResult.status === "copied" ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
-            {copyResult?.id === activeSnippet.id && copyResult.status === "copied" ? "已复制配置" : "复制配置代码"}
+            {copyResult?.id === activeSnippet.id && copyResult.status === "copied" ? "已复制" : "复制配置"}
           </Button>
         </div>
       </div>
