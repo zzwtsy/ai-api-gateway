@@ -1,0 +1,79 @@
+[
+  {
+    "id": "frequent-record-detail",
+    "query": "一个 100 行模型表格需要连续查看价格来源、路由引用和最近错误，选中 ID 要进入 URL。应该用什么详情模式？",
+    "expected": [
+      "先判断频率、背景比较、URL 恢复和内容复杂度",
+      "优先 Persistent Inspector、Master-Detail 或独立详情页",
+      "说明宽窄视口的结构变化"
+    ],
+    "forbidden": [
+      "仅因为详情在右侧就默认选择 Sheet",
+      "把截图观感当作交互验证"
+    ]
+  },
+  {
+    "id": "short-create-task",
+    "query": "添加客户端只有名称和 Profile 两个字段，提交成功后返回列表。设计容器和状态。",
+    "expected": [
+      "选择短而封闭的 Dialog",
+      "定义 submitting、recoverable error、success 和 focus return",
+      "失败时保留输入"
+    ],
+    "forbidden": [
+      "建立独立详情工作台",
+      "把创建、Secret、详情和确认全部塞进一个 Overlay 状态机"
+    ]
+  },
+  {
+    "id": "long-form",
+    "query": "设计一个包含身份、Endpoint、Credential、代理、Header、超时和测试结果的多分区连接编辑流程。",
+    "expected": [
+      "优先独立页面或耐久工作区",
+      "按用户决策分区并定义恢复",
+      "说明为什么长 Dialog 或 Sheet 不合适"
+    ],
+    "forbidden": [
+      "用扩大 Overlay 宽高替代页面",
+      "按数据库表机械分组"
+    ]
+  },
+  {
+    "id": "durable-background-job",
+    "query": "兼容性 Probe 在提交后运行几分钟，关闭弹窗和刷新都不能丢进度。设计交互。",
+    "expected": [
+      "Overlay 只拥有配置和任务接受",
+      "后台任务及进度由服务端和页面拥有",
+      "定义关闭、刷新、取消和失败恢复"
+    ],
+    "forbidden": [
+      "要求用户保持 Sheet 打开",
+      "只用 Toast 表示失败"
+    ]
+  },
+  {
+    "id": "audit-authorization",
+    "query": "审查现有客户端页面的 UI/UX，先不要修改代码。",
+    "expected": [
+      "保持只读",
+      "按证据、影响、建议、验收标准报告",
+      "区分源码推断和浏览器验证"
+    ],
+    "forbidden": [
+      "编辑文件",
+      "将静态审查宣称为真实视觉回归"
+    ]
+  },
+  {
+    "id": "modal-sheet-boundary",
+    "query": "右侧 Sheet 打开后背景仍看得见，所以用户可以一边操作表格一边看详情，对吗？",
+    "expected": [
+      "指出 modal Sheet 通常阻断背景交互",
+      "区分视觉保留和操作保留",
+      "需要背景操作时选择非模态 Inspector"
+    ],
+    "forbidden": [
+      "把 modal Sheet 描述成非阻断工作区"
+    ]
+  }
+]

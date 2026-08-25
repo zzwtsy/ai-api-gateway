@@ -1,42 +1,34 @@
 [
   {
-    "query": "用 shadcn 和 Lucide 重新设计这个后台的模型列表页，重点优化信息层级、筛选、空状态和行操作。",
+    "query": "用 shadcn 重新设计这个后台模型列表，重点处理信息层级、筛选、详情查看和空状态。",
     "should_trigger": true
   },
   {
-    "query": "这张设置页截图为什么难用？请按默认 shadcn 风格做一次 UX 审查，不要只谈颜色。",
+    "query": "这张设置页截图为什么难用？请做一次 UX 审查，区分可见证据和没有验证的交互。",
     "should_trigger": true
   },
   {
-    "query": "帮我决定这个编辑账号流程应该用 Dialog、Sheet 还是独立页面，并给出状态设计。",
+    "query": "这个高频表格详情应该用 Sheet、固定 Inspector 还是独立页面？请给出可验证的判断。",
     "should_trigger": true
   },
   {
-    "query": "Refactor our shadcn admin dashboard so the primary workflow is clearer, the table works on mobile, and errors preserve form input.",
+    "query": "为一个会在关闭弹窗后继续运行的兼容性测试设计状态所有权和恢复流程。",
     "should_trigger": true
   },
   {
-    "query": "为开发者工具设计首次使用、加载失败、筛选无结果和权限不足几个状态。",
+    "query": "Refactor our shadcn admin dashboard so the primary workflow is clearer, table details remain comparable, and errors preserve input.",
     "should_trigger": true
   },
   {
-    "query": "现有 React 页面到处都是 Card 和图标按钮，请在不改业务逻辑的前提下优化 UX。",
-    "should_trigger": true
-  },
-  {
-    "query": "Design an implementation-ready UX spec for a shadcn settings page with provider accounts, API keys, and advanced options.",
-    "should_trigger": true
-  },
-  {
-    "query": "检查这个表单的标签、验证、保存反馈、未保存离开和键盘操作是否合理。",
-    "should_trigger": true
-  },
-  {
-    "query": "把这个桌面端表格页面适配到手机，但不要简单地把每一行变成卡片。",
+    "query": "为开发者工具定义首次使用、加载失败、筛选无结果、stale 和权限不足状态。",
     "should_trigger": true
   },
   {
     "query": "实现这个 shadcn CRUD 页面，并在浏览器中验证创建、错误、空状态和删除恢复流程。",
+    "should_trigger": true
+  },
+  {
+    "query": "把桌面表格页面适配到窄屏，保持选择状态和阅读顺序，不要简单改成卡片。",
     "should_trigger": true
   },
   {
@@ -48,7 +40,7 @@
     "should_trigger": false
   },
   {
-    "query": "Create a highly expressive fashion landing page with cinematic gradients and custom illustrations.",
+    "query": "Create a cinematic fashion landing page with gradients and custom illustrations.",
     "should_trigger": false
   },
   {
@@ -60,10 +52,6 @@
     "should_trigger": false
   },
   {
-    "query": "给这个 Logo 设计三种图形方案。",
-    "should_trigger": false
-  },
-  {
     "query": "修复 React 组件里的 useEffect 无限循环。",
     "should_trigger": false
   },
@@ -72,7 +60,7 @@
     "should_trigger": false
   },
   {
-    "query": "只调整这个按钮的 hover 颜色，让它更鲜艳。",
+    "query": "只调整这个按钮的 hover 颜色。",
     "should_trigger": false
   },
   {

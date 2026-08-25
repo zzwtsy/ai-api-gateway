@@ -1,228 +1,126 @@
 ---
 name: shadcn-product-ux
 description: >-
-  Use this skill when designing, reviewing, or refactoring product-style web UX with shadcn/ui and Lucide, especially dashboards, admin tools, settings, forms, tables, detail pages, and multi-step workflows. Turn requirements, screenshots, or an existing frontend into clear information architecture, predictable interaction patterns, appropriate shadcn component choices, complete UI states, accessible behavior, and implementation-ready guidance while preserving the default shadcn visual language. Do not use for isolated component installation or debugging, purely decorative marketing-site art direction, or non-web interfaces.
+  Design or audit task-focused product web UX in applications that use shadcn/ui. Use when a request requires information architecture, interaction-pattern decisions, state lifecycles, accessibility, responsive behavior, or implementation-ready UX guidance. Do not use for isolated shadcn installation, upgrades, or debugging; generic React fixes; decorative marketing art direction; or non-web interfaces.
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   scope: "product-web-ux"
 ---
 
-# Shadcn Product UX
+# Product UX for shadcn applications
 
-Design or improve product interfaces so users can understand the page, find the primary action, complete the task, understand system state, and recover from errors without reading documentation.
+Decide the user's task, information structure, interaction model, and state ownership before mapping the result to shadcn primitives. shadcn is an implementation layer, not the UX method.
 
-Default to the standard shadcn visual language and Lucide icons. Optimize task flow and information hierarchy before adding visual decoration.
+## Authority and scope
 
-## Scope
+Use evidence in this order:
 
-Use this skill for:
+1. explicit user goals and constraints;
+2. the product's current source of truth, domain model, routes, and accepted behavior;
+3. observed runtime behavior and trustworthy evidence;
+4. this skill's defaults when the product has not made a decision.
 
-- product dashboards, admin tools, developer tools, settings, CRUD flows, forms, tables, detail pages, diagnostics, onboarding, and multi-step tasks;
-- UX audits of screenshots, prototypes, or existing frontend code;
-- information architecture, interaction design, state design, accessibility, responsive behavior, and implementation planning;
-- implementation or refactoring when the project uses shadcn/ui and Lucide.
+Honor an established design system. Preserve default shadcn styling only when the product has adopted it or no stronger visual direction exists.
 
-Do not use this skill as the primary workflow for:
+Choose the operating mode from the request:
 
-- installing, updating, or debugging an isolated shadcn component;
-- highly art-directed marketing pages whose main problem is brand expression rather than product usability;
-- native mobile, desktop, game, or spatial interfaces;
-- generic visual polish with no user task or product workflow.
+- **Focused decision:** resolve one interaction or information-architecture choice.
+- **Design:** produce an implementation-ready UX contract.
+- **Audit:** identify evidence-backed defects and acceptance criteria.
+- **Refactor or implement:** change code only when the user explicitly requests changes.
 
-When another specialized skill covers current shadcn APIs, repository conventions, frontend testing, or visual concept generation, compose with it rather than duplicating its instructions.
-
-## Operating modes
-
-Infer the mode from the request:
-
-1. **Design** — turn requirements into an implementation-ready UX specification.
-2. **Audit** — inspect an existing screen or flow and identify concrete usability defects.
-3. **Refactor** — preserve behavior and information while improving hierarchy, consistency, states, and accessibility.
-4. **Implement** — edit the frontend, make the workflow functional, and verify it in the browser.
-5. **Focused review** — answer a narrow decision such as Dialog vs Sheet, table vs cards, or how to structure a form.
-
-Do not force a full redesign when the user asks for a focused correction.
+Audit, review, explanation, and recommendation requests are read-only. Do not turn them into implementation work.
 
 ## Workflow
 
-### 1. Establish the UX contract
+### 1. Establish the task and evidence boundary
 
-Before choosing components, identify:
+Identify:
 
-- the primary user;
-- the page or flow's single main job;
-- the primary action and successful outcome;
-- the core objects and relationships the user must understand;
-- the highest-risk mistakes or destructive actions;
-- constraints from the repository, screenshots, copy, or existing product behavior.
+- primary user and main job;
+- successful outcome and primary action;
+- core objects and relationships;
+- costly mistakes, destructive actions, and sensitive data;
+- stable URLs, terminology, and accepted behavior;
+- available evidence: requirements, source, screenshots, prototype, or running product.
 
-Infer minor missing details when safe. State material assumptions instead of blocking progress with unnecessary questions.
+Distinguish confirmed behavior, source-level inference, visual observation, and unverified assumption. A screenshot does not prove interaction, keyboard behavior, loading states, or responsive transitions.
 
-### 2. Inspect the source of truth
+### 2. Shape the information and task flow
 
-For an existing product, inspect the relevant routes, components, styles, data shape, screenshots, and interaction behavior before proposing changes.
+Organize the interface around user decisions rather than database tables or backend modules. Give each page one main job, keep the primary action visible, and preserve useful context across recovery and navigation.
 
-Preserve:
+Read [UX principles](references/ux-principles.md) for page hierarchy, dense data, forms, progressive disclosure, and content decisions.
 
-- the user's actual domain model and terminology;
-- required fields and actions;
-- stable navigation and URLs;
-- accepted product behavior;
-- existing project conventions that do not harm usability.
+### 3. Define state ownership and lifecycle
 
-Do not invent navigation, metrics, entities, product claims, or workflows merely to fill the page.
+Decide which state belongs to the URL, server cache, unsaved form, background job, or transient feedback. Define loading, populated, empty, invalid, pending, success, recoverable failure, partial failure, disabled, permission, and destructive states only where they can occur.
 
-### 3. Shape information architecture and task flow
+Read [state lifecycles](references/state-lifecycles.md) when the flow uses asynchronous work, URL-restorable selection, overlays, background jobs, optimistic updates, cancellation, or recoverable forms.
 
-Design from user questions rather than database tables or backend modules.
+### 4. Choose interaction patterns
 
-- Give each page one primary purpose.
-- Keep stable business areas in primary navigation.
-- Use pages, tabs, sections, and overlays according to task scope, not visual preference.
-- Keep the primary action visible; place low-frequency actions in contextual menus.
-- Reveal advanced configuration progressively without hiding core configuration.
-- Minimize repeated decisions, manual entry, and context switching.
+Choose modality, persistence, and spatial structure before choosing a component. Consider task frequency, duration, background comparison, deep-linking, content complexity, and narrow-screen behavior.
 
-Read [references/component-decisions.md](references/component-decisions.md) when choosing navigation, overlays, data presentation, feedback, or destructive-action patterns.
+Read [interaction decisions](references/interaction-decisions.md) whenever selecting among a page, persistent inspector, inline detail, Dialog, Sheet, Drawer, Popover, table, list, cards, navigation, or action placement.
 
-### 4. Define the complete state model
+### 5. Map the decision to the product's UI system
 
-For every important surface, design the states that can actually occur:
+When implementation details matter, inspect `components.json`, installed primitives, package versions, current component documentation, and repository conventions.
 
-- initial/default;
-- loading or submitting;
-- populated/success;
-- first-use empty;
-- search or filter with no results;
-- recoverable error;
-- partial failure;
-- disabled or unavailable with an explanation;
-- permission denied when applicable;
-- destructive confirmation and post-action recovery;
-- narrow-screen and keyboard interaction.
+- Prefer existing primitives and explicit local compositions over parallel component systems.
+- Use semantic theme tokens; do not encode product meaning in raw colors.
+- Preserve visible labels, useful descriptions, focus affordances, and state feedback.
+- Use Lucide icons functionally and consistently; icon-only controls need accessible names.
+- Do not add dependencies when an existing primitive or small composition is sufficient.
 
-Do not treat loading, empty, and error states as implementation afterthoughts.
+### 6. Deliver and verify at the requested depth
 
-### 5. Map the UX to shadcn primitives
+For audits and implementation handoffs, read [audit and evidence](references/audit-evidence.md). Verify only claims supported by the available environment. When a runnable product is available and the request includes implementation or runtime validation, exercise the primary workflow in a browser at relevant wide and narrow viewports.
 
-Use existing shadcn components and built-in variants before custom components. Inspect `components.json`, installed components, the package manager, and current component documentation when implementation details matter.
+Do not claim browser, accessibility, responsive, or visual-regression verification from type checking, component rendering, source inspection, or screenshots alone.
 
-Default rules:
+## Non-negotiable decisions
 
-- use semantic theme tokens rather than raw color utilities;
-- keep the default shadcn palette, radii, borders, typography, and elevation unless the user explicitly requests a theme change;
-- use layout utilities for structure, not to restyle every primitive;
-- prefer tables or lists for dense, comparable data;
-- use cards only for genuinely independent objects or concise summaries;
-- use a full page for long or durable tasks, Sheet for contextual detail or light editing, and Dialog for short interruptive tasks;
-- use AlertDialog only when explicit confirmation is justified;
-- use Toast for transient completion feedback and inline Alert or field errors for persistent problems;
-- keep form labels visible and place validation next to the affected field;
-- keep overlay titles and accessible names even when visually hidden.
+- Do not choose a component because content should appear on a particular edge; choose modality and state ownership first.
+- A modal Sheet visually preserves the page but does not preserve interactive background context. Use a persistent inspector when users must compare or operate on the background.
+- Do not make Sheet the default record-detail pattern. High-frequency comparison belongs in a persistent inspector or Master-Detail layout; durable multi-section details belong on a page.
+- Do not use one overlay as a state-machine shell for unrelated create, detail, confirmation, secret, and background-job states.
+- Do not put long multi-section work in a Dialog.
+- Do not nest modal workflows when a sequential state, inline confirmation, or page transition can express the task.
+- Do not hide the only primary or recovery action in a menu.
+- Do not turn comparable records into cards solely for visual novelty.
+- Do not treat loading, first-use empty, filtered empty, error, `unknown`, and zero as interchangeable.
+- Recoverable failures preserve user input and successful surrounding content.
+- Responsive behavior changes priority and structure; it is not a uniformly shrunken desktop screen.
 
-### 6. Apply Lucide consistently
+## Deliverables
 
-Use Lucide as functional iconography, not decoration.
+Match the output to the request rather than filling a universal template.
 
-- Pair icons with text for unfamiliar, high-value, or destructive actions.
-- Give every icon-only control an accessible name.
-- Use one icon metaphor consistently for each action across the product.
-- Do not use color alone to communicate status.
-- Avoid adding icons to every label, metric, card, or navigation item when they do not improve recognition.
-- Let the shadcn component control icon sizing when its API or styles already do so.
+### Focused decision
 
-### 7. Produce or implement the result
-
-For a design or audit deliverable, use [assets/ux-spec-template.md](assets/ux-spec-template.md) and omit sections that do not apply.
-
-For implementation:
-
-- preserve the repository's framework, routing, state, data-fetching, form, and testing conventions;
-- build real interactions rather than inert mock controls;
-- keep repeated UI in reusable components or explicit variants;
-- preserve user input after recoverable failures;
-- prevent duplicate submissions and show pending state immediately;
-- avoid adding a dependency when a current shadcn primitive or small local composition is sufficient;
-- use realistic existing data or clearly marked fixtures; do not present invented metrics as real.
-
-### 8. Verify the experience
-
-When code or a runnable prototype is available:
-
-1. open the actual page in a browser;
-2. complete the primary workflow;
-3. test at least one narrow and one wide viewport;
-4. use keyboard navigation through the main controls;
-5. exercise loading, empty, invalid, success, and failure states where feasible;
-6. inspect focus visibility, clipping, wrapping, scroll behavior, and overlay focus management;
-7. compare the result against the accepted requirements or source screen.
-
-Use [references/qa-checklist.md](references/qa-checklist.md) for a full review before handoff.
-
-## Non-negotiable UX rules
-
-- A user should understand where they are, what the page contains, and what to do next without guessing.
-- Each page has one visually dominant primary action; secondary actions must not compete with it.
-- Every asynchronous action communicates pending, success, and failure states.
-- Errors explain what failed and how to recover; recoverable errors do not discard user input.
-- Initial empty state and filtered-empty state are different problems and need different guidance.
-- Important information cannot exist only in a tooltip, placeholder, transient toast, icon, or color.
-- A disabled control either has an obvious prerequisite or explains why it is unavailable.
-- Destructive friction is proportional to consequence: prefer undo for reversible actions and explicit confirmation for irreversible actions.
-- Responsive design reorganizes priority and interaction; it is not merely a compressed desktop layout.
-- Accessibility is part of the definition of done, not a later polish pass.
-
-## Default visual direction
-
-Preserve the default shadcn character:
-
-- neutral semantic colors;
-- restrained borders and shadows;
-- clear typography and spacing hierarchy;
-- one accent hierarchy rather than many competing colors;
-- low visual noise;
-- limited, purposeful motion;
-- no gradients, glass effects, glow, oversized radii, or decorative color systems unless requested.
-
-Do not confuse restraint with removing labels, descriptions, affordances, or state feedback.
-
-## High-value gotchas
-
-- Do not wrap the whole page, every section, and every row in nested cards. Borders and spacing often establish enough hierarchy.
-- Do not turn structured, comparable records into a card grid merely because cards look modern.
-- Do not hide the only important action inside an ellipsis menu.
-- Do not place a long multi-section form inside a Dialog.
-- Do not use Tabs for sequential steps or unrelated business areas.
-- Do not use placeholder text as the only field label.
-- Do not use Toast as the only record of a persistent failure.
-- Do not make every deletion require typed confirmation; calibrate friction to reversibility and impact.
-- Do not add helper copy that repeats the label without clarifying behavior, consequences, format, or defaults.
-- Do not remove useful text in pursuit of a cleaner-looking screenshot.
-
-## Output quality
-
-### Design specification
-
-Include the page goal, user flow, information hierarchy, component mapping, state model, responsive behavior, accessibility requirements, and acceptance criteria. Prefer concrete decisions over a menu of equal options.
+State the decision, evidence, material tradeoff, rejected alternative, and testable acceptance criterion.
 
 ### UX audit
 
-Report issues by impact. For each issue include evidence, user consequence, recommended change, and a testable acceptance criterion. Separate UX defects from subjective visual preferences.
+Order findings by impact. Each finding contains observable evidence, user consequence, recommendation, and acceptance criterion. Separate defects from subjective preferences and state what was not verified.
+
+### Design contract
+
+Include the page or flow goal, information hierarchy, primary workflow, interaction pattern, state ownership, responsive behavior, accessibility requirements, and acceptance criteria. Add component mapping only after those decisions.
 
 ### Implementation
 
-Deliver functional code consistent with the existing project, then report the workflow tested, states verified, responsive widths checked, accessibility checks performed, and any intentional deviations.
+Preserve product behavior and repository conventions, implement real interactions, and report actual checks, viewports, states, and remaining gaps. Never imply that the skill itself grants permission to modify code or external systems.
 
 ## Completion gate
 
-Before finishing, confirm:
+Before finishing, confirm that:
 
-- the primary task and action are unambiguous;
-- the hierarchy works without relying on decoration;
-- component choices match task scope;
-- all meaningful states have a design or implementation;
-- keyboard and focus behavior are viable;
-- the page remains usable at narrow widths;
-- errors preserve context and offer recovery;
-- no invented product facts were introduced;
-- the result still looks and behaves like default shadcn rather than a custom theme.
+- the main job, successful outcome, and primary action are unambiguous;
+- interaction patterns match modality, frequency, durability, and comparison needs;
+- state owners and recovery transitions are defined;
+- narrow-screen and keyboard behavior remain viable;
+- claims do not exceed the available evidence;
+- the result follows the product's design system without inventing product facts.
