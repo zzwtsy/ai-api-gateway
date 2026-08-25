@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ffffff" />
+    <script>
+      (() => {
+        let stored = null;
+        try {
+          stored = localStorage.getItem("aigw_theme");
+        } catch {
+          stored = null;
+        }
+        const preference = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+        const theme = preference === "system"
+          ? matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+          : preference;
+        const root = document.documentElement;
+        root.classList.remove("light", "dark");
+        root.classList.add(theme);
+        root.dataset.theme = theme;
+        root.dataset.themePreference = preference;
+        root.style.colorScheme = theme;
+        document.querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", theme === "dark" ? "#171717" : "#ffffff");
+      })();
+    </script>
     <title>AI API Gateway</title>
   </head>
   <body>

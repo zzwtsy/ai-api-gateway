@@ -1,4 +1,5 @@
 {
+  "$schema": "./schemas/page-contracts.schema.json",
   "version": "0.1.0-alpha.3",
   "pages": [
     {
@@ -8,13 +9,50 @@
       "label": "概览",
       "purpose": "确认系统状态、使用量与待处理问题",
       "primaryAction": null,
-      "layout": "kpi-strip + trend/attention + compact tables",
-      "requiredStates": [
-        "loading",
-        "first-empty",
-        "partial",
-        "system-error",
-        "unknown-cost"
+      "layout": "kpi-strip + onboarding + compact tables",
+      "regions": [
+        {
+          "id": "workspace",
+          "owner": "Overview queries and route composition",
+          "states": [
+            {
+              "id": "loading",
+              "availability": "required",
+              "owner": "Overview queries",
+              "entry": "首次进入且没有缓存",
+              "preserves": ["Route"],
+              "recovery": "查询完成后进入 ready、first-empty 或 error",
+              "urlOutcome": "保持 /",
+              "selectionOutcome": "无选择状态",
+              "focusOutcome": "保持当前导航焦点",
+              "scenarioIds": ["UX-OVERVIEW-LOADING"]
+            },
+            {
+              "id": "ready-or-partial",
+              "availability": "required",
+              "owner": "Overview route composition",
+              "entry": "至少一个概览区域成功加载",
+              "preserves": ["成功区域", "起步向导上下文"],
+              "recovery": "失败区域独立重试",
+              "urlOutcome": "保持 /",
+              "selectionOutcome": "无选择状态",
+              "focusOutcome": "重试后返回触发按钮或更新区域",
+              "scenarioIds": ["UX-OVERVIEW-READY"]
+            },
+            {
+              "id": "first-empty",
+              "availability": "required",
+              "owner": "Overview onboarding projection",
+              "entry": "尚未创建连接或客户端",
+              "preserves": ["已存在对象"],
+              "recovery": "导航到对应创建入口",
+              "urlOutcome": "进入目标页面",
+              "selectionOutcome": "不伪造默认对象",
+              "focusOutcome": "目标页主标题或创建入口可达",
+              "scenarioIds": ["UX-OVERVIEW-FIRST-EMPTY"]
+            }
+          ]
+        }
       ]
     },
     {
@@ -25,13 +63,55 @@
       "purpose": "解释一次逻辑请求及其上游 Attempt 链",
       "primaryAction": "发送测试请求",
       "layout": "master-detail",
-      "requiredStates": [
-        "loading",
-        "first-empty",
-        "filtered-empty",
-        "partial-inspector",
-        "payload-not-retained",
-        "stream-interrupted"
+      "regions": [
+        {
+          "id": "request-list",
+          "owner": "useRequests query",
+          "states": [
+            {
+              "id": "loading",
+              "availability": "required",
+              "owner": "useRequests query",
+              "entry": "首次进入且没有缓存",
+              "preserves": ["requestId URL"],
+              "recovery": "查询完成或显式重试",
+              "urlOutcome": "保留 requestId",
+              "selectionOutcome": "保留 URL 选择，不推断对象存在",
+              "focusOutcome": "保持当前焦点",
+              "scenarioIds": ["UX-REQUESTS-LIST-LOADING"]
+            },
+            {
+              "id": "ready-empty-or-stale",
+              "availability": "required",
+              "owner": "Request list region",
+              "entry": "列表查询成功、成功空或缓存刷新失败",
+              "preserves": ["最后成功列表", "requestId URL"],
+              "recovery": "局部重试且不清空 Inspector",
+              "urlOutcome": "保留 requestId",
+              "selectionOutcome": "有效选择保持高亮",
+              "focusOutcome": "重试后返回列表区域",
+              "scenarioIds": ["UX-REQUESTS-LIST-LIFECYCLE"]
+            }
+          ]
+        },
+        {
+          "id": "request-inspector",
+          "owner": "requestId URL and useRequest query",
+          "states": [
+            {
+              "id": "unselected-loading-ready-or-error",
+              "availability": "required",
+              "owner": "requestId URL and Inspector query",
+              "entry": "requestId 缺失、变化或详情查询结算",
+              "preserves": ["请求列表", "最后成功详情的局部边界"],
+              "recovery": "选择请求或局部重试",
+              "urlOutcome": "选择写入 requestId",
+              "selectionOutcome": "与 requestId 一致",
+              "focusOutcome": "选择入口或 Inspector 恢复动作保持可达",
+              "scenarioIds": ["UX-REQUESTS-INSPECTOR-LIFECYCLE"]
+            }
+          ]
+        }
       ]
     },
     {
@@ -42,12 +122,14 @@
       "purpose": "比较使用量、稳定性、性能与成本",
       "primaryAction": "导出 CSV",
       "layout": "filters + metric switch + chart + breakdown",
-      "requiredStates": [
-        "loading",
-        "empty",
-        "partial",
-        "stale",
-        "unknown-cost"
+      "regions": [
+        {
+          "id": "workspace",
+          "owner": "Future Analytics route",
+          "states": [
+            { "id": "not-delivered", "availability": "n/a", "reason": "Analytics 尚未进入 Page Manifest 或当前 Web 路由。" }
+          ]
+        }
       ]
     },
     {
@@ -58,13 +140,43 @@
       "purpose": "管理 Provider、Endpoint、账号、Credential 与兼容性",
       "primaryAction": "添加连接",
       "layout": "provider-directory + durable-detail",
-      "requiredStates": [
-        "loading",
-        "first-empty",
-        "partial-provider",
-        "cooldown",
-        "auth-failed",
-        "unverified"
+      "regions": [
+        {
+          "id": "connection-directory",
+          "owner": "connectionId URL and useConnections query",
+          "states": [
+            {
+              "id": "loading-ready-empty-error-or-stale",
+              "availability": "required",
+              "owner": "Connections directory",
+              "entry": "列表查询开始或结算",
+              "preserves": ["最后成功目录", "connectionId", "tab"],
+              "recovery": "局部重试或创建连接",
+              "urlOutcome": "有效 connectionId 与非默认 tab 可恢复",
+              "selectionOutcome": "缺失或无效 ID 按连接页合同规范化",
+              "focusOutcome": "目录操作或重试入口保持可达",
+              "scenarioIds": ["UX-CONNECTIONS-DIRECTORY-LIFECYCLE"]
+            }
+          ]
+        },
+        {
+          "id": "connection-detail",
+          "owner": "Connections detail and server-backed Probe",
+          "states": [
+            {
+              "id": "detail-and-probe",
+              "availability": "required",
+              "owner": "connectionId/tab URL and compatibility query",
+              "entry": "选择连接、切换 Tab 或启动 Probe",
+              "preserves": ["连接目录", "服务端 Probe 进度", "已成功模型事实"],
+              "recovery": "关闭临时 Sheet、刷新或从兼容性 Tab 继续",
+              "urlOutcome": "恢复 connectionId 与 tab",
+              "selectionOutcome": "保持同一连接",
+              "focusOutcome": "关闭临时任务后返回触发入口",
+              "scenarioIds": ["UX-CONNECTIONS-DETAIL-PROBE"]
+            }
+          ]
+        }
       ]
     },
     {
@@ -72,17 +184,64 @@
       "path": "/models",
       "navGroup": "配置",
       "label": "模型",
-      "purpose": "管理 Endpoint 级模型绑定、能力、上下文与价格来源",
+      "purpose": "管理 Endpoint 级模型绑定及当前可确认的元数据",
       "primaryAction": "添加模型绑定",
-      "layout": "dense-table + detail-sheet",
-      "requiredStates": [
-        "loading",
-        "first-empty",
-        "filtered-empty",
-        "syncing",
-        "stale",
-        "unknown-price",
-        "disabled"
+      "layout": "dense-table + persistent-inspector",
+      "regions": [
+        {
+          "id": "model-directory",
+          "owner": "useModelBindings query",
+          "states": [
+            {
+              "id": "loading-ready-empty-error-or-stale",
+              "availability": "required",
+              "owner": "Models directory",
+              "entry": "绑定查询开始或结算",
+              "preserves": ["最后成功目录", "modelBindingId"],
+              "recovery": "局部重试或添加绑定",
+              "urlOutcome": "保留有效 modelBindingId",
+              "selectionOutcome": "选中行与 URL 一致",
+              "focusOutcome": "目录操作保持可达",
+              "scenarioIds": ["UX-MODELS-DIRECTORY-LIFECYCLE"]
+            }
+          ]
+        },
+        {
+          "id": "model-inspector",
+          "owner": "modelBindingId URL",
+          "states": [
+            {
+              "id": "unselected-ready-or-invalid",
+              "availability": "required",
+              "owner": "Models route and page",
+              "entry": "modelBindingId 缺失、有效或在目录加载后无效",
+              "preserves": ["模型目录", "创建 Dialog 状态边界"],
+              "recovery": "选择、关闭或 replace 清除无效 ID",
+              "urlOutcome": "有效 ID 可刷新恢复，无效 ID 被清除",
+              "selectionOutcome": "不自动选择首项",
+              "focusOutcome": "关闭后返回原查看详情按钮",
+              "scenarioIds": ["UX-MODELS-INSPECTOR-LIFECYCLE"]
+            }
+          ]
+        },
+        {
+          "id": "model-create-dialog",
+          "owner": "ModelsPage local Dialog state",
+          "states": [
+            {
+              "id": "closed-loading-form-or-error",
+              "availability": "required",
+              "owner": "Create Model Binding form",
+              "entry": "用户打开创建任务并加载 Endpoint",
+              "preserves": ["模型目录", "modelBindingId"],
+              "recovery": "取消、重试或创建成功",
+              "urlOutcome": "不写入临时表单状态",
+              "selectionOutcome": "不改变 Inspector 选择",
+              "focusOutcome": "关闭后返回添加模型绑定按钮",
+              "scenarioIds": ["UX-MODELS-CREATE-DIALOG"]
+            }
+          ]
+        }
       ]
     },
     {
@@ -93,13 +252,14 @@
       "purpose": "定义确定性同协议模型映射并解释选择",
       "primaryAction": "创建路由",
       "layout": "rules-table + explanation-panel",
-      "requiredStates": [
-        "loading",
-        "first-empty",
-        "filtered-empty",
-        "draft",
-        "shadowed",
-        "invalid-reference"
+      "regions": [
+        {
+          "id": "workspace",
+          "owner": "Future Routes route",
+          "states": [
+            { "id": "not-delivered", "availability": "n/a", "reason": "Routes 尚未进入 Page Manifest 或当前 Web 路由。" }
+          ]
+        }
       ]
     },
     {
@@ -110,13 +270,14 @@
       "purpose": "配置、模拟、校验并发布路由",
       "primaryAction": "保存并发布",
       "layout": "form-sections + sticky-explanation",
-      "requiredStates": [
-        "pristine",
-        "dirty",
-        "validating",
-        "simulation-success",
-        "simulation-failed",
-        "publish-conflict"
+      "regions": [
+        {
+          "id": "workspace",
+          "owner": "Future Route Editor route",
+          "states": [
+            { "id": "not-delivered", "availability": "n/a", "reason": "Route Editor 尚未进入当前 Web 路由。" }
+          ]
+        }
       ]
     },
     {
@@ -124,15 +285,64 @@
       "path": "/clients",
       "navGroup": "配置",
       "label": "客户端",
-      "purpose": "管理 Harness 实例、Gateway Key、路由范围和归因",
+      "purpose": "管理 Harness 实例与 Gateway Key 生命周期",
       "primaryAction": "添加客户端",
-      "layout": "dense-table + detail-sheet",
-      "requiredStates": [
-        "loading",
-        "first-empty",
-        "key-created-once",
-        "disabled",
-        "key-rotation"
+      "layout": "dense-table + persistent-inspector",
+      "regions": [
+        {
+          "id": "client-directory",
+          "owner": "useGatewayClients query",
+          "states": [
+            {
+              "id": "loading-ready-empty-error-or-stale",
+              "availability": "required",
+              "owner": "Clients directory",
+              "entry": "客户端查询开始或结算",
+              "preserves": ["最后成功目录", "clientId"],
+              "recovery": "局部重试或添加客户端",
+              "urlOutcome": "保留有效 clientId",
+              "selectionOutcome": "选中行与 URL 一致",
+              "focusOutcome": "目录操作保持可达",
+              "scenarioIds": ["UX-CLIENTS-DIRECTORY-LIFECYCLE"]
+            }
+          ]
+        },
+        {
+          "id": "client-inspector",
+          "owner": "clientId URL",
+          "states": [
+            {
+              "id": "unselected-ready-invalid-or-confirming",
+              "availability": "required",
+              "owner": "Clients route, page and ClientDetail",
+              "entry": "clientId 变化或打开 Key 确认",
+              "preserves": ["客户端目录", "脱敏 Key 元数据"],
+              "recovery": "选择、关闭、取消确认或清除无效 ID",
+              "urlOutcome": "有效 ID 可刷新恢复，无效 ID 被清除",
+              "selectionOutcome": "不自动选择首项",
+              "focusOutcome": "关闭 Inspector 返回查看详情；取消确认返回触发按钮",
+              "scenarioIds": ["UX-CLIENTS-INSPECTOR-LIFECYCLE"]
+            }
+          ]
+        },
+        {
+          "id": "client-secret-dialog",
+          "owner": "ClientsPage transient modal state",
+          "states": [
+            {
+              "id": "created-once",
+              "availability": "required",
+              "owner": "One-time Secret Dialog",
+              "entry": "客户端创建或 Key 轮换成功",
+              "preserves": ["返回列表或原 clientId"],
+              "recovery": "用户确认已保存并关闭",
+              "urlOutcome": "完整 Secret 永不进入 URL",
+              "selectionOutcome": "轮换后返回原 Client Inspector",
+              "focusOutcome": "关闭后返回有效页面上下文",
+              "scenarioIds": ["UX-CLIENTS-SECRET-ONCE"]
+            }
+          ]
+        }
       ]
     },
     {
@@ -143,24 +353,46 @@
       "purpose": "管理隐私、模型元数据、Secret、备份与运行策略",
       "primaryAction": null,
       "layout": "local-nav + open-setting-rows",
-      "requiredStates": [
-        "loading",
-        "dirty",
-        "saving",
-        "saved",
-        "restart-required",
-        "validation-error"
+      "regions": [
+        {
+          "id": "workspace",
+          "owner": "Future Settings route",
+          "states": [
+            { "id": "not-delivered", "availability": "n/a", "reason": "Settings 尚未进入 Page Manifest 或当前 Web 路由；Theme Preference 当前由 App Shell 拥有。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "login",
+      "path": "/login",
+      "navGroup": "系统",
+      "label": "管理员登录",
+      "purpose": "建立控制面会话而不混淆 Gateway Client Key",
+      "primaryAction": "登录",
+      "layout": "centered-auth-dialog",
+      "regions": [
+        {
+          "id": "login-form",
+          "owner": "Login form and Better Auth session",
+          "states": [
+            {
+              "id": "ready-submitting-error-or-success",
+              "availability": "required",
+              "owner": "Login form",
+              "entry": "进入登录页或提交凭据",
+              "preserves": ["非敏感表单字段在可恢复失败后保留"],
+              "recovery": "修正输入、重试或进入控制面",
+              "urlOutcome": "Secret 不进入 URL",
+              "selectionOutcome": "无业务对象选择",
+              "focusOutcome": "错误关联字段；成功进入目标页",
+              "scenarioIds": ["UX-LOGIN-LIFECYCLE"]
+            }
+          ]
+        }
       ]
     }
   ],
-  "globalActions": [
-    "command-search",
-    "quick-create",
-    "system-health"
-  ],
-  "quickCreate": [
-    "connection",
-    "route",
-    "client"
-  ]
+  "globalActions": ["command-search", "quick-create", "system-health"],
+  "quickCreate": ["connection", "route", "client"]
 }

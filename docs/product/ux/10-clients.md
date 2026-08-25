@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-24
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -51,7 +51,7 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 
 关闭后完整 Key 无法再次查看。必须要求用户确认已复制，或允许立即下载仅含该 Key 的一次性安全文件，但普通导出永不包含完整 Key。
 
-## 4. 客户端详情 Sheet
+## 4. 客户端详情 Inspector
 
 包含：
 
@@ -62,6 +62,8 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 - 最近请求；
 - 使用量和费用；
 - Key 轮换、撤销、禁用。
+
+详情使用由 `clientId` 恢复的非模态 Persistent Inspector。无效 ID 在目录成功加载后从 URL 删除，不自动选择首项。Inspector 外层不超过 App Shell 内容视口，Header 固定，Body 独立滚动；1440px 及以上与目录并排，1280px 与 1024px 按目录、Inspector 顺序上下排列。
 
 ## 5. Key 轮换
 
@@ -78,6 +80,8 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 
 轮换和撤销都必须先打开确认 Dialog。确认轮换前不创建新 Key；确认成功后新 Key 才立即生效，旧 Key 进入 24 小时重叠窗口。详情默认只展示可用 Key 摘要，历史 Key 折叠，避免轮换次数持续增加目录高度。
 
+轮换完成后一次性 Secret Dialog 返回原客户端详情，创建完成后返回列表；任一时刻只有一个 Modal Root。关闭 Inspector 后焦点返回原“查看详情”按钮。
+
 ## 6. 安全显示
 
 - 列表只显示前缀与后 4 位；
@@ -89,11 +93,3 @@ Dialog 使用真实 Trigger 恢复关闭后的焦点，并持续提供“取消 
 ## 7. 禁用
 
 禁用客户端后，新请求立即拒绝；历史请求与分析保持可查。界面必须说明禁用影响，而不是只切换 Switch。
-
-## 8. 当前交付
-
-当前页面交付带只读 Profile 摘要和明确 Footer 的客户端创建 Dialog、目录摘要、由 `clientId` 控制的客户端详情 Sheet，以及轮换/创建后的一次性 Secret 居中 Dialog。无效 `clientId` 会从 URL 删除，不自动选择首个客户端；详情可在刷新后恢复，并集中展示基本信息、可用 Key 摘要、折叠历史 Key、确认轮换、确认撤销和配置入口。
-
-详情生成按入口协议匹配的 Cursor、Codex CLI、Claude Code 或 cURL 配置模板，模板只包含 `YOUR_GATEWAY_CLIENT_KEY` 占位符。Gateway 无法从已保存摘要恢复现有完整 Key；用户可显式轮换 Key，并在一次性完成态复制新 Key 与完整配置。轮换完成态关闭后返回原客户端详情，创建完成态关闭后返回列表。
-
-完整 Key 只保存在当前页面内存，创建或确认轮换 mutation 成功后立即清除其内部状态，既不进入 URL，也不进入浏览器持久化；关闭完成态后不可恢复。已超过 `expiresAt` 的 `expiring` Key 在认证和可用数量中都视为不可用。路由范围、客户端禁用、最近请求、成本统计、发送测试请求和完整的 Profile 驱动配置生成器尚未交付。

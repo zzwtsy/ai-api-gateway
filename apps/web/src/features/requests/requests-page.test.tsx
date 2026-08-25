@@ -59,6 +59,15 @@ describe("requests page", () => {
     hookMocks.useRequests.mockReturnValue(idleQuery());
   });
 
+  it("covers UX-REQUESTS-LIST-LOADING: renders the list skeleton before data is available", () => {
+    hookMocks.useRequests.mockReturnValue({ ...idleQuery(), isPending: true });
+
+    const { container } = render(<RequestsPage requestId={undefined} />);
+
+    expect(container.querySelector("[data-slot=\"request-master\"] [data-slot=\"skeleton\"]")).toBeVisible();
+    expect(screen.queryByText("还没有逻辑请求")).not.toBeInTheDocument();
+  });
+
   it("renders a recoverable list error instead of the first-use empty state", () => {
     const refetch = vi.fn();
     hookMocks.useRequests.mockReturnValue(errorQuery("请求列表暂时不可用", refetch));
@@ -73,7 +82,7 @@ describe("requests page", () => {
     expect(refetch).toHaveBeenCalledOnce();
   });
 
-  it("keeps the request list available when only the inspector fails", () => {
+  it("covers UX-REQUESTS-INSPECTOR-LIFECYCLE: keeps the request list available when only the inspector fails", () => {
     hookMocks.useRequests.mockReturnValue(readyQuery([request]));
     hookMocks.useRequest.mockReturnValue(errorQuery("详情读取失败"));
 
@@ -95,7 +104,7 @@ describe("requests page", () => {
     expect(screen.getByText(/直连上游成功/u)).toBeVisible();
   });
 
-  it("keeps cached rows visible when a background refresh fails", () => {
+  it("covers UX-REQUESTS-LIST-LIFECYCLE: keeps cached rows visible when a background refresh fails", () => {
     hookMocks.useRequests.mockReturnValue({
       ...readyQuery([request]),
       error: new Error("刷新失败"),

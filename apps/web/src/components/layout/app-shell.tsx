@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { ThemeSelect } from "./theme-select";
+
 const navigationIcons = {
   gauge: Gauge,
   connections: Plug,
@@ -119,9 +121,10 @@ export function AppShell({ pages }: { readonly pages: readonly NavigationPage[] 
           <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
             <SidebarTrigger aria-label="切换侧边栏" title="切换侧边栏" />
             <div className="h-4 w-px bg-border" aria-hidden="true" />
-            <p data-slot="topbar-title" className="text-sm font-medium">{pageTitle}</p>
+            <p data-slot="topbar-title" className="min-w-0 flex-1 truncate text-sm font-medium">{pageTitle}</p>
+            <ThemeSelect />
           </header>
-          <div className="min-h-0 flex-1 overflow-auto px-(--aigw-layout-page-gutter-compact) pt-(--aigw-layout-page-top-padding) pb-(--aigw-layout-page-bottom-padding) aigw-minimum:px-(--aigw-layout-page-gutter-medium) aigw-desktop:px-(--aigw-layout-page-gutter-desktop)">
+          <div data-slot="workspace-content" className="min-h-0 flex-1 overflow-auto px-(--aigw-layout-page-gutter-compact) pt-(--aigw-layout-page-top-padding) pb-(--aigw-layout-page-bottom-padding) aigw-minimum:px-(--aigw-layout-page-gutter-medium) aigw-desktop:px-(--aigw-layout-page-gutter-desktop)">
             <Outlet />
           </div>
         </SidebarInset>

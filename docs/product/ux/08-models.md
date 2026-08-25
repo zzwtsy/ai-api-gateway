@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-24
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -55,7 +55,7 @@ Endpoint 加载、失败或为空时仍允许打开 Dialog，并在原位展示�
 > unknown
 ```
 
-每个字段都应保存来源，而不是整行只有一个模糊“来自 models.dev”。详情 Sheet 应逐字段展示当前值、来源、最后更新时间和覆盖入口。
+每个字段都应保存来源，而不是整行只有一个模糊“来自 models.dev”。详情 Inspector 应逐字段展示当前值、来源、最后更新时间和覆盖入口。
 
 ## 5. 价格
 
@@ -66,7 +66,7 @@ Endpoint 加载、失败或为空时仍允许打开 Dialog，并在原位展示�
 - unknown 使用明确 Badge，不能显示 `$0.00`；
 - 未知价格的模型仍可路由，但界面必须持续提示成本不完整。
 
-## 6. 模型详情 Sheet
+## 6. 模型详情 Inspector
 
 包含：
 
@@ -80,7 +80,9 @@ Endpoint 加载、失败或为空时仍允许打开 Dialog，并在原位展示�
 - 最近请求与错误；
 - 手动覆盖与禁用。
 
-详情属于上下文审阅和轻量编辑，使用宽版 Sheet 或侧边 Inspector；复杂能力 Probe 进入独立任务或 Dialog。
+详情属于可通过 `modelBindingId` 恢复的上下文审阅和轻量编辑，使用非模态 Persistent Inspector；复杂能力 Probe 进入独立任务或 Dialog。无效 ID 在目录成功加载后从 URL 删除，不自动选择首项。
+
+Inspector 外层不超过 App Shell 内容视口，Header 固定，Body 独立滚动。1440px 及以上与目录并排，1280px 与 1024px 按目录、Inspector 顺序上下排列。当前 DTO 未提供能力、价格或健康事实时必须显示 `unknown`，不得推断或显示为 0。
 
 ## 7. 状态
 
@@ -89,9 +91,3 @@ Endpoint 加载、失败或为空时仍允许打开 Dialog，并在原位展示�
 ```
 
 “需关注”必须有具体原因，例如价格未知、Probe 过期或 Endpoint 兼容性下降。
-
-## 8. 当前交付
-
-当前页面交付 Endpoint 级绑定列表，以及带固定 Footer 和状态说明的单步创建 Dialog。Endpoint 选项来自连接目录并显示 Provider / Endpoint 名称，不回显内部 ID。选择 Endpoint 后，用户可显式选择绑定且未禁用的 Credential，请求可配置的模型目录路径，并从 OpenAI-compatible `data[].id` 结果中选择模型；选择后自动填充上游模型 ID 和空白显示名称。
-
-模型发现由 Gateway 解密 Provider Credential 并发起受限上游请求，浏览器不持有完整 Secret。上游不可用、鉴权失败、响应过大或格式不兼容时保留手工输入，不创建耐久同步任务，也不清空已经编辑的字段。新绑定显示为“未验证”，能力与价格明确显示为 unknown。筛选、详情 Sheet、models.dev 同步、能力和价格编辑尚未交付。

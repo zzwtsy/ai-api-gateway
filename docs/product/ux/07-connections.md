@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-24
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -23,6 +23,8 @@ language: zh-CN
 ```
 
 1280px 及以上使用双列，左侧目录约 300px，右侧详情填满剩余空间；1024px 窄工作面按目录、详情上下排列，避免压缩详情表格。Provider 切换不离开页面，详情 Tab 保持在 URL 中。
+
+选中连接使用 `connectionId`，非默认详情 Tab 使用 `tab`，默认概览省略 `tab`。缺失或无效连接 ID 规范化到首项，无效 Tab 规范化到概览；刷新、返回和分享必须恢复同一上下文。
 
 ## 3. Provider 列表
 
@@ -98,20 +100,8 @@ Header、Query、有限 Body Patch、Timeout、Proxy 等低频设置。默认折
 
 测试是长任务，应显示进度，可关闭浮层，结果持续显示在详情页。
 
+完整兼容性 Probe 的 Run、进度和模型级事实由服务端拥有。关闭启动/进度浮层不取消任务，兼容性 Tab 继续轮询；刷新带 `tab=compatibility` 的 URL 后从服务端恢复运行中、失败或完成状态。完整 Credential、原始请求和原始响应不进入页面。
+
 ## 7. 删除与禁用
 
 删除 Account、Credential 或 Endpoint 前，必须列出引用它的路由和影响。若仍被已发布路由引用，默认阻断删除，只允许先禁用或迁移引用。Credential 禁用属于高影响即时操作，必须使用确认 Dialog，确认前不得调用写 API。
-
-## 8. 当前交付
-
-当前页面交付名称型 Provider 目录，以及“概览 / Endpoints / 账号 / 模型 / 兼容性”五个详情 Tab。概览只展示配置状态和已有对象数量，不把启用状态推断为健康或兼容；模型 Tab 只展示属于当前连接 Endpoint 的真实模型绑定，模型查询失败不会遮蔽其他 Tab。
-
-选中连接写入 `connectionId` Search 参数；非默认详情 Tab 写入 `tab`，默认概览省略该参数。刷新和分享 URL 可恢复连接与 Tab 上下文，缺失或无效连接 ID 会规范化到首项，无效 Tab 会规范化到概览。页面 Header 的两步创建 Dialog 原子创建 Provider、默认 Endpoint、账号和 Credential，成功后关闭并立即切换到新连接。
-
-Endpoints Tab 可为当前 Provider 原子添加另一个协议 Endpoint，并把选中的可用 Credential 绑定到新 Endpoint。账号 Tab 展示账号与 Masked Credential 的聚合详情，并提供 Credential 轮换、确认禁用和显式最小连通性测试（采用居中 Dialog 聚焦反馈）。
-
-最小测试表单必须选择绑定 Endpoint、输入真实模型，并在提交按钮附近持续显示可能计费的提示。结果只证明一次最小非流式请求的分类、HTTP 状态和模型，不代表流式输出、Usage 或字段兼容性。
-
-“兼容性”Tab 的空状态提供“开始完整测试”入口，已有事实时在 Tab 末尾提供低频“重新测试”入口；详情 Header 不重复展示该操作。启动浮层必须选择 Endpoint、绑定且未禁用的 Credential 和真实模型，并说明它会发送多次可能计费的上游请求。接受任务后显示当前检查和完成数量；关闭浮层不取消任务，兼容性 Tab 继续轮询并显示耐久进度。刷新或分享带 `tab=compatibility` 的 URL 后，运行中状态、失败原因和已完成结果都从服务端恢复。
-
-兼容性 Tab 按 Endpoint 与 Harness Profile 展示 Profile 汇总结论，并以表格显示能力、支持等级、实测模型、验证时间和脱敏可观察事实。`unknown`、`unsupported`、`degraded` 与无数据分别显示；完整 Credential、原始请求和原始响应不进入页面。健康指标和高级 Tab 仍属于后续交付。

@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -12,6 +12,8 @@ language: zh-CN
 > 最低承诺视口：1280px；基准视口：1440 × 1000
 
 本目录是前端产品目标与 UX 合同的唯一事实来源，定义页面结构、视觉 Token、组件选择、状态模型、交互方式和验收标准。已交付页面由当前 Web 源码、静态 Page Manifest 和生成路由共同拥有；目标页面不等于已交付能力。历史 UI 文档和历史视觉稿不参与当前实现决策。
+
+前端事实按四层分工：Markdown 保存耐久产品语义，`design-tokens.json` 与 `page-contracts.json` 保存机器可读目标合同，Page Manifest、Route 与当前源码保存已交付事实，Component/Playwright 场景与 UI Evidence 保存运行时证据。逐页规范不维护“当前交付”台账；验证结果也不反向成为产品合同。
 
 ## 规范优先级
 

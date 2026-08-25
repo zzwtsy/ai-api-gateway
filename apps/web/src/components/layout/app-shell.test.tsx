@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { pageManifest } from "@/routes/-page-manifest";
 
 import { AppShell } from "./app-shell";
+import { ThemeProvider } from "./theme-provider";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const original = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -26,6 +27,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 describe("app shell", () => {
   beforeEach(() => {
     document.cookie = "sidebar_state=; path=/; max-age=0";
+    window.localStorage.clear();
     vi.stubGlobal("matchMedia", vi.fn().mockImplementation(() => ({
       matches: false,
       addEventListener: vi.fn(),
@@ -34,7 +36,7 @@ describe("app shell", () => {
   });
 
   it("shows the active route and current page title", () => {
-    render(<AppShell pages={pageManifest} />);
+    renderAppShell();
 
     expect(screen.getByText("请求", { selector: "[data-slot=\"topbar-title\"]" })).toBeVisible();
     expect(screen.getByRole("link", { name: "请求" })).toHaveAttribute("data-active");
@@ -44,7 +46,7 @@ describe("app shell", () => {
   });
 
   it("toggles from the Chinese control, persists, and restores the cookie state", () => {
-    const firstRender = render(<AppShell pages={pageManifest} />);
+    const firstRender = renderAppShell();
     const sidebar = firstRender.container.querySelector("[data-slot=\"sidebar\"][data-state]");
     expect(sidebar).toHaveAttribute("data-state", "expanded");
 
@@ -53,7 +55,7 @@ describe("app shell", () => {
     expect(document.cookie).toContain("sidebar_state=false");
     firstRender.unmount();
 
-    const secondRender = render(<AppShell pages={pageManifest} />);
+    const secondRender = renderAppShell();
     expect(secondRender.container.querySelector("[data-slot=\"sidebar\"][data-state]"))
       .toHaveAttribute("data-state", "collapsed");
 
@@ -61,4 +63,24 @@ describe("app shell", () => {
     expect(secondRender.container.querySelector("[data-slot=\"sidebar\"][data-state]"))
       .toHaveAttribute("data-state", "expanded");
   });
+
+  it("opens the theme menu and changes the theme", async () => {
+    renderAppShell();
+
+    const trigger = screen.getByRole("button", { name: "选择界面主题" });
+    fireEvent.click(trigger);
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: "深色" }));
+
+    expect(document.documentElement).toHaveClass("dark");
+    expect(document.documentElement).toHaveAttribute("data-theme-preference", "dark");
+    expect(screen.queryByRole("menuitemradio", { name: "深色" })).not.toBeInTheDocument();
+  });
 });
+
+function renderAppShell() {
+  return render(
+    <ThemeProvider>
+      <AppShell pages={pageManifest} />
+    </ThemeProvider>,
+  );
+}

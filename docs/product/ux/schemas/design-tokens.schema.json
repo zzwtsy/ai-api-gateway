@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aigw.local/schemas/design-tokens.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "name", "version", "theme", "color", "darkColor", "radius", "shadow", "layout", "control", "table", "typography", "breakpoint", "motion"],
+  "properties": {
+    "$schema": { "const": "./schemas/design-tokens.schema.json" },
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preferences", "defaultPreference", "storageKey"],
+      "properties": {
+        "preferences": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [{ "const": "system" }, { "const": "light" }, { "const": "dark" }],
+          "items": false
+        },
+        "defaultPreference": { "const": "system" },
+        "storageKey": { "const": "aigw_theme" }
+      }
+    },
+    "color": { "$ref": "#/$defs/colorSet" },
+    "darkColor": { "$ref": "#/$defs/colorSet" },
+    "radius": { "$ref": "#/$defs/stringMap" },
+    "shadow": { "$ref": "#/$defs/stringMap" },
+    "layout": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "required": ["pageGutterDesktop", "pageGutterMedium", "pageGutterCompact", "pageTopPadding", "pageBottomPadding", "requestMasterMin", "requestInspectorMin", "inspectorMin", "contentViewportHeight"]
+    },
+    "control": { "$ref": "#/$defs/stringMap" },
+    "table": { "$ref": "#/$defs/stringMap" },
+    "typography": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fontFamily", "monoFamily", "persistentCjkMinimum", "pageTitle", "editorTitle", "entityTitle", "cardTitle", "body", "control", "helper", "micro"],
+      "properties": {
+        "fontFamily": { "type": "string", "minLength": 1 },
+        "monoFamily": { "type": "string", "minLength": 1 },
+        "persistentCjkMinimum": { "const": "12px" },
+        "pageTitle": { "$ref": "#/$defs/typeScaleWithTracking" },
+        "editorTitle": { "$ref": "#/$defs/typeScale" },
+        "entityTitle": { "$ref": "#/$defs/typeScale" },
+        "cardTitle": { "$ref": "#/$defs/typeScale" },
+        "body": { "$ref": "#/$defs/typeScale" },
+        "control": { "$ref": "#/$defs/typeScale" },
+        "helper": { "$ref": "#/$defs/typeScale" },
+        "micro": { "$ref": "#/$defs/typeScale" }
+      }
+    },
+    "breakpoint": { "$ref": "#/$defs/stringMap" },
+    "motion": { "$ref": "#/$defs/stringMap" }
+  },
+  "$defs": {
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "minProperties": 1
+    },
+    "semanticTone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["foreground", "background", "border"],
+      "properties": {
+        "foreground": { "type": "string", "minLength": 1 },
+        "background": { "type": "string", "minLength": 1 },
+        "border": { "type": "string", "minLength": 1 }
+      }
+    },
+    "colorSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["background", "foreground", "surface", "surfaceSubtle", "sidebar", "muted", "mutedForeground", "border", "input", "ring", "primary", "primaryForeground", "destructive", "semantic"],
+      "properties": {
+        "background": { "type": "string", "minLength": 1 },
+        "foreground": { "type": "string", "minLength": 1 },
+        "surface": { "type": "string", "minLength": 1 },
+        "surfaceSubtle": { "type": "string", "minLength": 1 },
+        "sidebar": { "type": "string", "minLength": 1 },
+        "muted": { "type": "string", "minLength": 1 },
+        "mutedForeground": { "type": "string", "minLength": 1 },
+        "border": { "type": "string", "minLength": 1 },
+        "input": { "type": "string", "minLength": 1 },
+        "ring": { "type": "string", "minLength": 1 },
+        "primary": { "type": "string", "minLength": 1 },
+        "primaryForeground": { "type": "string", "minLength": 1 },
+        "destructive": { "type": "string", "minLength": 1 },
+        "semantic": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["success", "warning", "danger", "info"],
+          "properties": {
+            "success": { "$ref": "#/$defs/semanticTone" },
+            "warning": { "$ref": "#/$defs/semanticTone" },
+            "danger": { "$ref": "#/$defs/semanticTone" },
+            "info": { "$ref": "#/$defs/semanticTone" }
+          }
+        }
+      }
+    },
+    "typeScale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "lineHeight", "weight"],
+      "properties": {
+        "size": { "type": "string", "minLength": 1 },
+        "lineHeight": { "type": "string", "minLength": 1 },
+        "weight": { "type": "number" }
+      }
+    },
+    "typeScaleWithTracking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "lineHeight", "weight", "tracking"],
+      "properties": {
+        "size": { "type": "string", "minLength": 1 },
+        "lineHeight": { "type": "string", "minLength": 1 },
+        "weight": { "type": "number" },
+        "tracking": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

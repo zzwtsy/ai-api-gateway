@@ -134,6 +134,7 @@ flowchart LR
   n_666561747572653a6d6f64656c73 --> n_6c6962
   n_666561747572653a7265717565737473 --> n_636f6d706f6e656e7473
   n_666561747572653a7265717565737473 --> n_6c6962
+  n_666561747572653a7265717565737473 --> n_726f75746573
   n_726f75746573 --> n_636f6d706f6e656e7473
   n_726f75746573 --> n_666561747572653a61757468
   n_726f75746573 --> n_666561747572653a636c69656e7473
@@ -146,7 +147,7 @@ flowchart LR
 
 | From | To | 代表性 Import |
 | --- | --- | --- |
-| `application` | `components` | `apps/web/src/router.tsx → apps/web/src/components/product/route-error-state.tsx` |
+| `application` | `components` | `apps/web/src/app.tsx → apps/web/src/components/layout/theme-provider.tsx`<br>`apps/web/src/router.tsx → apps/web/src/components/product/route-error-state.tsx` |
 | `application` | `index.css` | `apps/web/src/main.tsx → apps/web/src/index.css` |
 | `application` | `lib` | `apps/web/src/app.tsx → apps/web/src/lib/query-client.ts`<br>`apps/web/src/router.tsx → apps/web/src/lib/query-client.ts` |
 | `application` | `routeTree.gen.ts` | `apps/web/src/router.tsx → apps/web/src/routeTree.gen.ts` |
@@ -162,10 +163,11 @@ flowchart LR
 | `feature:models` | `lib` | `apps/web/src/features/models/create-model-binding-form.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/models/hooks.ts → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/models/models-page.tsx → apps/web/src/lib/api-runtime/client.ts` |
 | `feature:requests` | `components` | `apps/web/src/features/requests/components/request-diagnostic-banner.tsx → apps/web/src/components/ui/button.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/data-error-state.tsx`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/components/product/page-header.tsx` |
 | `feature:requests` | `lib` | `apps/web/src/features/requests/hooks.ts → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/api-runtime/client.ts`<br>`apps/web/src/features/requests/requests-page.tsx → apps/web/src/lib/utils.ts` |
+| `feature:requests` | `routes` | `apps/web/src/features/requests/components/request-diagnostic-banner.tsx → apps/web/src/routes/-deep-links.ts` |
 | `routes` | `components` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/page-header.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/product/request-status.tsx`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/components/ui/button.tsx` |
 | `routes` | `feature:auth` | `apps/web/src/routes/login.tsx → apps/web/src/features/auth/login-page.tsx` |
 | `routes` | `feature:clients` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/clients/hooks.ts`<br>`apps/web/src/routes/_workspace/clients.tsx → apps/web/src/features/clients/clients-page.tsx` |
-| `routes` | `feature:connections` | `apps/web/src/routes/-components/models-route-page.tsx → apps/web/src/features/connections/hooks.ts`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/connections/hooks.ts`<br>`apps/web/src/routes/_workspace/connections.tsx → apps/web/src/features/connections/connection-detail-tabs.ts` |
+| `routes` | `feature:connections` | `apps/web/src/routes/-components/models-route-page.tsx → apps/web/src/features/connections/hooks.ts`<br>`apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/connections/hooks.ts`<br>`apps/web/src/routes/-deep-links.ts → apps/web/src/features/connections/connection-detail-tabs.ts` |
 | `routes` | `feature:models` | `apps/web/src/routes/-components/models-route-page.tsx → apps/web/src/features/models/models-page.tsx`<br>`apps/web/src/routes/_workspace/connections.tsx → apps/web/src/features/models/hooks.ts` |
 | `routes` | `feature:requests` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/features/requests/hooks.ts`<br>`apps/web/src/routes/_workspace/requests.tsx → apps/web/src/features/requests/requests-page.tsx` |
 | `routes` | `lib` | `apps/web/src/routes/-components/overview-page.tsx → apps/web/src/lib/metrics.ts` |

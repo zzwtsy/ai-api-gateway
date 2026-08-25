@@ -42,6 +42,17 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       animations: "disabled",
     });
 
+    await page.getByRole("button", { name: "选择界面主题" }).click();
+    await page.getByRole("menuitemradio", { name: "深色" }).click();
+    await expect(page.locator("html")).toHaveClass(/dark/u);
+    await page.screenshot({
+      path: path.join(outputDirectory, "overview-dark-1440x1000.png"),
+      animations: "disabled",
+    });
+    await page.getByRole("button", { name: "选择界面主题" }).click();
+    await page.getByRole("menuitemradio", { name: "浅色" }).click();
+    await expect(page.locator("html")).toHaveClass(/light/u);
+
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.getByRole("button", { name: "切换侧边栏" }).click();
     await expect(page.locator("[data-slot=\"sidebar\"][data-state]"))
@@ -193,6 +204,7 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       data: { endpointId, upstreamModelId: "ui-evidence-model", name: "UI 证据模型" },
     });
     expect(modelResponse.status()).toBe(201);
+    const modelPayload = await modelResponse.json() as { data: { id: string } };
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/models");
     await expect(page.getByText("UI 证据模型", { exact: true })).toBeVisible();
@@ -205,6 +217,13 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.screenshot({
       path: path.join(outputDirectory, "models-1024x768.png"),
+      animations: "disabled",
+    });
+
+    await page.goto(`/models?modelBindingId=${encodeURIComponent(modelPayload.data.id)}`);
+    await expect(page.getByRole("region", { name: "UI 证据模型" })).toBeVisible();
+    await page.screenshot({
+      path: path.join(outputDirectory, "models-inspector-1024x768.png"),
       animations: "disabled",
     });
 
@@ -270,13 +289,13 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
     await expect(page.getByText(/YOUR_GATEWAY_CLIENT_KEY/u)).toBeVisible();
     await expect(page.getByLabel("完整 Gateway Key")).toHaveCount(0);
     await page.screenshot({
-      path: path.join(outputDirectory, "clients-detail-1280x900.png"),
+      path: path.join(outputDirectory, "clients-inspector-1280x900.png"),
       animations: "disabled",
     });
 
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.screenshot({
-      path: path.join(outputDirectory, "clients-detail-1024x768.png"),
+      path: path.join(outputDirectory, "clients-inspector-1024x768.png"),
       animations: "disabled",
     });
 
@@ -346,7 +365,7 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
         `AIGW_RECORD_UI_EVIDENCE=1 AIGW_E2E_GATEWAY_PORT=${gatewayPort} AIGW_E2E_PROVIDER_PORT=${providerPort} AIGW_E2E_WEB_PORT=${webPort} pnpm --filter @aigw/e2e exec playwright test tests/visual-evidence.spec.ts`,
       ],
       claims: [
-        "Blue/Inter theme and official inset Sidebar render in the real Web app",
+        "Light/Dark semantic themes and the official inset Sidebar render in the real Web app",
         "Sidebar expanded and collapsed layouts remain visible at the verified desktop viewports",
         "Connections and Request detail render against the real in-memory Gateway and Mock Provider",
         "Connection detail omits the duplicate full compatibility test action at 1280px and 1024px",
@@ -356,7 +375,8 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
         "The two-step Connection creation flow remains inside the viewport at 1440px and 1024px",
         "The Clients empty and creation states render inside the viewport without exposing a complete Gateway Key",
         "The Clients directory displays only derived protocol badges, without a duplicate Harness badge, at 1280px and 1024px",
-        "The Client detail Sheet renders a non-secret protocol-specific configuration template at 1280px and 1024px",
+        "The non-modal Client Inspector renders a non-secret protocol-specific configuration template within the content viewport at 1280px and 1024px",
+        "The non-modal Model Inspector renders current Endpoint facts without inventing capability or price data at 1024px",
         "Overview and Connections describe current product behavior without development roadmap copy",
         "The connection form does not prefill development fixture names, identifiers or URLs",
         "Request Workbench uses side-by-side geometry at 1440px and stacked geometry at 1280px and 1024px",
@@ -365,6 +385,7 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
       artifacts: {
         screenshots: [
           "overview-1440x1000.png",
+          "overview-dark-1440x1000.png",
           "overview-collapsed-1024x768.png",
           "connections-1440x1000.png",
           "connections-detail-1280x900.png",
@@ -378,6 +399,7 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
           "connections-create-endpoint-1024x768.png",
           "models-1280x900.png",
           "models-1024x768.png",
+          "models-inspector-1024x768.png",
           "models-form-1280x900.png",
           "models-form-1024x768.png",
           "clients-empty-1280x900.png",
@@ -385,8 +407,8 @@ test("记录 Web UI 合同与 Request 响应式布局截图", async ({ page, req
           "clients-form-1024x768.png",
           "clients-directory-1280x900.png",
           "clients-directory-1024x768.png",
-          "clients-detail-1280x900.png",
-          "clients-detail-1024x768.png",
+          "clients-inspector-1280x900.png",
+          "clients-inspector-1024x768.png",
           "requests-1440x1000.png",
           "requests-stacked-1280x900.png",
           "requests-stacked-1024x768.png",

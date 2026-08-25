@@ -9,6 +9,9 @@ catalogs:
     '@antfu/eslint-config':
       specifier: 9.3.0
       version: 9.3.0
+    '@axe-core/playwright':
+      specifier: 4.13.0
+      version: 4.13.0
     '@base-ui/react':
       specifier: 1.7.0
       version: 1.7.0
@@ -87,6 +90,9 @@ catalogs:
     '@vitest/coverage-v8':
       specifier: 4.1.8
       version: 4.1.8
+    ajv:
+      specifier: 8.20.0
+      version: 8.20.0
     better-auth:
       specifier: 1.6.26
       version: 1.6.26
@@ -218,6 +224,9 @@ importers:
       '@types/semver':
         specifier: 'catalog:'
         version: 7.8.0
+      ajv:
+        specifier: 'catalog:'
+        version: 8.20.0
       eslint:
         specifier: 'catalog:'
         version: 10.8.1(jiti@2.7.0)(supports-color@10.2.2)
@@ -254,6 +263,9 @@ importers:
 
   apps/e2e:
     devDependencies:
+      '@axe-core/playwright':
+        specifier: 'catalog:'
+        version: 4.13.0(playwright-core@1.62.1)
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.62.1
@@ -513,6 +525,11 @@ packages:
     resolution: {integrity: sha512-pLMeRgRYS7/vZIgAAkOe2P6+XGTifR1MT9pqDoxZ11EmcJJ+DPmdPqLN8ZZF4U8R9KHCCQCS9c2wtuE8wSrfkw==}
     peerDependencies:
       zod: ^4.0.0
+
+  '@axe-core/playwright@4.13.0':
+    resolution: {integrity: sha512-6YLx+kxXu5GJceG4ozFg+33a2EMTdjYwWGloJ3sb9Kta5pp+ZNS53uxGVog5JetIY8s++P5UrtX+cri+u0VAVg==}
+    peerDependencies:
+      playwright-core: '>= 1.0.0'
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -6584,6 +6601,11 @@ snapshots:
     dependencies:
       openapi3-ts: 4.6.1
       zod: 4.4.3
+
+  '@axe-core/playwright@4.13.0(playwright-core@1.62.1)':
+    dependencies:
+      axe-core: 4.13.0
+      playwright-core: 1.62.1
 
   '@babel/code-frame@7.29.7':
     dependencies:

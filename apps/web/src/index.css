@@ -9,7 +9,7 @@
     --breakpoint-aigw-desktop: 1440px;
     --breakpoint-aigw-minimum: 1280px;
     --font-heading: var(--font-sans);
-    --font-sans: 'Inter Variable', sans-serif;
+    --font-sans: 'Inter Variable', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', ui-sans-serif, system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -62,6 +62,9 @@
     --aigw-layout-page-bottom-padding: 32px;
     --aigw-layout-request-master-min: 620px;
     --aigw-layout-request-inspector-min: 390px;
+    --aigw-layout-inspector-min: 390px;
+    --aigw-layout-content-viewport-height: calc(100dvh - 8px - 8px - 56px - 22px - 32px);
+    --aigw-focus-ring: oklch(0.424 0.199 265.638);
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -79,7 +82,7 @@
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --ring: oklch(0.424 0.199 265.638);
     --chart-1: oklch(0.809 0.105 251.813);
     --chart-2: oklch(0.623 0.214 259.815);
     --chart-3: oklch(0.546 0.245 262.881);
@@ -118,7 +121,8 @@
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --ring: oklch(0.809 0.105 251.813);
+    --aigw-focus-ring: oklch(0.809 0.105 251.813);
     --chart-1: oklch(0.809 0.105 251.813);
     --chart-2: oklch(0.623 0.214 259.815);
     --chart-3: oklch(0.546 0.245 262.881);
@@ -144,7 +148,6 @@
     }
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
-    min-width: 1024px;
     margin: 0;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
@@ -159,4 +162,18 @@
 
 #root {
   min-height: 100vh;
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--aigw-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

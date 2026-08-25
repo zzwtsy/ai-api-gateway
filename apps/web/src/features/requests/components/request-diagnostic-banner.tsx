@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 import { ArrowRight, CheckCircle2, Info, TriangleAlert, XCircle } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { connectionDeepLink } from "@/routes/-deep-links";
 
 function ToneIcon({ tone, className }: { readonly tone: DiagnosticResult["tone"]; readonly className?: string }) {
   switch (tone) {
@@ -45,10 +46,7 @@ function DiagnosticAction({ diagnosis }: { readonly diagnosis: DiagnosticResult 
   if (diagnosis.actionLink === "/connections") {
     return (
       <Link
-        to="/connections"
-        search={diagnosis.actionConnectionId === undefined
-          ? {}
-          : { connectionId: diagnosis.actionConnectionId }}
+        {...connectionDeepLink(diagnosis.actionConnectionId)}
         className={className}
       >
         {content}
@@ -63,13 +61,13 @@ function getToneClasses(tone: DiagnosticResult["tone"]) {
   switch (tone) {
     case "success":
       return {
-        container: "border-green-500/20 bg-green-500/5 text-foreground",
-        icon: "text-green-600 dark:text-green-400",
+        container: "border-success/20 bg-success/10 text-foreground",
+        icon: "text-success-foreground",
       };
     case "warning":
       return {
-        container: "border-amber-500/20 bg-amber-500/5 text-foreground",
-        icon: "text-amber-600 dark:text-amber-400",
+        container: "border-warning/20 bg-warning/10 text-foreground",
+        icon: "text-warning-foreground",
       };
     case "danger":
       return {

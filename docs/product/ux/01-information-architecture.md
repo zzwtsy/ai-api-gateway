@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-22
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -34,9 +34,9 @@ language: zh-CN
 | 请求 | 一次逻辑请求发生了什么 | 筛选、发送测试请求、导出 | Master–Detail 排障工作台 |
 | 分析 | 谁在消耗、哪里不稳定、成本如何 | 过滤、切换指标、导出 | 指标切换、趋势图、拆分表、错误构成 |
 | 连接 | 厂商 Endpoint 与账号是否可用 | 添加连接、添加账号、测试 | Provider 目录 + 耐久详情 |
-| 模型 | 哪些上游模型可用，能力和价格来自哪里 | 同步、添加绑定 | 高密度表格 + 详情 Sheet |
+| 模型 | 哪些上游模型可用，能力和价格来自哪里 | 同步、添加绑定 | 高密度表格 + Persistent Inspector |
 | 路由 | 请求将匹配哪条规则并去向哪里 | 创建、模拟、发布 | 规则表 + 解释预览；独立编辑器 |
-| 客户端 | 每个 Harness 使用什么 Key 和路由范围 | 添加客户端、轮换 Key | 高密度表格 + 详情 Sheet |
+| 客户端 | 每个 Harness 使用什么 Key 和路由范围 | 添加客户端、轮换 Key | 高密度表格 + Persistent Inspector |
 | 设置 | 系统如何保存数据和运行 | 分区保存 | 左侧本地导航 + 开放式设置行 |
 
 ## 3. 全局顶栏
@@ -85,6 +85,8 @@ language: zh-CN
 - 模型筛选和分页；
 - 路由列表筛选；
 - 设置分区。
+
+已交付对象详情使用 `requestId`、`connectionId`、`modelBindingId` 与 `clientId`。Route Search Schema 拥有参数名、默认值省略和无效值规范化；跨页入口使用 `routes/-deep-links.ts` 中面向真实消费者的 Builder，不在 Feature 中复制 Search 对象。
 
 以下状态不进入 URL：
 

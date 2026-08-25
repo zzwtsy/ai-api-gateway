@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -45,7 +45,7 @@ pnpm dlx shadcn@4.19.0 init \
 pnpm exec shadcn apply --cwd apps/web --preset base-nova
 
 pnpm exec shadcn add --cwd apps/web \
-  badge button card empty field input label select separator sheet sidebar skeleton spinner table tooltip
+  badge button card dropdown-menu empty field input label select separator sheet sidebar skeleton spinner table tooltip
 
 pnpm ui:info
 ```

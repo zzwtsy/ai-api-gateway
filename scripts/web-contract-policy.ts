@@ -1,11 +1,22 @@
+import type { AnySchema, ErrorObject } from "ajv";
+import { Ajv2020 } from "ajv/dist/2020.js";
 import * as ts from "typescript";
 
 export interface WebContractInput {
   readonly cssSource: string;
   readonly designTokens: unknown;
+  readonly designTokensSchema: unknown;
+  readonly indexHtmlSource: string;
   readonly pageContracts: unknown;
+  readonly pageContractsSchema: unknown;
   readonly pageManifest: readonly unknown[];
   readonly routeTreeSource: string;
+  readonly runtimeScenarioSources: readonly {
+    readonly path: string;
+    readonly source: string;
+  }[];
+  readonly themeProviderSource: string;
+  readonly themeSource: string;
 }
 
 interface PageIdentity {
@@ -23,12 +34,16 @@ const implementedTokenVariables = [
   ["layout", "pageBottomPadding", "--aigw-layout-page-bottom-padding"],
   ["layout", "requestMasterMin", "--aigw-layout-request-master-min"],
   ["layout", "requestInspectorMin", "--aigw-layout-request-inspector-min"],
+  ["layout", "inspectorMin", "--aigw-layout-inspector-min"],
+  ["layout", "contentViewportHeight", "--aigw-layout-content-viewport-height"],
   ["breakpoint", "desktop", "--breakpoint-aigw-desktop"],
   ["breakpoint", "minimumCommitted", "--breakpoint-aigw-minimum"],
 ] as const;
 
 export function collectWebContractViolations(input: WebContractInput): string[] {
   const failures: string[] = [];
+  validateJsonSchema(input.designTokensSchema, input.designTokens, "design-tokens.json", failures);
+  validateJsonSchema(input.pageContractsSchema, input.pageContracts, "page-contracts.json", failures);
   const contractPages = readPageIdentities(input.pageContracts, "page-contracts.json", failures);
   const deliveredPages = readPageIdentities({ pages: input.pageManifest }, "page manifest", failures);
 
@@ -54,7 +69,31 @@ export function collectWebContractViolations(input: WebContractInput): string[] 
   }
 
   checkImplementedTokens(input.designTokens, input.cssSource, failures);
+  checkThemeContract(input, failures);
+  checkLifecycleIdentities(input.pageContracts, input.runtimeScenarioSources, failures);
   return failures;
+}
+
+function validateJsonSchema(schema: unknown, value: unknown, owner: string, failures: string[]): void {
+  try {
+    const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false });
+    const validate = ajv.compile(schema as AnySchema);
+    const result = validate(value);
+    if (result instanceof Promise) {
+      failures.push(`${owner} schema: asynchronous validation is not supported`);
+      return;
+    }
+    if (result === true)
+      return;
+    for (const error of validate.errors ?? [])
+      failures.push(`${owner}${formatInstancePath(error)}: ${error.message ?? "invalid value"}`);
+  } catch (error) {
+    failures.push(`${owner} schema: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+function formatInstancePath(error: ErrorObject): string {
+  return error.instancePath.length === 0 ? "" : error.instancePath;
 }
 
 function readPageIdentities(source: unknown, owner: string, failures: string[]): PageIdentity[] {
@@ -162,6 +201,104 @@ function checkImplementedTokens(designTokens: unknown, cssSource: string, failur
     if (actual !== expected) {
       failures.push(`index.css ${variable}: expected ${JSON.stringify(expected)}, received ${JSON.stringify(actual)}`);
     }
+  }
+}
+
+function checkThemeContract(input: WebContractInput, failures: string[]): void {
+  const storageKey = readNestedString(input.designTokens, "theme", "storageKey");
+  if (storageKey === null) {
+    failures.push("design-tokens.json theme.storageKey: expected a string value");
+    return;
+  }
+  for (const [owner, source] of [
+    ["index.html", input.indexHtmlSource],
+    ["theme.ts", input.themeSource],
+  ] as const) {
+    if (!source.includes(storageKey))
+      failures.push(`${owner}: missing Theme storage key ${JSON.stringify(storageKey)}`);
+  }
+  if (!input.themeProviderSource.includes("themeStorageKey"))
+    failures.push("theme-provider.tsx: missing Theme storage key owner reference");
+  if (!input.cssSource.includes(".dark {") || !input.cssSource.includes("--aigw-focus-ring:"))
+    failures.push("index.css: missing Dark or Focus semantic Theme contract");
+}
+
+function checkLifecycleIdentities(
+  pageContracts: unknown,
+  runtimeScenarioSources: WebContractInput["runtimeScenarioSources"],
+  failures: string[],
+): void {
+  if (!isRecord(pageContracts) || !Array.isArray(pageContracts.pages))
+    return;
+  const scenarioOwners = new Map<string, string>();
+  for (const pageValue of pageContracts.pages)
+    collectPageScenarioOwners(pageValue, scenarioOwners, failures);
+  if (scenarioOwners.size === 0) {
+    failures.push("page-contracts.json: expected required lifecycle states to reference runtime scenario IDs");
+    return;
+  }
+  for (const [scenarioId, owner] of scenarioOwners) {
+    const matchingFiles = runtimeScenarioSources
+      .filter(testSource => testSource.source.includes(scenarioId))
+      .map(testSource => testSource.path);
+    if (matchingFiles.length === 0)
+      failures.push(`page-contracts.json ${owner}: runtime scenario ${JSON.stringify(scenarioId)} is missing from test source`);
+  }
+}
+
+function collectPageScenarioOwners(
+  pageValue: unknown,
+  scenarioOwners: Map<string, string>,
+  failures: string[],
+): void {
+  if (!isRecord(pageValue) || !Array.isArray(pageValue.regions))
+    return;
+  const pageId = String(pageValue.id);
+  const regionIds = new Set<string>();
+  for (const regionValue of pageValue.regions) {
+    if (!isRecord(regionValue) || typeof regionValue.id !== "string" || !Array.isArray(regionValue.states))
+      continue;
+    if (regionIds.has(regionValue.id))
+      failures.push(`page-contracts.json ${pageId}: duplicate region id ${JSON.stringify(regionValue.id)}`);
+    regionIds.add(regionValue.id);
+    collectRegionScenarioOwners(pageId, regionValue, scenarioOwners, failures);
+  }
+}
+
+function collectRegionScenarioOwners(
+  pageId: string,
+  regionValue: Record<string, unknown>,
+  scenarioOwners: Map<string, string>,
+  failures: string[],
+): void {
+  const regionId = regionValue.id as string;
+  const states = regionValue.states as unknown[];
+  const stateIds = new Set<string>();
+  for (const stateValue of states) {
+    if (!isRecord(stateValue) || typeof stateValue.id !== "string")
+      continue;
+    if (stateIds.has(stateValue.id))
+      failures.push(`page-contracts.json ${pageId}.${regionId}: duplicate state id ${JSON.stringify(stateValue.id)}`);
+    stateIds.add(stateValue.id);
+    if (Array.isArray(stateValue.scenarioIds))
+      collectStateScenarioOwners(`${pageId}.${regionId}.${stateValue.id}`, stateValue.scenarioIds, scenarioOwners, failures);
+  }
+}
+
+function collectStateScenarioOwners(
+  owner: string,
+  scenarioIds: unknown[],
+  scenarioOwners: Map<string, string>,
+  failures: string[],
+): void {
+  for (const scenarioId of scenarioIds) {
+    if (typeof scenarioId !== "string")
+      continue;
+    const previousOwner = scenarioOwners.get(scenarioId);
+    if (previousOwner !== undefined)
+      failures.push(`page-contracts.json: scenario ${JSON.stringify(scenarioId)} is referenced by both ${previousOwner} and ${owner}`);
+    else
+      scenarioOwners.set(scenarioId, owner);
   }
 }
 

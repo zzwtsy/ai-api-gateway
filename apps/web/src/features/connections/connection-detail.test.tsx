@@ -228,7 +228,7 @@ describe("connection detail views", () => {
     expect(screen.getByText("需要至少一个未禁用的 Credential 才能添加 Endpoint。")).toBeVisible();
   });
 
-  it("starts a fee-labelled full probe and keeps progress in a closeable sheet", async () => {
+  it("covers UX-CONNECTIONS-DETAIL-PROBE: starts a fee-labelled full probe and keeps progress in a closeable sheet", async () => {
     const user = userEvent.setup();
     const run = probeRunFixture("running");
     hookMocks.startCompatibility.mockImplementation(async () => {

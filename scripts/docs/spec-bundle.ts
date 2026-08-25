@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { pageManifest } from "../../apps/web/src/routes/-page-manifest.ts";
+
 import { resolveSourceCommit } from "./source-identity.ts";
 
 interface SpecBundle {
@@ -85,7 +87,26 @@ async function buildBundle(
     "> 维护方式：修改模块化源文档后运行 `pnpm docs:bundle`，禁止直接修改本文件。",
     "",
   ].join("\n");
-  return `${header}${sections.join("\n\n---\n\n")}\n`;
+  const deliveredPages = bundle.sources.includes("docs/product/ux/README.md")
+    ? renderDeliveredPages()
+    : "";
+  return `${header}${deliveredPages}${sections.join("\n\n---\n\n")}\n`;
+}
+
+function renderDeliveredPages(): string {
+  const pages = pageManifest
+    .map(page => `- ${page.label}（\`${page.path}\`，${page.navGroup}）`)
+    .join("\n");
+  return [
+    "## 当前已交付导航页面",
+    "",
+    "本节由 `apps/web/src/routes/-page-manifest.ts` 生成；生成路由一致性由 `pnpm verify:web-contracts` 校验。目标页面和页内能力仍以本规范与机器合同为准。",
+    "",
+    pages,
+    "",
+    "---",
+    "",
+  ].join("\n");
 }
 
 function validateBundle(bundle: SpecBundle, seenOutputs: Set<string>): void {

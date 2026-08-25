@@ -77,7 +77,7 @@ describe("clients page", () => {
     });
   });
 
-  it("shows a newly created Key only in the explicit completion state", async () => {
+  it("covers UX-CLIENTS-SECRET-ONCE: shows a newly created Key only in the explicit completion state", async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue();
     renderClientsPage();
@@ -92,12 +92,14 @@ describe("clients page", () => {
     expect(screen.queryByDisplayValue(createdResult.key)).not.toBeInTheDocument();
   });
 
-  it("keeps Key metadata and lifecycle actions inside the selected detail Sheet", async () => {
+  it("covers UX-CLIENTS-INSPECTOR-LIFECYCLE: keeps Key metadata and lifecycle actions inside the non-modal Inspector", async () => {
     const user = userEvent.setup();
     hookMocks.useGatewayClients.mockReturnValue(readyQuery([client]));
     hookMocks.revoke.mockResolvedValue(undefined);
     renderClientsPage("client_01");
 
+    expect(screen.getByRole("region", { name: "Codex · 工作站" })).toBeVisible();
+    expect(screen.queryByRole("dialog", { name: "Codex · 工作站" })).not.toBeInTheDocument();
     expect(screen.getByText("gw_codex_AbCd••••wxyz")).toBeVisible();
     expect(screen.getByText("现有完整 Gateway Key 无法恢复")).toBeVisible();
     expect(screen.getByText(/YOUR_GATEWAY_CLIENT_KEY/u)).toBeVisible();
@@ -107,6 +109,16 @@ describe("clients page", () => {
     expect(hookMocks.revoke).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "确认撤销" }));
     expect(hookMocks.revoke).toHaveBeenCalledWith("key_01");
+  });
+
+  it("closes the Inspector through the route owner", async () => {
+    const user = userEvent.setup();
+    hookMocks.useGatewayClients.mockReturnValue(readyQuery([client]));
+    renderClientsPage("client_01");
+
+    await user.click(screen.getByRole("button", { name: "关闭客户端详情" }));
+
+    expect(onClientIdChange).toHaveBeenCalledWith(undefined, { replace: true });
   });
 
   it("opens detail through the route-owned client selection callback", async () => {
@@ -152,7 +164,7 @@ describe("clients page", () => {
     expect(onClientIdChange).not.toHaveBeenCalledWith(undefined, expect.anything());
   });
 
-  it("keeps cached clients visible when a background refresh fails", () => {
+  it("covers UX-CLIENTS-DIRECTORY-LIFECYCLE: keeps cached clients visible when a background refresh fails", () => {
     hookMocks.useGatewayClients.mockReturnValue({
       ...readyQuery([client]),
       error: new Error("刷新失败"),

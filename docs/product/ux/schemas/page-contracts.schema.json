@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aigw.local/schemas/page-contracts.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "version", "pages", "globalActions", "quickCreate"],
+  "properties": {
+    "$schema": { "const": "./schemas/page-contracts.schema.json" },
+    "version": { "type": "string", "minLength": 1 },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/page" }
+    },
+    "globalActions": { "$ref": "#/$defs/stringArray" },
+    "quickCreate": { "$ref": "#/$defs/stringArray" }
+  },
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "navGroup", "label", "purpose", "primaryAction", "layout", "regions"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "path": { "type": "string", "pattern": "^/" },
+        "navGroup": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "purpose": { "type": "string", "minLength": 1 },
+        "primaryAction": { "type": ["string", "null"] },
+        "layout": { "type": "string", "minLength": 1 },
+        "regions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/region" }
+        }
+      }
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "owner", "states"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "owner": { "type": "string", "minLength": 1 },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/lifecycle" }
+        }
+      }
+    },
+    "lifecycle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "availability", "owner", "entry", "preserves", "recovery", "urlOutcome", "selectionOutcome", "focusOutcome", "scenarioIds"],
+          "properties": {
+            "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+            "availability": { "const": "required" },
+            "owner": { "type": "string", "minLength": 1 },
+            "entry": { "type": "string", "minLength": 1 },
+            "preserves": { "$ref": "#/$defs/stringArray" },
+            "recovery": { "type": "string", "minLength": 1 },
+            "urlOutcome": { "type": "string", "minLength": 1 },
+            "selectionOutcome": { "type": "string", "minLength": 1 },
+            "focusOutcome": { "type": "string", "minLength": 1 },
+            "scenarioIds": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "pattern": "^UX-[A-Z0-9]+(?:-[A-Z0-9]+)+$" },
+              "uniqueItems": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "availability", "reason"],
+          "properties": {
+            "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+            "availability": { "const": "n/a" },
+            "reason": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    }
+  }
+}

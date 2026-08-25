@@ -31,7 +31,7 @@ describe("overview page", () => {
     hookMocks.useRequests.mockReturnValue({ data: [], isLoading: false });
   });
 
-  it("describes the current request path without development progress copy", () => {
+  it("covers UX-OVERVIEW-READY: describes the current request path without development progress copy", () => {
     render(<OverviewPage />);
 
     expect(screen.getByText("请求转发链路")).toBeVisible();
@@ -40,13 +40,22 @@ describe("overview page", () => {
     expect(screen.queryByText(/留给后续功能/u)).not.toBeInTheDocument();
   });
 
-  it("renders 3-step onboarding guide on initial setup", () => {
+  it("covers UX-OVERVIEW-FIRST-EMPTY: renders 3-step onboarding guide on initial setup", () => {
     render(<OverviewPage />);
 
     expect(screen.getByText("快速起步向导")).toBeVisible();
     expect(screen.getByText("1. 接入上游厂商")).toBeVisible();
     expect(screen.getByText("2. 确认可用模型")).toBeVisible();
     expect(screen.getByText("3. 签发接入密钥")).toBeVisible();
+  });
+
+  it("covers UX-OVERVIEW-LOADING: keeps the recent-request region in a loading state", () => {
+    hookMocks.useRequests.mockReturnValue({ data: undefined, isLoading: true });
+
+    const { container } = render(<OverviewPage />);
+
+    expect(container.querySelector("[data-slot=\"skeleton\"]")).toBeVisible();
+    expect(screen.queryByText("还没有请求记录")).not.toBeInTheDocument();
   });
 
   it("keeps onboarding visible while a Gateway Client is still missing", () => {

@@ -79,6 +79,7 @@
     "@eslint-react/eslint-plugin": "catalog:",
     "@types/node": "catalog:",
     "@types/semver": "catalog:",
+    "ajv": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-boundaries": "catalog:",
     "eslint-plugin-jsx-a11y": "catalog:",

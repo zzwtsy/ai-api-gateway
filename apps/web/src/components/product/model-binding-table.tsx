@@ -1,5 +1,6 @@
 import { StatusBadge } from "@/components/product/status-badge";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ModelBindingTableItem {
@@ -14,11 +15,15 @@ export function ModelBindingTable({
   bindings,
   endpointColumnLabel,
   endpointNames,
+  onSelect,
+  selectedBindingId,
   showMetadata = false,
 }: {
   readonly bindings: readonly ModelBindingTableItem[];
   readonly endpointColumnLabel: string;
   readonly endpointNames: ReadonlyMap<string, string>;
+  readonly onSelect?: (bindingId: string) => void;
+  readonly selectedBindingId?: string | undefined;
   readonly showMetadata?: boolean;
 }) {
   return (
@@ -30,11 +35,16 @@ export function ModelBindingTable({
           <TableHead>{endpointColumnLabel}</TableHead>
           <TableHead>状态</TableHead>
           {showMetadata && <TableHead>元数据</TableHead>}
+          {onSelect !== undefined && <TableHead className="text-right">操作</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
         {bindings.map(binding => (
-          <TableRow key={binding.id}>
+          <TableRow
+            key={binding.id}
+            aria-selected={binding.id === selectedBindingId}
+            data-state={binding.id === selectedBindingId ? "selected" : undefined}
+          >
             <TableCell className="font-medium">{binding.name}</TableCell>
             <TableCell><code className="text-xs">{binding.upstreamModelId}</code></TableCell>
             <TableCell>{endpointNames.get(binding.endpointId) ?? binding.endpointId}</TableCell>
@@ -44,6 +54,21 @@ export function ModelBindingTable({
               </StatusBadge>
             </TableCell>
             {showMetadata && <TableCell><Badge variant="secondary">能力与价格未知</Badge></TableCell>}
+            {onSelect !== undefined && (
+              <TableCell className="text-right">
+                <Button
+                  id={`model-binding-detail-trigger-${binding.id}`}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  aria-controls="model-binding-inspector"
+                  aria-expanded={binding.id === selectedBindingId}
+                  onClick={() => onSelect(binding.id)}
+                >
+                  查看详情
+                </Button>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>

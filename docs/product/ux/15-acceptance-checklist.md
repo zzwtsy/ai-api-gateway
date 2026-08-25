@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -30,7 +30,8 @@ language: zh-CN
 ## 3. Shell 与视觉
 
 - [ ] 浮动 inset Sidebar 与 Main Surface 结构正确；
-- [ ] Sidebar 为浅色背景，Inset 内容表面为真白，Primary 为蓝色；
+- [ ] Light 使用浅色 Sidebar 与白色内容面，Dark 使用中性深色语义表面，Primary 保持蓝色方向；
+- [ ] Theme Dropdown Menu 可选择跟随系统、浅色、深色，刷新、系统变化与同源标签页同步符合合同；
 - [ ] Sidebar 可点击和通过 `Cmd/Ctrl+B` 折叠，刷新后恢复，折叠导航显示中文 Tooltip；
 - [ ] 页面主操作在 Page Header；
 - [ ] 顶栏只保留全局能力；
@@ -68,6 +69,7 @@ language: zh-CN
 - [ ] Request Master–Detail 在 1440px 以不小于 620px / 390px 的双栏显示；
 - [ ] 1280 宽保留全部核心任务，Request Master–Detail 按阅读顺序上下排列；
 - [ ] 1024 × 768 展开与折叠状态均无内容裁切，Request Master–Detail 保持上下排列；
+- [ ] Clients/Models Inspector 在 1440px 并排，在 1280px 与 1024px 上下排列；外层不超过内容视口且 Body 独立滚动；
 - [ ] `<768px` Sidebar Sheet 打开、关闭、焦点和遮罩 Smoke 通过；
 - [ ] 次要列按断点隐藏，核心列保留；
 - [ ] 路由编辑预览在窄视口顺序降级；
@@ -77,12 +79,14 @@ language: zh-CN
 
 - [ ] 键盘可到达所有核心控件；
 - [ ] Focus ring 清晰；
+- [ ] 200% Zoom 与 320 CSS px Reflow 下核心内容可达且页面无横向滚动；
+- [ ] `prefers-reduced-motion` 下非必要动画被移除；
 - [ ] Overlay 有 Title，关闭后焦点返回；
 - [ ] Icon-only Button 有 accessible name；
 - [ ] 状态不只靠颜色；
 - [ ] Table、Tabs、Menu、Command 语义正确；
 - [ ] 图表有文本摘要；
-- [ ] 自动化无高严重度 a11y 问题。
+- [ ] Chromium 与 Firefox 目标场景的 axe 自动扫描无违规；自动扫描不被描述为 WCAG 认证。
 
 ## 8. 安全
 

@@ -3,7 +3,10 @@ import type { EndpointOption } from "@/features/models/models-page";
 import { useConnections } from "@/features/connections/hooks";
 import { ModelsPage } from "@/features/models/models-page";
 
-export function ModelsRoutePage() {
+export function ModelsRoutePage({ modelBindingId, onModelBindingIdChange }: {
+  readonly modelBindingId: string | undefined;
+  readonly onModelBindingIdChange: (modelBindingId: string | undefined, options?: { readonly replace?: boolean }) => void;
+}) {
   const connections = useConnections();
   const endpoints: EndpointOption[] | undefined = connections.data?.flatMap(connection =>
     connection.endpoints.map(endpoint => ({
@@ -23,6 +26,8 @@ export function ModelsRoutePage() {
       endpointError={connections.isError ? connections.error : null}
       endpoints={endpoints}
       endpointsLoading={connections.isPending}
+      modelBindingId={modelBindingId}
+      onModelBindingIdChange={onModelBindingIdChange}
       onRetryEndpoints={connections.refetch}
     />
   );

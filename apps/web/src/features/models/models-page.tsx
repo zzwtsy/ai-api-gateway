@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Box, Plus } from "lucide-react";
-import { useState } from "react";
+import { Box, Plus, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { DataErrorState } from "@/components/product/data-error-state";
 import { ModelBindingTable } from "@/components/product/model-binding-table";
@@ -22,6 +22,7 @@ import { describeApiError } from "@/lib/api-runtime/client";
 
 import { CreateModelBindingForm } from "./create-model-binding-form";
 import { useModelBindings } from "./hooks";
+import { ModelBindingDetail } from "./model-binding-detail";
 
 export interface EndpointOption {
   readonly id: string;
@@ -37,18 +38,46 @@ export function ModelsPage({
   endpointError,
   endpoints,
   endpointsLoading,
+  modelBindingId,
+  onModelBindingIdChange,
   onRetryEndpoints,
 }: {
   readonly endpointError: unknown;
   readonly endpoints: readonly EndpointOption[] | undefined;
   readonly endpointsLoading: boolean;
+  readonly modelBindingId: string | undefined;
+  readonly onModelBindingIdChange: (modelBindingId: string | undefined, options?: { readonly replace?: boolean }) => void;
   readonly onRetryEndpoints: () => Promise<unknown>;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const focusAfterCloseRef = useRef<string | null>(null);
   const query = useModelBindings();
+  const selectedBinding = query.data?.find(binding => binding.id === modelBindingId);
+
+  useEffect(() => {
+    if (modelBindingId === undefined || query.data === undefined || selectedBinding !== undefined)
+      return;
+    onModelBindingIdChange(undefined, { replace: true });
+  }, [modelBindingId, onModelBindingIdChange, query.data, selectedBinding]);
+
+  useEffect(() => {
+    if (modelBindingId !== undefined || focusAfterCloseRef.current === null)
+      return;
+    const closedBindingId = focusAfterCloseRef.current;
+    focusAfterCloseRef.current = null;
+    document.getElementById(`model-binding-detail-trigger-${closedBindingId}`)?.focus();
+  }, [modelBindingId]);
+
+  const endpointNames = new Map(endpoints?.map(endpoint => [endpoint.id, endpoint.label]));
+  const closeInspector = () => {
+    if (modelBindingId === undefined)
+      return;
+    focusAfterCloseRef.current = modelBindingId;
+    onModelBindingIdChange(undefined, { replace: true });
+  };
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex min-h-0 flex-col gap-7">
       <PageHeader
         title="模型"
         description="管理每个 Endpoint 上可明确调用的上游模型绑定。"
@@ -78,22 +107,56 @@ export function ModelsPage({
         )}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Endpoint 模型绑定</CardTitle>
-          <CardDescription>同一模型在不同 Endpoint 上保持独立记录。</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ModelDirectory
-            bindings={query.data}
-            endpoints={endpoints}
-            error={query.isError ? query.error : null}
-            loading={query.isPending}
-            onRetry={query.refetch}
-            stale={query.isRefetchError && query.data !== undefined}
-          />
-        </CardContent>
-      </Card>
+      <div className={selectedBinding === undefined
+        ? "min-h-0"
+        : "grid min-h-0 gap-6 aigw-desktop:grid-cols-[minmax(620px,1fr)_minmax(var(--aigw-layout-inspector-min),0.72fr)]"}
+      >
+        <Card data-slot="models-master" className="min-w-0">
+          <CardHeader>
+            <CardTitle>Endpoint 模型绑定</CardTitle>
+            <CardDescription>同一模型在不同 Endpoint 上保持独立记录。</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ModelDirectory
+              bindings={query.data}
+              endpoints={endpoints}
+              error={query.isError ? query.error : null}
+              loading={query.isPending}
+              onRetry={query.refetch}
+              onSelect={onModelBindingIdChange}
+              selectedBindingId={modelBindingId}
+              stale={query.isRefetchError && query.data !== undefined}
+            />
+          </CardContent>
+        </Card>
+
+        {selectedBinding !== undefined && (
+          <Card
+            id="model-binding-inspector"
+            role="region"
+            aria-labelledby="model-binding-inspector-title"
+            className="max-h-[var(--aigw-layout-content-viewport-height)] min-h-0 min-w-0 gap-0 overflow-hidden"
+          >
+            <CardHeader className="shrink-0 border-b">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <CardTitle id="model-binding-inspector-title" className="truncate">{selectedBinding.name}</CardTitle>
+                  <CardDescription>当前 Endpoint 级模型绑定事实。</CardDescription>
+                </div>
+                <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭模型详情" onClick={closeInspector}>
+                  <X />
+                </Button>
+              </div>
+            </CardHeader>
+            <div data-slot="inspector-body" className="min-h-0 overflow-y-auto">
+              <ModelBindingDetail
+                binding={selectedBinding}
+                endpointName={endpointNames.get(selectedBinding.endpointId) ?? selectedBinding.endpointId}
+              />
+            </div>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
@@ -167,6 +230,8 @@ function ModelDirectory({
   error,
   loading,
   onRetry,
+  onSelect,
+  selectedBindingId,
   stale,
 }: {
   readonly bindings: ReturnType<typeof useModelBindings>["data"];
@@ -174,6 +239,8 @@ function ModelDirectory({
   readonly error: unknown;
   readonly loading: boolean;
   readonly onRetry: () => Promise<unknown>;
+  readonly onSelect: (bindingId: string) => void;
+  readonly selectedBindingId: string | undefined;
   readonly stale: boolean;
 }) {
   if (bindings === undefined && error !== null) {
@@ -209,6 +276,8 @@ function ModelDirectory({
           bindings={bindings}
           endpointColumnLabel="Provider / Endpoint"
           endpointNames={endpointNames}
+          onSelect={onSelect}
+          selectedBindingId={selectedBindingId}
           showMetadata
         />
       </div>

@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -60,6 +60,8 @@ src/
 
 `page-contracts.json` 拥有产品目标页面全集；`routes/-page-manifest.ts` 只拥有当前已交付且进入导航的页面集合。App Shell 从 Manifest 派生导航、分组、当前标题和 Active 状态。静态合同 Gate 校验已交付页面的 ID、Path、中文标签、导航分组、生成路由和已落地布局 Token；计划页面可以只存在于产品合同中，不得提前进入已交付导航。
 
+目标页面区域生命周期由 `page-contracts.json` 表达；必需状态的 Scenario ID 必须关联真实 Component 或 Playwright 测试源码。该 Gate 只证明结构与关联存在，不执行场景，也不代替浏览器证据。
+
 ## 3. shadcn 约束
 
 - 添加组件前先检查已安装组件并读取当前官方文档；
@@ -77,6 +79,8 @@ src/
 - Empty、Alert、Skeleton、Separator、Sonner 使用官方组件；
 - Dialog、Sheet、Drawer 必须包含可访问 Title。
 
+Theme 使用原生 Provider，不引入第二个全局 Store。偏好仅为 `system | light | dark`，默认 `system`，Local Storage Key 为 `aigw_theme`；系统媒体查询、根 Class、`color-scheme` 和 `theme-color` 都是单一偏好的派生输出。Theme 控制使用官方 Base UI `DropdownMenuRadioGroup`，Label 必须位于 Group Context 内。
+
 ## 4. 状态管理
 
 - 服务端状态：TanStack Query；
@@ -89,6 +93,8 @@ src/
 - 只有出现真实跨页面客户端状态时才引入全局 Store。
 
 禁止把服务端对象长期复制到全局 Store，形成 Query Cache 与 Store 双事实来源。
+
+跨页对象入口由目标 Route 拥有的 Search Schema 与 `routes/-deep-links.ts` Builder 定义。Builder 只覆盖真实消费者，省略未设置的默认值，不建立第二份通用路由 Registry；Feature 不自行发明 Search 参数。
 
 ## 5. OpenAPI 客户端
 
@@ -168,18 +174,19 @@ type RequestResult
 
 `components/ui` 是官方 Registry 所有面，不接受手工 Patch 或 Formatter 改写。产品状态组件位于 `components/product`，App Shell 差异通过官方 Sidebar 的 Props 和组合表达。
 
-机器可读值见 [`design-tokens.json`](design-tokens.json)。浏览器实现通过 CSS Custom Properties 消费已落地 Token，`verify:web-contracts` 校验页面 Gutter、页面 Padding、Request 最小宽度和响应式断点没有漂移。Token 变化必须同步规范、当前截图和视觉回归证据。
+机器可读值见 [`design-tokens.json`](design-tokens.json)。浏览器实现通过 CSS Custom Properties 消费已落地 Token，`verify:web-contracts` 使用项目 JSON Schema 校验完整结构，并校验页面 Gutter、页面 Padding、Inspector 高度、Theme、响应式断点和 Scenario 关联没有漂移。Token 变化必须同步规范、当前截图和视觉回归证据。
 
 ## 11. 测试
 
 至少包括：
 
 - 单元：状态映射、格式化、匹配解释和 Cost Unknown；
-- 组件：表格筛选、Inspector Tab、Sheet/Dialog Form；
+- 组件：表格筛选、Inspector 生命周期、Theme Dropdown Menu、Sheet/Dialog Form；
 - 集成：连接 → 路由规则 → 客户端 → 测试 Request；
 - E2E：核心闭环、键盘、URL 恢复、Error/Partial、局部故障隔离和稳定区域 ARIA 语义；
-- 视觉：1440 × 1000、1280 宽、1024 × 768；
+- 视觉：1440 × 1000、1280 宽、1024 × 768，Light/Dark 分开记录；
 - 可访问性：axe 或等价自动检查，加键盘人工检查；
+- 浏览器：Chromium 执行主流程与视觉回归，Firefox 执行 Theme、Inspector、键盘、Reflow、Overlay 几何与 a11y 目标子集；
 - Artifact：对 Vite Build 产物运行浏览器 Golden Journey。
 
 ## 12. 禁止实现

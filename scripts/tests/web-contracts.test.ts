@@ -1,7 +1,7 @@
 import type { WebContractInput } from "../web-contract-policy.ts";
 
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -64,18 +64,89 @@ test("layout token drift reports the CSS variable and both values", async () => 
     && error.includes("620px") && error.includes("600px")));
 });
 
+test("unknown UX contract fields fail through the project JSON Schema", async () => {
+  const input = await actualInput();
+  const designTokens = structuredClone(input.designTokens) as Record<string, unknown>;
+  designTokens.unownedThemeState = true;
+  const errors = collectWebContractViolations({ ...input, designTokens });
+  assert.ok(errors.some(error => error.includes("design-tokens.json") && error.includes("additional properties")));
+});
+
+test("an N/A lifecycle state without a reason fails closed", async () => {
+  const input = await actualInput();
+  const pageContracts = structuredClone(input.pageContracts) as {
+    pages: Array<{ regions: Array<{ states: Array<Record<string, unknown>> }> }>;
+  };
+  const plannedState = pageContracts.pages[2]?.regions[0]?.states[0];
+  assert.ok(plannedState);
+  delete plannedState.reason;
+  const errors = collectWebContractViolations({ ...input, pageContracts });
+  assert.ok(errors.some(error => error.includes("page-contracts.json") && error.includes("reason")));
+});
+
+test("a lifecycle scenario without a real test-source association fails closed", async () => {
+  const input = await actualInput();
+  const missingScenario = "UX-OVERVIEW-LOADING";
+  const errors = collectWebContractViolations({
+    ...input,
+    runtimeScenarioSources: input.runtimeScenarioSources.map(testSource => ({
+      ...testSource,
+      source: testSource.source.replaceAll(missingScenario, "REMOVED-SCENARIO"),
+    })),
+  });
+  assert.ok(errors.some(error => error.includes(missingScenario) && error.includes("missing from test source")));
+});
+
 async function actualInput(): Promise<WebContractInput> {
-  const [pageContractsSource, designTokensSource, routeTreeSource, cssSource] = await Promise.all([
+  const [
+    pageContractsSource,
+    pageContractsSchemaSource,
+    designTokensSource,
+    designTokensSchemaSource,
+    routeTreeSource,
+    cssSource,
+    indexHtmlSource,
+    themeProviderSource,
+    themeSource,
+    runtimeScenarioSources,
+  ] = await Promise.all([
     readFile(path.join(root, "docs/product/ux/page-contracts.json"), "utf8"),
+    readFile(path.join(root, "docs/product/ux/schemas/page-contracts.schema.json"), "utf8"),
     readFile(path.join(root, "docs/product/ux/design-tokens.json"), "utf8"),
+    readFile(path.join(root, "docs/product/ux/schemas/design-tokens.schema.json"), "utf8"),
     readFile(path.join(root, "apps/web/src/routeTree.gen.ts"), "utf8"),
     readFile(path.join(root, "apps/web/src/index.css"), "utf8"),
+    readFile(path.join(root, "apps/web/index.html"), "utf8"),
+    readFile(path.join(root, "apps/web/src/components/layout/theme-provider.tsx"), "utf8"),
+    readFile(path.join(root, "apps/web/src/components/layout/theme.ts"), "utf8"),
+    readRuntimeScenarioSources(),
   ]);
   return {
     pageContracts: JSON.parse(pageContractsSource),
+    pageContractsSchema: JSON.parse(pageContractsSchemaSource),
     designTokens: JSON.parse(designTokensSource),
+    designTokensSchema: JSON.parse(designTokensSchemaSource),
     pageManifest,
     routeTreeSource,
+    runtimeScenarioSources,
     cssSource,
+    indexHtmlSource,
+    themeProviderSource,
+    themeSource,
   };
+}
+
+async function readRuntimeScenarioSources() {
+  const sourceRoots = ["apps/web/src", "apps/e2e/tests"];
+  const files = (await Promise.all(sourceRoots.map(async (sourceRoot) => {
+    const absoluteRoot = path.join(root, sourceRoot);
+    const entries = await readdir(absoluteRoot, { recursive: true, withFileTypes: true });
+    return entries
+      .filter(entry => entry.isFile() && /\.(?:test|spec)\.tsx?$/u.test(entry.name))
+      .map(entry => path.join(entry.parentPath, entry.name));
+  }))).flat();
+  return Promise.all(files.map(async file => ({
+    path: path.relative(root, file),
+    source: await readFile(file, "utf8"),
+  })));
 }

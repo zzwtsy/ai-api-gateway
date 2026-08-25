@@ -1,6 +1,6 @@
 ---
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -12,8 +12,7 @@ language: zh-CN
 
 必须遵守：
 
-- 真白色内容表面；
-- 浅色 Sidebar 背景与白色 Inset 内容面；
+- Light 使用白色内容表面和浅色 Sidebar；Dark 使用中性深色表面与清晰边框，不使用大面积纯黑；
 - 蓝色主操作；
 - 彩色只承载状态和对象识别；
 - 1px 边框和极轻阴影；
@@ -33,7 +32,7 @@ language: zh-CN
 └─────────────────────────────────────────────────────────┘
 
   ┌──────────────── Main Surface（独立白色表面） ───────┐
-  │ Topbar：Sidebar Trigger / Current Page Title          │
+  │ Topbar：Sidebar Trigger / Current Page / Theme        │
   ├───────────────────────────────────────────────────────┤
   │ Page Scroll                                           │
   │ Page Header                                           │
@@ -41,9 +40,11 @@ language: zh-CN
   └───────────────────────────────────────────────────────┘
 ```
 
-App Shell 由官方 `SidebarProvider`、`Sidebar variant="inset" collapsible="icon"` 和 `SidebarInset` 组成。Sidebar 使用浅色背景，Inset 使用独立白色内容面，外边距 8px。页面内部不得继续层层套大圆角容器。
+App Shell 由官方 `SidebarProvider`、`Sidebar variant="inset" collapsible="icon"` 和 `SidebarInset` 组成。Sidebar 与 Inset 使用当前主题的独立语义表面，外边距 8px。页面内部不得继续层层套大圆角容器。
 
-Sidebar 展开状态为 16rem，图标状态为 3rem。官方 Provider 拥有交互状态，使用非敏感 `sidebar_state` Cookie 跨刷新恢复，并支持顶部中文 Trigger、侧栏 Rail 和 `Cmd/Ctrl+B`。折叠导航必须显示中文 Tooltip。`SidebarInset` 顶部固定保留 56px Topbar，显示中文折叠按钮和当前页面标题。
+Sidebar 展开状态为 16rem，图标状态为 3rem。官方 Provider 拥有交互状态，使用非敏感 `sidebar_state` Cookie 跨刷新恢复，并支持顶部中文 Trigger、侧栏 Rail 和 `Cmd/Ctrl+B`。折叠导航必须显示中文 Tooltip。`SidebarInset` 顶部固定保留 56px Topbar，显示中文折叠按钮、当前页面标题和 Theme Dropdown Menu。
+
+Theme 偏好固定为 `system | light | dark`，默认 `system`，使用非敏感 `aigw_theme` Local Storage 值跨刷新恢复。`system` 实时跟随系统配色变化，显式 Light/Dark 不受系统变化覆盖；同源标签页通过 `storage` 事件同步。React 挂载前的同步 Bootstrap 与 Theme Provider 使用同一输入输出合同，并同步根 Class、`color-scheme` 和 `theme-color`，避免首屏闪烁。
 
 ## 3. 尺寸 Token
 
@@ -79,7 +80,7 @@ Sidebar 展开状态为 16rem，图标状态为 3rem。官方 Provider 拥有交
 | 次级文字 | `#737373` |
 | 边框 / 输入框 | `#e5e5e5` |
 | 轻背景 | `#f5f5f5` |
-| Focus ring | `#a1a1a1` |
+| Focus ring | `#1447e6` |
 
 ### 4.2 状态色
 
@@ -93,12 +94,14 @@ Sidebar 展开状态为 16rem，图标状态为 3rem。官方 Provider 拥有交
 
 状态色只能用于 Badge、Alert、状态图标、轻量对象标识和必要的趋势提示。大面积布局仍保持中性。
 
+Dark 的完整表面、文字、边框、Focus 与状态色以 [`design-tokens.json`](design-tokens.json) 的 `darkColor` 为唯一机器可读来源。Feature 只消费语义 Token，不使用散落的 `dark:` 原始色补丁。
+
 ## 5. Typography
 
 字体栈：
 
 ```text
-Inter Variable, sans-serif
+Inter Variable, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK SC, ui-sans-serif, system-ui, sans-serif
 ```
 
 | 层级 | 字号 / 行高 | 字重 | 用途 |
@@ -108,10 +111,12 @@ Inter Variable, sans-serif
 | Entity title | 16 / 23 | 660 | 连接详情、设置分区 |
 | Card title | 13 / 19 | 650 | 区块标题 |
 | Body | 12–14 / 18–21 | 400–560 | 表格、说明、控件 |
-| Helper | 10–11 / 14–17 | 400–560 | 辅助信息、表头、描述 |
+| Helper | 12 / 18 | 400–560 | 辅助信息、表头、描述 |
 | Monospace | 12–13 | 500–650 | ID、模型名、URL、Key Mask |
 
 页面标题和主要数值使用负字距与 tabular numerals。不能把整页设置成等宽字体。
+
+常驻中文正文、Label 和表头不得小于 12px。10px 只用于非关键、短且有充足上下文的微型元数据。
 
 ## 6. 阴影、边框和层级
 

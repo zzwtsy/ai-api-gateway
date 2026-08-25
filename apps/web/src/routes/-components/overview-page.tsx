@@ -72,7 +72,7 @@ export function OverviewPage() {
 
       {isInitialSetup && <OnboardingGuide />}
 
-      <section className="grid grid-cols-4 gap-7 border-y py-5">
+      <section className="grid grid-cols-2 gap-7 border-y py-5 aigw-desktop:grid-cols-4">
         <Metric icon={Radio} label="请求" value={String(items.length)} detail="最近 50 条" />
         <Metric
           icon={Plug}
@@ -94,7 +94,7 @@ export function OverviewPage() {
         />
       </section>
 
-      <div className="grid grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)] gap-6">
+      <div className="grid gap-6 aigw-desktop:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.75fr)]">
         <Card>
           <CardHeader>
             <CardTitle>最近请求</CardTitle>
@@ -147,7 +147,7 @@ function OnboardingGuide() {
           <Sparkles className="size-4 text-primary" />
           <CardTitle className="text-base">快速起步向导</CardTitle>
         </div>
-        <CardDescription>
+        <CardDescription className="text-foreground/70">
           完成以下 3 步，即可在本地 IDE 与 CLI 工具中接入网关。
         </CardDescription>
       </CardHeader>

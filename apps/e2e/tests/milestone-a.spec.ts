@@ -174,19 +174,23 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
   await page.getByLabel("显示名称").fill("里程碑 A 演示模型");
   await page.getByRole("button", { name: "创建模型绑定" }).click();
 
-  await expect(page.getByText("里程碑 A 演示模型", { exact: true })).toBeVisible();
-  await expect(page.getByText("未验证", { exact: true })).toBeVisible();
-  await expect(page.getByText("能力与价格未知", { exact: true })).toBeVisible();
+  const createdModelRow = page.getByRole("row").filter({
+    has: page.getByText("里程碑 A 演示模型", { exact: true }),
+  });
+  await expect(createdModelRow).toBeVisible();
+  await expect(createdModelRow.getByText("未验证", { exact: true })).toBeVisible();
+  await expect(createdModelRow.getByText("能力与价格未知", { exact: true })).toBeVisible();
   await expectNoDocumentOverflow(page);
 
   await page.goto("/clients");
   await page.getByRole("button", { name: "添加客户端" }).first().click();
-  await page.getByLabel("客户端名称").fill(clientName);
-  await page.getByRole("combobox", { name: "Harness Profile" }).click();
+  const createClientDialog = page.getByRole("dialog", { name: "添加 Gateway 客户端" });
+  await createClientDialog.getByLabel("客户端名称").fill(clientName);
+  await createClientDialog.getByRole("combobox", { name: "Harness Profile" }).click();
   await page.getByRole("option", { name: "Codex", exact: true }).click();
-  await expect(page.getByText("OpenAI Responses", { exact: true })).toBeVisible();
-  await expect(page.getByRole("combobox", { name: "入口协议" })).toHaveCount(0);
-  await page.getByRole("button", { name: "创建客户端" }).click();
+  await expect(createClientDialog.getByText("OpenAI Responses", { exact: true })).toBeVisible();
+  await expect(createClientDialog.getByRole("combobox", { name: "入口协议" })).toHaveCount(0);
+  await createClientDialog.getByRole("button", { name: "创建客户端" }).click();
 
   const revealedKey = page.getByLabel("完整 Gateway Key");
   await expect(revealedKey).toBeVisible();
@@ -227,14 +231,14 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
     { width: 1024, height: 768 },
   ]) {
     await page.setViewportSize(viewport);
-    await expectOverlayInsideViewport(page);
+    await expectClientInspectorWithinContentViewport(page);
     await expectNoDocumentOverflow(page);
   }
 
   await page.setViewportSize({ width: 700, height: 800 });
-  await expectOverlayInsideViewport(page);
+  await expectClientInspectorWithinContentViewport(page);
 
-  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "关闭客户端详情" }).click();
   await expect.poll(() => new URL(page.url()).searchParams.get("clientId")).toBeNull();
   await page.goto("/clients?clientId=missing-client");
   await expect.poll(() => new URL(page.url()).searchParams.get("clientId")).toBeNull();
@@ -264,10 +268,26 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
   expect(browserErrors).toEqual([]);
 });
 
+async function expectClientInspectorWithinContentViewport(page: Page): Promise<void> {
+  const inspector = page.getByRole("region", { name: /Codex · 里程碑 A/u });
+  await expect(inspector).toBeVisible();
+  const workspace = page.locator("[data-slot=\"workspace-content\"]");
+  await expect.poll(async () => {
+    const [inspectorBox, workspaceBox] = await Promise.all([
+      inspector.boundingBox(),
+      workspace.boundingBox(),
+    ]);
+    if (inspectorBox === null || workspaceBox === null)
+      return false;
+    return inspectorBox.width <= workspaceBox.width + 1
+      && inspectorBox.height <= workspaceBox.height + 1;
+  }).toBe(true);
+}
+
 async function expectOverlayInsideViewport(page: Page): Promise<void> {
-  const sheet = page.getByRole("dialog");
-  await expect(sheet).toBeVisible();
-  await expect.poll(async () => sheet.evaluate((element) => {
+  const overlay = page.getByRole("dialog");
+  await expect(overlay).toBeVisible();
+  await expect.poll(async () => overlay.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return rect.left >= 0
       && rect.right <= element.ownerDocument.documentElement.clientWidth

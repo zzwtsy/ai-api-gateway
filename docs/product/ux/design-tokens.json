@@ -1,8 +1,12 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "./schemas/design-tokens.schema.json",
   "name": "ai-api-gateway-shadcn-product-ux",
   "version": "0.1.0-alpha.3",
-  "mode": "light",
+  "theme": {
+    "preferences": ["system", "light", "dark"],
+    "defaultPreference": "system",
+    "storageKey": "aigw_theme"
+  },
   "color": {
     "background": "#ffffff",
     "foreground": "#0a0a0a",
@@ -13,7 +17,7 @@
     "mutedForeground": "#737373",
     "border": "#e5e5e5",
     "input": "#e5e5e5",
-    "ring": "#a1a1a1",
+    "ring": "#1447e6",
     "primary": "#1447e6",
     "primaryForeground": "#eff6ff",
     "destructive": "#e7000b",
@@ -37,11 +41,43 @@
         "foreground": "#1d4ed8",
         "background": "#eff6ff",
         "border": "#bfdbfe"
+      }
+    }
+  },
+  "darkColor": {
+    "background": "oklch(0.145 0 0)",
+    "foreground": "oklch(0.985 0 0)",
+    "surface": "oklch(0.205 0 0)",
+    "surfaceSubtle": "oklch(0.269 0 0)",
+    "sidebar": "oklch(0.205 0 0)",
+    "muted": "oklch(0.269 0 0)",
+    "mutedForeground": "oklch(0.708 0 0)",
+    "border": "oklch(1 0 0 / 10%)",
+    "input": "oklch(1 0 0 / 15%)",
+    "ring": "oklch(0.809 0.105 251.813)",
+    "primary": "oklch(0.424 0.199 265.638)",
+    "primaryForeground": "oklch(0.97 0.014 254.604)",
+    "destructive": "oklch(0.704 0.191 22.216)",
+    "semantic": {
+      "success": {
+        "foreground": "oklch(0.92 0.08 155)",
+        "background": "oklch(0.723 0.191 149.579 / 12%)",
+        "border": "oklch(0.723 0.191 149.579 / 28%)"
       },
-      "purple": {
-        "foreground": "#7e22ce",
-        "background": "#faf5ff",
-        "border": "#e9d5ff"
+      "warning": {
+        "foreground": "oklch(0.95 0.08 90)",
+        "background": "oklch(0.828 0.189 84.429 / 12%)",
+        "border": "oklch(0.828 0.189 84.429 / 28%)"
+      },
+      "danger": {
+        "foreground": "oklch(0.85 0.12 22.216)",
+        "background": "oklch(0.704 0.191 22.216 / 12%)",
+        "border": "oklch(0.704 0.191 22.216 / 28%)"
+      },
+      "info": {
+        "foreground": "oklch(0.86 0.08 251.813)",
+        "background": "oklch(0.623 0.214 259.815 / 12%)",
+        "border": "oklch(0.623 0.214 259.815 / 28%)"
       }
     }
   },
@@ -54,8 +90,7 @@
   "shadow": {
     "xs": "0 1px 2px rgb(0 0 0 / 0.035)",
     "sm": "0 1px 3px rgb(0 0 0 / 0.055), 0 1px 2px rgb(0 0 0 / 0.03)",
-    "dialog": "0 24px 60px rgb(0 0 0 / 0.20)",
-    "sheet": "-16px 0 44px rgb(0 0 0 / 0.14)"
+    "dialog": "0 24px 60px rgb(0 0 0 / 0.20)"
   },
   "layout": {
     "shellOuterGap": "8px",
@@ -69,11 +104,13 @@
     "pageBottomPadding": "32px",
     "requestMasterMin": "620px",
     "requestInspectorMin": "390px",
+    "inspectorMin": "390px",
+    "contentViewportHeight": "calc(100dvh - 8px - 8px - 56px - 22px - 32px)",
     "connectionDirectory": "300px",
     "settingsNavigation": "220px",
     "settingsContentMax": "760px",
-    "sheetDefault": "500px",
-    "sheetWide": "640px"
+    "dialogDefault": "500px",
+    "dialogWide": "640px"
   },
   "control": {
     "defaultHeight": "34px",
@@ -85,64 +122,33 @@
     "headerHeight": "35px",
     "rowHeight": "42px",
     "fontSize": "12px",
-    "headerFontSize": "10px"
+    "headerFontSize": "12px"
   },
   "typography": {
-    "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif",
+    "fontFamily": "Inter Variable, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Noto Sans CJK SC, ui-sans-serif, system-ui, sans-serif",
     "monoFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-    "pageTitle": {
-      "size": "22px",
-      "lineHeight": "30px",
-      "weight": 680,
-      "tracking": "-0.025em"
-    },
-    "editorTitle": {
-      "size": "18px",
-      "lineHeight": "26px",
-      "weight": 670
-    },
-    "entityTitle": {
-      "size": "16px",
-      "lineHeight": "23px",
-      "weight": 660
-    },
-    "cardTitle": {
-      "size": "13px",
-      "lineHeight": "19px",
-      "weight": 650
-    },
-    "body": {
-      "size": "14px",
-      "lineHeight": "21px",
-      "weight": 400
-    },
-    "control": {
-      "size": "12px",
-      "lineHeight": "16px",
-      "weight": 560
-    },
-    "helper": {
-      "size": "11px",
-      "lineHeight": "17px",
-      "weight": 400
-    },
-    "micro": {
-      "size": "10px",
-      "lineHeight": "14px",
-      "weight": 400
-    }
+    "persistentCjkMinimum": "12px",
+    "pageTitle": { "size": "22px", "lineHeight": "30px", "weight": 680, "tracking": "-0.025em" },
+    "editorTitle": { "size": "18px", "lineHeight": "26px", "weight": 670 },
+    "entityTitle": { "size": "16px", "lineHeight": "23px", "weight": 660 },
+    "cardTitle": { "size": "13px", "lineHeight": "19px", "weight": 650 },
+    "body": { "size": "14px", "lineHeight": "21px", "weight": 400 },
+    "control": { "size": "12px", "lineHeight": "16px", "weight": 560 },
+    "helper": { "size": "12px", "lineHeight": "18px", "weight": 400 },
+    "micro": { "size": "10px", "lineHeight": "14px", "weight": 400 }
   },
   "breakpoint": {
     "wide": "1600px",
     "desktop": "1440px",
     "minimumCommitted": "1280px",
-    "compactDesktop": "1024px"
+    "compactDesktop": "1024px",
+    "reflow": "320px"
   },
   "motion": {
     "fast": "80ms",
     "default": "120ms",
     "overlay": "150ms",
-    "sheet": "180ms",
-    "easing": "ease-out"
+    "easing": "ease-out",
+    "reducedMotion": "0.01ms"
   }
 }

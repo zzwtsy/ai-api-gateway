@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -7,6 +7,7 @@ import { ModelsPage } from "./models-page";
 const hookMocks = vi.hoisted(() => ({
   useModelBindings: vi.fn(),
 }));
+const onModelBindingIdChange = vi.fn();
 
 vi.mock("./hooks", () => hookMocks);
 vi.mock("./create-model-binding-form", () => ({
@@ -37,10 +38,11 @@ const binding = {
 
 describe("models page", () => {
   beforeEach(() => {
+    onModelBindingIdChange.mockReset();
     hookMocks.useModelBindings.mockReturnValue(readyQuery([]));
   });
 
-  it("uses the route-owned endpoint directory for binding creation", async () => {
+  it("covers UX-MODELS-CREATE-DIALOG: uses the route-owned endpoint directory for binding creation", async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -75,7 +77,31 @@ describe("models page", () => {
     expect(screen.getByText("能力与价格未知")).toBeVisible();
   });
 
-  it("keeps cached bindings visible after a refresh failure", () => {
+  it("opens a URL-owned non-modal Inspector with only current model facts", async () => {
+    const user = userEvent.setup();
+    hookMocks.useModelBindings.mockReturnValue(readyQuery([binding]));
+    renderPage(endpoints, "binding_01");
+
+    const inspector = screen.getByRole("region", { name: "DeepSeek Chat" });
+    expect(within(inspector).getByText("DeepSeek / 默认 Endpoint")).toBeVisible();
+    expect(within(inspector).getByText(/未知不等于不支持或数值为 0/u)).toBeVisible();
+    expect(screen.queryByRole("dialog", { name: "DeepSeek Chat" })).not.toBeInTheDocument();
+
+    await user.click(within(inspector).getByRole("button", { name: "关闭模型详情" }));
+    expect(onModelBindingIdChange).toHaveBeenCalledWith(undefined, { replace: true });
+  });
+
+  it("removes an invalid modelBindingId without selecting the first binding", async () => {
+    hookMocks.useModelBindings.mockReturnValue(readyQuery([binding]));
+    renderPage(endpoints, "missing-binding");
+
+    await waitFor(() => {
+      expect(onModelBindingIdChange).toHaveBeenCalledWith(undefined, { replace: true });
+    });
+    expect(screen.queryByRole("region", { name: "DeepSeek Chat" })).not.toBeInTheDocument();
+  });
+
+  it("covers UX-MODELS-DIRECTORY-LIFECYCLE: keeps cached bindings visible after a refresh failure", () => {
     hookMocks.useModelBindings.mockReturnValue({
       ...readyQuery([binding]),
       error: new Error("刷新失败"),
@@ -90,12 +116,14 @@ describe("models page", () => {
   });
 });
 
-function renderPage(endpointOptions: typeof endpoints | [] = endpoints) {
+function renderPage(endpointOptions: typeof endpoints | [] = endpoints, modelBindingId?: string) {
   return render(
     <ModelsPage
       endpointError={null}
       endpoints={endpointOptions}
       endpointsLoading={false}
+      modelBindingId={modelBindingId}
+      onModelBindingIdChange={onModelBindingIdChange}
       onRetryEndpoints={vi.fn()}
     />,
   );

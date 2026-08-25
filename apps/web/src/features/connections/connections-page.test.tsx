@@ -94,7 +94,7 @@ beforeEach(() => {
 });
 
 describe("connections page states", () => {
-  it("guides first use without prefilled development fixtures", async () => {
+  it("covers UX-CONNECTIONS-DIRECTORY-LIFECYCLE: guides first use without prefilled development fixtures", async () => {
     const user = userEvent.setup();
     hookMocks.useConnections.mockReturnValue({
       data: [],

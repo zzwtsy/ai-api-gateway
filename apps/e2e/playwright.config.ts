@@ -23,6 +23,26 @@ export default defineConfig({
   timeout: 30_000,
   fullyParallel: false,
   reporter: [["list"]],
+  projects: [
+    {
+      name: "chromium",
+      use: { browserName: "chromium" },
+    },
+    {
+      name: "firefox",
+      testMatch: [
+        /accessibility\.spec\.ts/u,
+        /theme-and-detail-workspaces\.spec\.ts/u,
+      ],
+      use: {
+        browserName: "firefox",
+        colorScheme: "dark",
+        launchOptions: {
+          firefoxUserPrefs: { "ui.systemUsesDarkTheme": 1 },
+        },
+      },
+    },
+  ],
   use: {
     baseURL: useBuild ? gatewayOrigin : webOrigin,
     trace: "retain-on-failure",

@@ -1,7 +1,7 @@
 import type { components } from "@/api/schema";
 
-import { Check, Copy, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, Copy, Plus, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { PageHeader } from "@/components/product/page-header";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 
 import { ClientConfigSnippets } from "./client-config-snippets";
 import { ClientDetail } from "./client-detail";
@@ -48,6 +41,7 @@ export function ClientsPage({
   readonly onClientIdChange: (clientId: string | undefined, options?: { readonly replace?: boolean }) => void;
 }) {
   const [modalState, setModalState] = useState<ModalState>(null);
+  const focusAfterCloseRef = useRef<string | null>(null);
   const query = useGatewayClients();
   const selectedClient = query.data?.find(client => client.id === clientId);
 
@@ -56,6 +50,14 @@ export function ClientsPage({
       return;
     onClientIdChange(undefined, { replace: true });
   }, [clientId, onClientIdChange, query.data, selectedClient]);
+
+  useEffect(() => {
+    if (clientId !== undefined || focusAfterCloseRef.current === null)
+      return;
+    const closedClientId = focusAfterCloseRef.current;
+    focusAfterCloseRef.current = null;
+    document.getElementById(`client-detail-trigger-${closedClientId}`)?.focus();
+  }, [clientId]);
 
   const closeModal = () => {
     if (modalState?.kind === "secret" && modalState.returnTo.kind === "detail") {
@@ -68,9 +70,11 @@ export function ClientsPage({
     setModalState(null);
   };
 
-  const closeDetailSheet = () => {
-    if (clientId !== undefined)
+  const closeInspector = () => {
+    if (clientId !== undefined) {
+      focusAfterCloseRef.current = clientId;
       onClientIdChange(undefined, { replace: true });
+    }
   };
 
   const startCreate = () => {
@@ -85,7 +89,7 @@ export function ClientsPage({
   };
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex min-h-0 flex-col gap-7">
       <PageHeader
         title="客户端"
         description="为每个 Harness 实例签发独立 Gateway Client Key。"
@@ -151,65 +155,76 @@ export function ClientsPage({
         </DialogContent>
       </Dialog>
 
-      <Sheet
-        open={selectedClient !== undefined && modalState === null}
-        onOpenChange={(open) => {
-          if (!open)
-            closeDetailSheet();
-        }}
+      <div className={selectedClient === undefined
+        ? "min-h-0"
+        : "grid min-h-0 gap-6 aigw-desktop:grid-cols-[minmax(620px,1fr)_minmax(var(--aigw-layout-inspector-min),0.72fr)]"}
       >
-        <SheetContent className="overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-xl">
-          {selectedClient !== undefined && (
-            <ClientDetailSheet
-              key={selectedClient.id}
-              client={selectedClient}
-              onRotated={result => setModalState({
-                kind: "secret",
-                result,
-                returnTo: { clientId: selectedClient.id, kind: "detail" },
-              })}
+        <Card data-slot="clients-master" className="min-w-0">
+          <CardHeader>
+            <CardTitle>Gateway 客户端</CardTitle>
+            <CardDescription>控制面登录与 Gateway Client Key 使用不同的身份边界。</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ClientDirectory
+              clients={query.data}
+              error={query.isError ? query.error : null}
+              loading={query.isPending}
+              onRetry={query.refetch}
+              onSelect={selectClient}
+              onStartCreate={startCreate}
+              selectedClientId={clientId}
+              stale={query.isRefetchError && query.data !== undefined}
             />
-          )}
-        </SheetContent>
-      </Sheet>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Gateway 客户端</CardTitle>
-          <CardDescription>控制面登录与 Gateway Client Key 使用不同的身份边界。</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ClientDirectory
-            clients={query.data}
-            error={query.isError ? query.error : null}
-            loading={query.isPending}
-            onRetry={query.refetch}
-            onSelect={selectClient}
-            onStartCreate={startCreate}
-            stale={query.isRefetchError && query.data !== undefined}
+        {selectedClient !== undefined && modalState?.kind !== "create" && (
+          <ClientInspector
+            client={selectedClient}
+            onClose={closeInspector}
+            onRotated={result => setModalState({
+              kind: "secret",
+              result,
+              returnTo: { clientId: selectedClient.id, kind: "detail" },
+            })}
           />
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }
 
-function ClientDetailSheet({ client, onRotated }: {
+function ClientInspector({ client, onClose, onRotated }: {
   readonly client: components["schemas"]["GatewayClient"];
+  readonly onClose: () => void;
   readonly onRotated: (result: ClientWithSecret) => void;
 }) {
   return (
-    <>
-      <SheetHeader>
-        <SheetTitle>{client.name}</SheetTitle>
-        <SheetDescription>
-          {client.profile.name}
-          {" "}
-          客户端详情与 Gateway Key 生命周期。
-        </SheetDescription>
-      </SheetHeader>
-      <ClientDetail client={client} onRotated={onRotated} />
-    </>
+    <Card
+      id="client-inspector"
+      role="region"
+      aria-labelledby="client-inspector-title"
+      className="max-h-(--aigw-layout-content-viewport-height) min-h-0 min-w-0 gap-0 overflow-hidden"
+    >
+      <CardHeader className="shrink-0 border-b">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <CardTitle id="client-inspector-title" className="truncate">{client.name}</CardTitle>
+            <CardDescription>
+              {client.profile.name}
+              {" "}
+              客户端详情与 Gateway Key 生命周期。
+            </CardDescription>
+          </div>
+          <Button type="button" size="icon-sm" variant="ghost" aria-label="关闭客户端详情" onClick={onClose}>
+            <X />
+          </Button>
+        </div>
+      </CardHeader>
+      <div data-slot="inspector-body" className="min-h-0 overflow-y-auto pt-6">
+        <ClientDetail key={client.id} client={client} onRotated={onRotated} />
+      </div>
+    </Card>
   );
 }
 

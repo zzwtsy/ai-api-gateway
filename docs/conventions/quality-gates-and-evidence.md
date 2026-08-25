@@ -1,7 +1,7 @@
 ---
 document_id: AIGW-QUALITY-001
 status: normative
-last_reviewed_at: 2026-08-23
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -80,7 +80,7 @@ Credential Scheduler、Retry/Fallback Compiler 尚未实现；实现后加入该
 
 ### `check:web`
 
-- Web 页面、生成路由和布局 Token 合同；
+- Web 产品 JSON Schema、页面/生成路由、Theme/布局 Token 与 Scenario 源码关联合同；
 - Web Typecheck；
 - Web Unit Test；
 - Vite Production Build。
@@ -91,6 +91,8 @@ Credential Scheduler、Retry/Fallback Compiler 尚未实现；实现后加入该
 - Gateway 与 Web Production Build；
 - Playwright 对编译后 Gateway 和静态 Web 运行 Golden Journey；
 - Mock Provider 实收与 Request/Attempt 检查。
+
+UI 场景分别报告 Chromium 与 Firefox。未运行的浏览器必须明确标记未验证，不能从一个浏览器的结果外推。
 
 可见页面、路由、布局、产品组件、shadcn Primitive、Theme 或机器可读 UI 合同发生变化时，证据选择器同时要求 `check:web` 与 `check:e2e`。纯 Hook、纯 View Model 和相应单元测试只要求 `check:web`。
 
@@ -201,6 +203,17 @@ E2E 不得只断言系统自己的“成功”消息。应检查：
 - Shutdown 后没有遗留 Socket、Timer 和写入任务。
 
 Master–Detail 与响应式变化还必须在承诺视口比较区域 Bounding Box、阅读顺序和文档级溢出；限定区域 ARIA Snapshot 用于锁定稳定语义，不用整页像素截图替代行为断言。
+
+UI 证据分为四级，各自只声明实际证明面：
+
+| 级别 | 证明内容 | 证据 |
+| --- | --- | --- |
+| 行为断言 | 状态入口、恢复、URL、选择、焦点和 Secret 生命周期 | Component + Playwright |
+| ARIA / 几何断言 | 角色、名称、顺序、Bounding Box、滚动 Owner 和文档溢出 | Playwright Chromium / Firefox |
+| 人工视觉证据 | 指定 Commit、Theme、视口和场景的可审阅结果 | `visual-evidence.spec.ts` + Metadata |
+| 像素视觉回归 | 稳定、确定性区域相对已批准基线的差异 | 独立 `visual-regression.spec.ts` |
+
+自动 axe 扫描是可失败的辅助证据，不是 WCAG 合规认证。截图记录也不是像素回归；二者不得互相替代。
 
 ## 6. Source 与 Artifact 证据
 

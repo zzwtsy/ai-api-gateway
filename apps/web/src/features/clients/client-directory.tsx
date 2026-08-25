@@ -22,13 +22,14 @@ import {
 
 type GatewayClient = components["schemas"]["GatewayClient"];
 
-export function ClientDirectory({ clients, error, loading, onRetry, onSelect, onStartCreate, stale }: {
+export function ClientDirectory({ clients, error, loading, onRetry, onSelect, onStartCreate, selectedClientId, stale }: {
   readonly clients: ReturnType<typeof useGatewayClients>["data"];
   readonly error: unknown;
   readonly loading: boolean;
   readonly onRetry: () => Promise<unknown>;
   readonly onSelect: (clientId: string) => void;
   readonly onStartCreate: () => void;
+  readonly selectedClientId: string | undefined;
   readonly stale: boolean;
 }) {
   if (clients === undefined && error !== null)
@@ -65,7 +66,14 @@ export function ClientDirectory({ clients, error, loading, onRetry, onSelect, on
             </TableRow>
           </TableHeader>
           <TableBody>
-            {clients.map(client => <ClientRow key={client.id} client={client} onSelect={onSelect} />)}
+            {clients.map(client => (
+              <ClientRow
+                key={client.id}
+                client={client}
+                selected={client.id === selectedClientId}
+                onSelect={onSelect}
+              />
+            ))}
           </TableBody>
         </Table>
       </div>
@@ -73,10 +81,14 @@ export function ClientDirectory({ clients, error, loading, onRetry, onSelect, on
   );
 }
 
-function ClientRow({ client, onSelect }: { readonly client: GatewayClient; readonly onSelect: (clientId: string) => void }) {
+function ClientRow({ client, onSelect, selected }: {
+  readonly client: GatewayClient;
+  readonly onSelect: (clientId: string) => void;
+  readonly selected: boolean;
+}) {
   const usableKeyCount = usableGatewayClientKeyCount(client);
   return (
-    <TableRow>
+    <TableRow aria-selected={selected} data-state={selected ? "selected" : undefined}>
       <TableCell>
         <div className="flex min-w-0 items-center gap-2">
           <div className="max-w-64 truncate font-medium" title={client.name}>{client.name}</div>
@@ -104,7 +116,15 @@ function ClientRow({ client, onSelect }: { readonly client: GatewayClient; reado
       </TableCell>
       <TableCell>{formatClientLastUsedAt(client.lastUsedAt)}</TableCell>
       <TableCell className="text-right">
-        <Button type="button" size="sm" variant="outline" onClick={() => onSelect(client.id)}>
+        <Button
+          id={`client-detail-trigger-${client.id}`}
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-controls="client-inspector"
+          aria-expanded={selected}
+          onClick={() => onSelect(client.id)}
+        >
           查看详情
         </Button>
       </TableCell>

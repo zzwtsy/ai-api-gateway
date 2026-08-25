@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed_at: 2026-08-24
+last_reviewed_at: 2026-08-25
 language: zh-CN
 ---
 
@@ -17,7 +17,7 @@ language: zh-CN
 为避免在 1440px 桌面大屏下产生右侧视觉拉扯与遮罩疲劳，界面严格执行分层容器原则：
 
 - **Dialog（居中模态）**：承载添加客户端、添加 Endpoint、添加账号、密钥轮换、一次性 Secret 展示等高聚焦、短生命周期任务；
-- **Master–Detail（双栏工作台）**：承载请求排障、连接检视等高频数据比对与深度排障，无遮罩伴随查阅；
+- **Master–Detail（双栏工作台）**：承载请求排障、连接检视、模型与客户端详情等高频数据比对与深度排障，无遮罩伴随查阅；Clients/Models 在 1440px 并排，在 1280px 与 1024px 按 Master、Inspector 顺序上下排列，Inspector Header 固定且 Body 在内容视口内滚动；
 - **Sheet（侧滑抽屉）**：仅作为辅助性工具（如复杂全局筛选器、只读 Raw Payload 报文检查），禁止作为主创建表单或在单抽屉内嵌套多步骤业务状态；
 - **独立页面**：承载多分区复杂编排（如路由编辑器）。
 
@@ -30,3 +30,11 @@ language: zh-CN
 - 完整 Key 不进入 Local Storage、Session Storage、URL 或 Analytics；
 - 未知费用、Usage 和兼容性使用明确状态，不能显示为零或正常；
 - 中文是默认界面语言，术语按 [语言与本地化](language-and-localization.md) 处理。
+
+## Theme
+
+- 偏好只有 `system | light | dark`，默认 `system`，由根 Theme Provider 独占；
+- Topbar 使用官方 shadcn/Base UI Dropdown Menu 切换主题；
+- `aigw_theme` 只保存非敏感枚举值，系统主题变化和同源标签页同步必须派生到根 Class、`color-scheme` 与 `theme-color`；
+- Light/Dark 只通过语义 Token 实现，Feature 不维护散落的原始颜色分支；
+- `prefers-reduced-motion` 下禁用非必要动画。
