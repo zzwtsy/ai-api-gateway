@@ -1,35 +1,35 @@
 ---
 name: add-control-feature
-description: 按仓库黄金路径新增或修改严格的 Hono OpenAPI 控制面 Feature。
+description: Add or modify a strict Hono OpenAPI control-plane feature in ai-api-gateway through the repository's golden path. Use for a control-plane vertical slice; do not use for data-plane proxy behavior or UI-only work.
 ---
 
-# 新增控制面 Feature
+# Add a control-plane feature
 
-先读：
+Read first:
 
 1. `apps/gateway/src/control-plane/AGENTS.md`
 2. `docs/conventions/http-contracts-and-route-definition.md`
-3. 最近的已有 Feature
+3. The nearest existing feature
 
-实现显式垂直切片：
+Implement an explicit vertical slice:
 
 ```text
 schemas.ts
 routes.ts
 handlers.ts
-service.ts 或 contracts.ts（确有需要时）
+service.ts or contracts.ts when justified
 index.ts
-共置单元测试
+co-located unit tests
 ```
 
-要求：
+Requirements:
 
-- 使用 `createRoute` 和 SDK-friendly、全局唯一的 `operationId`；
-- 导出 `typeof route`，Handler 使用 `AppRouteHandler<RouteType>`；
-- 数据库 I/O 和长回调不得进入 `routes.ts`；
-- 在 `index.ts` 显式绑定 Route 和 Handler；
-- 显式注册 Feature，不增加文件系统扫描；
-- OpenAPI 的 `summary`、`description` 和 Response Description 使用中文；
-- Tag、`operationId`、Schema 名、字段名和 Error Code 使用英文；
-- 更新 OpenAPI 合同测试并重新生成 Web Schema；
-- 运行 `pnpm check:control`，报告精确结果。
+- Use `createRoute` with an SDK-friendly, globally unique `operationId`.
+- Export `typeof route`; handlers use `AppRouteHandler<RouteType>`.
+- Keep database I/O and long callbacks out of `routes.ts`.
+- Bind routes and handlers explicitly in `index.ts`.
+- Register the feature explicitly; do not add filesystem scanning.
+- Write OpenAPI `summary`, `description`, and response descriptions in Simplified Chinese.
+- Keep tags, `operationId`, schema names, field names, and Error Codes in English.
+- Update the OpenAPI contract tests and regenerate the Web schema.
+- Run `pnpm check:control` and report the exact result.

@@ -38,3 +38,24 @@ test("agent asset policy rejects unknown project scripts but skips locked third-
   assert.ok(result.failures.some(failure => failure.includes("unknown:project")));
   assert.ok(!result.failures.some(failure => failure.includes("unknown:upstream")));
 });
+
+test("agent asset policy rejects cross-skill references in project skills", async () => {
+  const root = await fixture();
+  await mkdir(path.join(root, ".agents/skills/skill-a/agents"), { recursive: true });
+  await mkdir(path.join(root, ".agents/skills/skill-a"), { recursive: true });
+  await mkdir(path.join(root, ".agents/skills/skill-b"), { recursive: true });
+  await writeFile(path.join(root, ".agents/skills/skill-a/SKILL.md"), "Independent.\n", "utf8");
+  await writeFile(path.join(root, ".agents/skills/skill-a/agents/openai.yaml"), "default_prompt: Use $skill-b.\n", "utf8");
+  await writeFile(path.join(root, ".agents/skills/skill-b/SKILL.md"), "Independent.\n", "utf8");
+  const result = await collectAgentAssetViolations(root, { required: [] });
+  assert.ok(result.failures.some(failure => failure.includes("references project skill skill-b")));
+});
+
+test("agent asset policy permits self references and skips locked third-party skills", async () => {
+  const root = await fixture();
+  await mkdir(path.join(root, ".agents/skills/skill-a"), { recursive: true });
+  await writeFile(path.join(root, ".agents/skills/skill-a/SKILL.md"), "Use `$skill-a` and `.agents/skills/skill-a/references`.\n", "utf8");
+  await writeFile(path.join(root, ".agents/skills/pnpm/SKILL.md"), "Third party may mention skill-a.\n", "utf8");
+  const result = await collectAgentAssetViolations(root, { required: [] });
+  assert.ok(!result.failures.some(failure => failure.includes("project skill")));
+});

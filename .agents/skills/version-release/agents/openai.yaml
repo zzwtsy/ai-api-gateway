@@ -1,7 +1,0 @@
-interface:
-  display_name: "Version Release"
-  short_description: "Prepare and verify synchronized project releases"
-  default_prompt: "Use $version-release to prepare this explicitly chosen project version without publishing it."
-
-policy:
-  allow_implicit_invocation: true

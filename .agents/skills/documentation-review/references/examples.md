@@ -1,131 +1,131 @@
-# 文档与文字审查示例
+# Documentation review examples
 
-这些示例用于校准“完整合同优先于字数”和“一个事实一个家”。示例中的技术事实必须再用当前源码验证，不能直接复制为项目结论。
+Use these examples to calibrate “complete contract before brevity” and “one fact, one owner.” Verify every technical fact against current source before adapting it; the wording is not a project conclusion.
 
-## 注释：控制流叙述改为时序合同
+## Comment: replace control-flow narration with a sequencing contract
 
-差：
-
-```ts
-// 先写 Attempt，然后更新 Request，最后发送通知。
-```
-
-好：
+Weak:
 
 ```ts
-// Request 只在 Attempt 持久化成功后发布终态，避免详情页观察到不存在的 Attempt。
+// First write the Attempt, then update the Request, and finally notify listeners.
 ```
 
-第一版只是复述代码；第二版说明不可交换的顺序和后果。
-
-## 注释：自我辩护改为所有权依据
-
-差：
+Better:
 
 ```ts
-// 这个类型断言是安全的，因为这里不会出错。
+// Publish the terminal Request state only after the Attempt is durable; otherwise detail readers can observe a Request whose Attempt does not exist.
 ```
 
-好：
+The first comment paraphrases the code. The second explains the non-interchangeable order and its consequence. When writing an actual project comment, follow the owning surface's language convention.
+
+## Comment: replace self-defense with ownership evidence
+
+Weak:
 
 ```ts
-// Route compiler 是该对象的唯一构造者，并在发布 Snapshot 前验证所有受保护字段。
+// This assertion is safe because nothing can fail here.
 ```
 
-若代码和类型已经表达唯一构造路径，整个注释都可以删除。
-
-## 数据面：保留否定保证
-
-差：
-
-```text
-网关尽量保持上游响应。
-```
-
-好：
-
-```text
-网关在相同协议内转发上游响应；除明确记录的 Gateway Patch 外，不重建 SSE 事件，也不删除未知 Provider 字段。
-```
-
-“尽量”丢失了可验证合同。
-
-## 状态：不要把 `unknown` 写成 `0`
-
-差：
-
-```text
-没有价格时费用显示为 0。
-```
-
-好：
-
-```text
-没有可验证价格时费用状态为 `unknown`；只有计算结果明确为零时才显示 `0`。
-```
-
-## 一个事实一个家
-
-差：Feature 文档手写所有 API 字段、数据库列和前端 TypeScript 类型。
-
-好：Feature 文档解释用户语义，并分别引用 `operationId`、Drizzle Schema/Migration 和生成的 API 类型。字段级事实留在拥有源。
-
-## Decision 与当前事实分离
-
-差：
-
-```text
-我们在 2026 年决定使用单仓库，因此当前目录是……
-```
-
-好：
-
-- Architecture 用现在时描述当前目录和依赖；
-- Decision 记录为何采用单仓库、考虑过什么、代价是什么；
-- Architecture 链接 Decision，而不是复制决策过程。
-
-## 测试注释：解释间接观察
-
-差：
+Better:
 
 ```ts
-// 点击第一行，然后等待详情出现。
+// The route compiler is the sole constructor and validates every protected field before publishing the snapshot.
 ```
 
-好：
+Delete the entire comment when code and types already make the sole construction path obvious.
+
+## Data plane: preserve a negative guarantee
+
+Weak:
+
+```text
+The Gateway tries to preserve upstream responses.
+```
+
+Better:
+
+```text
+The Gateway forwards upstream responses within the ingress protocol. Unless a documented Gateway Patch applies, it neither reconstructs SSE events nor removes unknown Provider fields.
+```
+
+“Tries to” discards the falsifiable contract.
+
+## State: do not rewrite `unknown` as `0`
+
+Weak:
+
+```text
+Display cost as 0 when no price is available.
+```
+
+Better:
+
+```text
+Cost is `unknown` when no verifiable price exists; display `0` only when the calculated result is explicitly zero.
+```
+
+## One fact, one owner
+
+Weak: a Feature document manually lists every API field, database column, and frontend TypeScript type.
+
+Better: the Feature document explains user semantics and links to the `operationId`, Drizzle schema or migration, and generated API type. Field-level facts remain with their owners.
+
+## Separate Decisions from current facts
+
+Weak:
+
+```text
+We decided in 2026 to use a monorepo, so the current directory layout is...
+```
+
+Better:
+
+- Architecture describes current directories and dependencies in the present tense.
+- The Decision records why the monorepo was chosen, the alternatives considered, and its costs.
+- Architecture links the Decision instead of copying its history.
+
+## Test comment: explain indirect observation
+
+Weak:
 
 ```ts
-// 必须从请求列表进入详情，才能同时验证 URL 恢复和生成客户端的真实调用路径。
+// Click the first row and wait for details.
 ```
 
-## 诊断：给出主体、规则和修正
+Better:
 
-差：
+```ts
+// Enter details from the request list so this scenario also exercises URL recovery and the generated client's real call path.
+```
+
+## Diagnostic: name the subject, rule, and correction
+
+Weak:
 
 ```text
-配置错误。
+Invalid configuration.
 ```
 
-好：
+Better:
 
 ```text
-RouteTarget `route-1` 的协议为 `anthropic-messages`，不能用于 `openai-chat` 入口；请选择同协议目标。
+RouteTarget `route-1` uses `anthropic-messages` and cannot serve the `openai-chat` ingress; select a target with the same protocol.
 ```
 
-Error Code 仍应保持稳定英文标识。
+The project-facing diagnostic should be rendered in Simplified Chinese while retaining stable English Error Codes and protocol identifiers.
 
-## 作者过程不进入当前事实
+## Remove authoring process from current facts
 
-差：
+Weak:
 
 ```text
-上一轮评审要求我们把 Retry 移到这里。
+The previous review asked us to move Retry here.
 ```
 
-好：
+Better:
 
 ```text
-Retry 决策由 Route Resolver 在首字节前完成；Transport 不拥有回退策略。
+The Route Resolver owns Retry decisions before the first downstream byte; Transport does not own fallback policy.
 ```
 
-若“为什么由 Resolver 拥有”是长期取舍，链接对应 Decision。
+When the ownership choice needs durable rationale, link the owning Decision.

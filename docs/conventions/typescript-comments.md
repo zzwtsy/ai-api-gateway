@@ -35,6 +35,6 @@ ESLint 对 `apps/**/*.{ts,tsx}` 执行上述抑制规则；生成 Route Tree、O
 
 ## Agent 路由与验证
 
-TypeScript JSDoc、内部/测试注释、TODO 与抑制指令由 `$typescript-comments` 处理。Markdown、Prompt、诊断和其他可见文字仍由 `documentation-review` 处理；作者过程残留可以叠加 `trim-authoring-residue` 专项审查。
+TypeScript JSDoc、内部/测试注释、TODO 与抑制指令由 `$typescript-comments` 处理。项目 Markdown 由 `documentation-review` 处理，Web UI 文案由 `review-ui-copy` 处理；Prompt、诊断和任意文字表面的作者过程残留可由 `trim-authoring-residue` 专项审查。各 Skill 独立完成自己的 Job，不在内部互相路由。
 
 至少运行最窄 Typecheck、相关测试和目标文件 ESLint。跨协议、安全或生命周期的注释变化不能只以文字 Gate 证明，必须读取并验证对应行为所有者。

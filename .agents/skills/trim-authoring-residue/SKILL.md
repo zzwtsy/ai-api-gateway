@@ -1,84 +1,89 @@
 ---
 name: trim-authoring-residue
-description: 在审查或修复 Markdown、JSDoc、注释、Prompt、诊断和可见字符串中的作者过程残留时使用；处理 PR/评审/设计稿视角、变更叙述、控制流讲解、无主计划和不可解析引用，同时保留当前合同与证据。
+description: Review or repair authoring-process residue in Markdown, JSDoc, comments, prompts, diagnostics, and visible strings. Use for PR, review, or design-session vantage; change narration; control-flow paraphrases; ownerless plans; and unresolvable references while preserving current contracts and evidence. Do not use for general UI copy simplification.
 ---
 
-# 清理作者过程残留
+# Trim Authoring Residue
 
-作者过程残留是从“写这次改动的人”的视角，而不是从当前仓库读者的视角写成的文字。它引用只有当时会话可见的设计编号、PR 轮次和评审对话，叙述代码怎么改过，或用自然语言复述控制流。
+Authoring residue describes the repository from the temporary perspective of the person making a change instead of the perspective of a reader at the current `HEAD`. It depends on private design labels, PR rounds, review conversations, change stories, or natural-language restatements of code.
 
-修复不是机械删除。若段落包含事实，先按 [`documentation-review`](../documentation-review/SKILL.md) 的完整命题规则重述当前合同，再删除过程外壳；没有事实的审计编号、评审寒暄和明显代码复述可以直接删除。
+Repair is not mechanical deletion. Preserve the complete current contract and remove only the process wrapper. Delete review pleasantries, private audit labels, and obvious code paraphrases that carry no durable fact.
 
-## 判断问题
+## Boundary
 
-对每段可疑文字询问：
+This Skill answers whether text depends on temporary author context. It does not decide whether a valid current fact deserves space in a product interface, whether nearby copy is repetitive, or whether the wording helps a user complete a task. When the request also concerns those questions, report the separate concern without expanding this workflow.
 
-> 当前 `HEAD` 的读者在看不到聊天记录、PR 讨论、未提交设计稿或作者记忆的情况下，能否解析每个引用并验证每项主张？
+## Core question
 
-不能时，改写为当前仓库可验证的事实，或链接到已提交的唯一拥有者。即使引用可解析，README、Convention、JSDoc 和当前 Architecture 中的变更故事仍应迁往 Decision、Postmortem、Issue 或 Git 历史。
+Ask of every suspicious passage:
 
-## 分类
+> Can a reader at the current `HEAD`, without access to chat history, PR discussion, an uncommitted design, or the author's memory, resolve every reference and verify every claim?
 
-1. **不可解析的设计引用**：`decision 7`、`audit C2`、`T4`、`P1`、`设计稿 §4.2`、`上一版方案`。链接已提交的 Decision/Plan，或删掉编号并让事实独立成立。
-2. **PR、Commit 与 Stack 视角**：`这个 PR 添加`、`后续 PR`、`前一个 Commit`、`本轮修改`。改写为已交付机制；延期工作进入有所有者的 `TODO`、Issue 或活动 Plan。
-3. **变更叙述和时间戳**：`以前`、`不再`、`旧版`、`现在`、`目前这版`。当前事实表面写现在时；需要保留的回归依据改成现在时反事实，例如“没有 X 时会发生 Y”。
-4. **评审过程**：`评审拒绝`、`Reviewer 确认`、`第 5 轮反馈`。保留最终决定和技术依据，删除是谁在何时说的。
-5. **面向 Reviewer 的自我辩护**：`这个强转是安全的`、`这里显然正确`。改写为使代码安全的所有权、验证点或不变量；代码已经清楚时删除。
-6. **控制流和测试讲解**：`先 A，再 B，最后 C`、逐行解释分支、测试点击步骤。删除；只有顺序不可交换并有后果时，改写为时序合同。
-7. **含糊计划和缓和语**：`暂时够用`、`以后再说`、`大概没问题`。给出真实边界，或使用有所有者和退出条件的 `TODO`/`FIXME`；否则删除。
-8. **写作语言残留**：中文文档中的无意义英文草稿片段、英文入口中的未翻译工作笔记、`---- 私有 ----` 等分隔。按表面语言翻译或删除；技术标识符不属于此类。
-9. **手写状态库存**：`已完成 7/10`、测试文件清单、模块目录镜像、生成字段表。移动到临时 Plan，或由脚本/生成物拥有；当前文档只保留耐久规则。
+If not, rewrite the passage as a repository-verifiable current fact or link to its committed owner. Even resolvable change stories do not belong in a current README, Convention, JSDoc, or Architecture document when Decision Notes, Postmortems, Issues, or Git history already own that history.
 
-## 不属于残留
+## Residue categories
 
-- 可解析的 Issue、已合并 PR 和 `TODO(name)` 引用；
-- Decision 的 `Alternatives considered` 和真实取舍；
-- Postmortem 的时间线、证据和因果链；
-- 活动 `docs/plans/` 内的阶段编号和实施顺序；完成后必须收口；
-- Lint/Coverage 抑制、空 Catch 和兼容分支的必要理由；
-- “没有 X 时 Y 会发生”的现在时回归依据；
-- 带来源的测量值和上限；
-- 运行时的旧/新对象，例如旧连接排空后新连接接管；
-- RFC、标准章节、公开设计资源和已提交文档锚点；
-- 代码标识符、协议名、Error Code 和日志字段中的英文。
+1. **Unresolvable design references:** `decision 7`, `audit C2`, `T4`, `P1`, `design §4.2`, or `the previous proposal`. Link a committed Decision or Plan, or remove the private label and make the fact self-contained.
+2. **PR, commit, and stack vantage:** `this PR adds`, `a later PR`, `the previous commit`, or `this round`. State the delivered mechanism. Put deferred work in an owned `TODO`, Issue, or active Plan.
+3. **Change narration and repository timestamps:** `used to`, `no longer`, `old version`, `now`, or `this cut`. Write current surfaces in the present tense. When regression rationale matters, use a present-tense counterfactual such as “Without X, Y occurs.”
+4. **Review process:** `review rejected`, `the reviewer confirmed`, or `round five feedback`. Preserve the final decision and technical basis, not who said it or when.
+5. **Reviewer-facing self-defense:** `this cast is safe` or `this is obviously correct`. State the ownership, validation point, or invariant that makes the code safe; delete the comment when the code already makes that clear.
+6. **Control-flow and test narration:** `first A, then B, finally C`, branch-by-branch paraphrases, or click-by-click test descriptions. Delete them unless the order is non-interchangeable and has consequences; then state the sequencing contract.
+7. **Vague plans and hedges:** `good enough for now`, `maybe later`, or `probably fine`. State the real boundary or use an owned `TODO` or `FIXME` with an exit condition; otherwise delete it.
+8. **Draft-language residue:** meaningless English fragments in Chinese documentation, untranslated work notes in an English entry point, or separators such as `---- private ----`. Translate to the surface language or delete them. Technical identifiers are not residue.
+9. **Hand-maintained status inventories:** `7/10 complete`, test-file lists, directory mirrors, or generated field tables. Move temporary progress to a Plan or let a script or generated artifact own the inventory. Current documentation keeps only durable rules.
 
-“可解析”只说明不是死引用，不代表它放在正确位置。变更历史在 Decision、Postmortem、Issue 和 Git 中有家时，不应重复进当前事实文档。
+## Not authoring residue
 
-## 工作流
+- Resolvable Issues, merged PRs, and `TODO(name)` references;
+- real alternatives and tradeoffs in a Decision Note;
+- Postmortem timelines, evidence, and causal chains;
+- phase labels and implementation order in an active `docs/plans/` document, which must be closed out when complete;
+- necessary reasons for lint or coverage suppressions, empty catches, and compatibility branches;
+- present-tense regression rationale such as “Without X, Y occurs”;
+- sourced measurements and limits;
+- runtime old and new objects, such as a new connection taking traffic after the old connection drains;
+- RFC sections, public standards, published design references, and committed documentation anchors;
+- code identifiers, protocol names, Error Codes, and log fields in English.
 
-1. 确认用户指定范围，或用已确认 Base 的 `change-scope` 获取范围；
-2. 读取拥有代码、文档类型和 [`documentation-review`](../documentation-review/SKILL.md)；
-3. 先只读运行 [召回探针](references/recall-batteries.md)，再人工阅读文字最密集的位置；探针命中不是缺陷结论；
-4. 对每段枚举 Actor、Action、条件、时序、强度、否定保证、所有权、失败和后果；
-5. 按“删除、现在时重述、链接拥有者、迁移到 Decision/Postmortem/Plan、保留”分类；
-6. 先修改拥有源，再重新生成 Catalog、规范投影、Snapshot 或可见输出；
-7. 用 [改写示例](references/examples.md) 检查过度删除；
-8. 重跑探针，并逐项确认剩余命中属于允许情况；
-9. 运行受影响表面的 Gate，报告明确修改、刻意保留和未决项。
+Being resolvable only proves that a reference is not dead. It does not prove that the text is in the correct location. Keep change history in its owner instead of duplicating it into current-fact surfaces.
 
-## 排除与保护
+## Workflow
 
-- 不直接编辑 `.artifacts/`、`dist/`、Coverage、生成 API 类型、Route Tree、Fixture 或 Snapshot；修复拥有源后重新生成；
-- 不“现代化”Postmortem 中作为证据保留的原始日志或引用；
-- 不把 Prompt 和 UI 字符串静默润色：它们是行为变化，需要对应测试；
-- 不因搜索结果数量设删除目标，也不为制造整洁而删除真实契约；
-- 不把一个明确义务改写成模糊建议，不把假设性能力写成已交付能力。
+1. Confirm the user-specified scope or obtain it from `change-scope` using the confirmed Base.
+2. Read the owning code and the conventions for the affected document or text surface.
+3. Run the [recall probes](references/recall-batteries.md) read-only, then manually read the prose-dense parts of the scope. A probe hit is not a defect conclusion, and zero hits are not acceptance evidence.
+4. For each candidate, enumerate actor, action, condition, timing, strength, negative guarantees, ownership, failure, and consequence.
+5. Classify it as delete, restate in the present tense, link to the owner, move to a Decision, Postmortem, or Plan, or keep.
+6. Edit the owning source first, then regenerate any catalog, specification projection, snapshot, or visible output.
+7. Use the [rewrite examples](references/examples.md) to check for over-deletion.
+8. Rerun the probes and manually justify every remaining match. Do not treat a clean search as proof of prose or UI quality.
+9. Run gates for the affected surface and report what changed, what was deliberately retained, and what remains unresolved.
 
-## 验证
+## Safeguards
 
-文档、AGENTS、Skill 或 Decision：
+- Do not directly edit `.artifacts/`, `dist/`, coverage output, generated API types, generated route trees, fixtures, or snapshots. Repair the owning source and regenerate.
+- Do not modernize original logs or quotations preserved as Postmortem evidence.
+- Do not silently polish prompts or UI strings. They are behavior changes and require corresponding evidence.
+- Do not set deletion targets from search-result counts or remove real contracts merely to make a diff look clean.
+- Do not weaken an explicit obligation into advice or present a hypothetical capability as delivered.
+- Do not claim that residue cleanup establishes UI copy quality. A correct current fact can still be redundant, misplaced, or irrelevant to the user's task.
+
+## Validation
+
+For documentation, AGENTS files, Skills, or Decision Notes:
 
 ```bash
 pnpm check:docs
 git diff --check
 ```
 
-可见字符串或 Prompt：
+For visible strings or prompts:
 
 ```bash
 pnpm check:web
 ```
 
-若修改属于协议、数据库或发布行为，增加对应 Gate；编辑检查不能替代行为证据。
+Add the relevant behavioral gate for protocol, database, or release changes. Editorial checks do not replace behavioral evidence.
 
-本 Skill 参考 DeepSeek Harness `dsh-trim-cot-leakage`，已按本项目的中文事实来源和 Decision/Plan 体系重写；许可见 [Third-Party Notices](../THIRD_PARTY_NOTICES.md)。
+This Skill is adapted from DeepSeek Harness `dsh-trim-cot-leakage` for this repository's fact ownership and Decision or Plan system. See [Third-Party Notices](../THIRD_PARTY_NOTICES.md) for licensing.

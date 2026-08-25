@@ -1,35 +1,39 @@
 ---
 name: execution-plan
-description: 用于跨模块、协议、数据库 Schema、安全、生命周期或多阶段修改。
+description: Create and maintain a temporary implementation plan for an ai-api-gateway change that crosses modules, protocols, database schemas, security boundaries, lifecycles, or delivery phases. Use before and during non-trivial implementation; do not use for mechanical single-file edits, durable specifications, or completed-work status records.
 ---
 
-# 执行计划
+# Execution plan
 
-修改跨越 Feature 边界或改变耐久合同时，实施前创建 `docs/plans/<kebab-topic>.md`。
+Before implementing a change that crosses feature boundaries or changes a durable contract, create `docs/plans/<kebab-topic>.md`.
 
-必须包含：
+Include:
 
 ```markdown
-# <主题>
+---
+status: draft
+last_reviewed_at: <YYYY-MM-DD>
+language: zh-CN
+---
 
-Status: draft
+# <topic>
 
-## 目标与范围
-## 明确不在范围
-## 当前证据
-## 决策
-## 新增或修改文件
-## 实施步骤
-## 验证命令
-## 风险与回滚
-## 文档与 Decision Note
+## Goal and scope
+## Explicitly out of scope
+## Current evidence
+## Decisions
+## Files to add or modify
+## Implementation steps
+## Verification commands
+## Risks and rollback
+## Documentation and Decision Notes
 ```
 
-规则：
+Rules:
 
-- 基于当前源码和测试，不基于记忆或旧 Decision Note；
-- 每一步写明所属模块；
-- 验证使用 `ai/change-evidence-matrix.md` 中的具体命令；
-- 显式排除范围，防止 Agent 扩张任务；
-- 中文写计划，代码标识符和命令保持英文；
-- 完成后删除或归档临时计划，耐久事实回到 Convention、Architecture 和 Decision Note。
+- Base the plan on current source and tests, not memory or stale Decision Notes.
+- Name the owning module for every step.
+- Select concrete verification commands from `ai/change-evidence-matrix.md`.
+- State exclusions explicitly so the implementation does not expand its scope.
+- Write the plan itself in Simplified Chinese; keep code identifiers and commands in English.
+- Delete or archive the temporary plan after completion, and move durable facts into the owning Convention, Architecture document, or Decision Note.

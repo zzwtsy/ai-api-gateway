@@ -12,7 +12,6 @@ Keep comments only when they preserve a contract that TypeScript and local code 
 - [TypeScript comment convention](../../../docs/conventions/typescript-comments.md)
 - [Language and localization](../../../docs/conventions/language-and-localization.md)
 - [Documentation ownership](../../../docs/conventions/documentation-system.md)
-- [`trim-authoring-residue`](../trim-authoring-residue/SKILL.md) for a dedicated authoring-residue audit
 
 Inspect the owning implementation, callers, tests, protocol contract, and lifecycle before changing a comment. A comment is not evidence that the behavior still exists.
 
@@ -26,7 +25,7 @@ Apply to project-owned, non-generated `.ts` and `.tsx` files:
 - actionable TODOs with an owner or removal condition;
 - `@ts-expect-error` descriptions.
 
-Do not patch generated route trees, generated OpenAPI types, shadcn Registry source, fixtures, or snapshots. Change their owner and regenerate them when applicable. Use `documentation-review` for Markdown, prompts, diagnostics, and user-visible prose outside TypeScript.
+Do not patch generated route trees, generated OpenAPI types, shadcn Registry source, fixtures, or snapshots. Change their owner and regenerate them when applicable. Markdown, prompts, diagnostics, and user-visible prose outside TypeScript are out of scope.
 
 ## Workflow
 

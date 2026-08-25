@@ -1,8 +1,10 @@
-# 作者过程残留召回探针
+# Authoring-residue recall probes
 
-这些命令只用于提高召回率，不定义缺陷。每个命中都必须结合文档类型、代码语义和当前拥有者人工判断。探针会命中本 Skill 自己的规则与示例；审查业务范围时排除该目录，或把这些命中标记为校准语料。
+These commands improve recall; they do not define defects. Judge every match against the document type, code semantics, and current fact owner. The probes intentionally match this Skill's own rules and examples. Exclude this directory when reviewing product scope, or mark its matches as calibration data.
 
-## 通用排除
+A run with no matches does not prove that prose is concise, useful, correctly placed, or free of less predictable authoring residue.
+
+## Common exclusions
 
 ```bash
 COMMON=(
@@ -18,9 +20,9 @@ COMMON=(
 )
 ```
 
-在不支持 Bash 数组的环境中，把这些 `--glob` 逐项写入命令。
+For shells without Bash arrays, write each `--glob` directly in the command.
 
-## PR、评审和设计会话视角
+## PR, review, and design-session vantage
 
 ```bash
 rg "${COMMON[@]}" -i \
@@ -28,7 +30,7 @@ rg "${COMMON[@]}" -i \
   .
 ```
 
-## 变更叙述和版本时间戳
+## Change narration and repository timestamps
 
 ```bash
 rg "${COMMON[@]}" -i \
@@ -36,9 +38,9 @@ rg "${COMMON[@]}" -i \
   .
 ```
 
-注意：Postmortem、Decision 和运行时 old/new 状态可能是合法命中。
+Postmortems, Decision Notes, and runtime old or new states may be legitimate matches.
 
-## 含糊计划和缓和语
+## Vague plans and hedges
 
 ```bash
 rg "${COMMON[@]}" -i \
@@ -46,9 +48,9 @@ rg "${COMMON[@]}" -i \
   .
 ```
 
-命中后判断是否应改成精确边界、活动 Plan、Issue，或有所有者的 `TODO`/`FIXME`。
+For each match, decide whether it needs a precise boundary, an active Plan or Issue, an owned `TODO` or `FIXME`, or deletion.
 
-## 控制流和测试讲解
+## Control-flow and test narration
 
 ```bash
 rg "${COMMON[@]}" -i \
@@ -57,9 +59,9 @@ rg "${COMMON[@]}" -i \
   .
 ```
 
-顺序本身是合同且不可交换时保留事实，但改写为“必须先 A 再 B，否则 C”。
+When order is itself a non-interchangeable contract, retain the fact as “A must precede B; otherwise C.”
 
-## 自我辩护
+## Self-defense
 
 ```bash
 rg "${COMMON[@]}" -i \
@@ -68,9 +70,9 @@ rg "${COMMON[@]}" -i \
   .
 ```
 
-需要的不是“安全”结论，而是唯一构造者、验证点、所有权或不变量。
+Replace the conclusion “safe” with the unique constructor, validation point, ownership rule, or invariant that establishes safety.
 
-## 不可解析的内部编号
+## Unresolvable internal labels
 
 ```bash
 rg "${COMMON[@]}" \
@@ -79,8 +81,8 @@ rg "${COMMON[@]}" \
   .
 ```
 
-该探针误报很多：HTTP 状态、Error Code、RFC 章节、正式文档锚点和测试 ID 都可能合法。只处理不能从当前仓库或公开标准解析的作者内部编号。
+This probe has many false positives: HTTP statuses, Error Codes, RFC sections, committed anchors, and test IDs can all be legitimate. Only repair labels that cannot be resolved from the current repository or a public standard.
 
-## 精确短语复查
+## Exact-phrase follow-up
 
-每发现一种新的残留表达，用其最有辨识度的 3 至 8 个词重新搜索整个请求范围，检查同类段落。不要把新短语永久加入探针，除非它代表稳定缺陷类别而不是一次性措辞。
+After finding a new residue expression, search the full request scope for its most distinctive three to eight words. Add a phrase to the permanent probes only when it represents a stable defect category rather than one author's wording.

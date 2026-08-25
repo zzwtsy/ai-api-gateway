@@ -1,127 +1,127 @@
-# 作者过程残留改写示例
+# Authoring-residue rewrite examples
 
-## PR 视角改为已交付机制
+## Replace PR vantage with the delivered mechanism
 
-差：
-
-```text
-这个 PR 增加了首字节后的回退保护。
-```
-
-好：
+Bad:
 
 ```text
-下游收到首个上游字节后，RouteTarget 固定；后续上游错误只结束当前 Attempt，不触发回退。
+This PR adds fallback protection after the first byte.
 ```
 
-## 评审过程改为技术依据
-
-差：
-
-```ts
-// Reviewer 要求在这里复制对象。
-```
-
-好：
-
-```ts
-// Snapshot 发布后可能被多个请求并发读取；发布前冻结，发布后不再暴露可变引用。
-```
-
-若真实合同是同进程只读借用，不应为了保留注释而编造复制需求。
-
-## 变更历史改为现在时反事实
-
-差：
-
-```ts
-// 以前这里会把 Client Cancel 记成 Provider 500。
-```
-
-好：
-
-```ts
-// Client Cancel 单独终止 Request；不得计入 Provider 失败率。
-```
-
-需要解释 Guard 时：
-
-```ts
-// 若在 Provider 分类前不检查 Client Abort，取消会污染 Provider 失败率。
-```
-
-## 控制流讲解：删除或写成时序合同
-
-差：
-
-```ts
-// 先保存 Attempt，再更新 Request，然后通知订阅者。
-```
-
-好：
-
-```ts
-// 订阅者只能在 Attempt 与 Request 终态同时可读后收到通知。
-```
-
-## 含糊计划改为真实边界
-
-差：
-
-```ts
-// 这个队列大小暂时应该够用。
-```
-
-好：
-
-```ts
-// 队列最多保留 256 个 Observation；超限时丢弃诊断并标记 observationStatus=incomplete，不阻塞响应流。
-```
-
-若没有已接受边界，使用有所有者的 Issue/TODO，而不是猜测数字。
-
-## 内部编号改为可解析引用
-
-差：
+Better:
 
 ```text
-按照 decision 7，价格快照在 Attempt 创建时确定。
+After the downstream receives the first upstream byte, RouteTarget remains fixed. A later upstream error ends the current Attempt and cannot trigger fallback.
 ```
 
-好：
+## Replace review process with technical basis
+
+Bad:
+
+```ts
+// The reviewer asked us to copy the object here.
+```
+
+Better:
+
+```ts
+// Multiple requests may read a published Snapshot concurrently; freeze it before publication and expose no mutable reference afterward.
+```
+
+Do not invent a copying requirement when the real contract is a process-local read-only borrow.
+
+## Replace change history with a present-tense counterfactual
+
+Bad:
+
+```ts
+// This used to record Client Cancel as Provider 500.
+```
+
+Better:
+
+```ts
+// Client Cancel terminates the Request independently and does not contribute to the Provider failure rate.
+```
+
+When the Guard needs rationale:
+
+```ts
+// Without checking Client Abort before Provider classification, cancellations contaminate the Provider failure rate.
+```
+
+## Delete control-flow narration or state a sequencing contract
+
+Bad:
+
+```ts
+// First save the Attempt, then update the Request, and finally notify subscribers.
+```
+
+Better:
+
+```ts
+// Notify subscribers only after both the Attempt and Request terminal states are readable.
+```
+
+## Replace a vague plan with the real boundary
+
+Bad:
+
+```ts
+// This queue size should be enough for now.
+```
+
+Better:
+
+```ts
+// Retain at most 256 Observations. On overflow, drop diagnostics and mark observationStatus=incomplete without blocking the response stream.
+```
+
+When no limit has been accepted, use an owned Issue or `TODO` instead of inventing a number.
+
+## Replace a private label with a resolvable fact
+
+Bad:
 
 ```text
-价格快照在 Attempt 创建时确定，避免后续价格目录变化重写历史成本。长期取舍见对应的已提交 Decision Note。
+Per decision 7, the pricing snapshot is fixed when the Attempt is created.
 ```
 
-只有存在真实文件时才添加 Markdown 链接。
-
-## 合法的运行时 old/new 状态
-
-保留：
+Better:
 
 ```text
-旧连接完成 Drain 后，新连接才接收请求。
+The pricing snapshot is fixed when the Attempt is created so later catalog changes cannot rewrite historical cost.
 ```
 
-这里的“旧/新”描述同一时刻的运行时对象，不是仓库版本历史。
+Add a Markdown link only when the corresponding committed Decision Note exists.
 
-## 合法的测量依据
+## Preserve legitimate runtime old and new state
 
-保留：
+Keep:
 
 ```text
-批量上限为 500 条；在目标硬件上测得该批次使事务时间保持在 200 ms 内。
+The new connection accepts requests only after the old connection finishes draining.
 ```
 
-“测得”提供常量依据，不是作者过程噪声。测量环境若影响结论，应同时记录。
+Here, old and new identify concurrent runtime objects rather than repository history.
 
-## 合法的 Decision 替代方案
+## Preserve sourced measurement rationale
 
-保留在 Decision：
+Keep:
 
 ```text
-Alternatives considered：使用 Provider SDK 重建请求；放弃，因为未知字段和原始 Streaming 字节无法得到同等保证。
+The batch limit is 500 records; measurements on the target hardware keep the transaction below 200 ms at that size.
 ```
 
-不要把这段复制到每个 Handler 注释中；局部只保留必须遵守的合同并链接 Decision。
+Record the measurement environment when it affects the conclusion.
+
+## Preserve real Decision alternatives
+
+Keep in a Decision Note:
+
+```text
+Alternative considered: rebuild requests through a Provider SDK. Rejected because it cannot preserve unknown fields or raw Streaming bytes with the same guarantees.
+```
+
+Do not copy the alternative into every Handler comment. Keep only the local contract and a resolvable link where needed.

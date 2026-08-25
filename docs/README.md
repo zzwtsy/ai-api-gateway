@@ -44,11 +44,12 @@ Decision Note 解释为什么存在某个选择，但不覆盖当前源码和现
 | 修改价格与成本 | `features/pricing-and-cost.md` |
 | 新增控制面 API | `conventions/http-contracts-and-route-definition.md`、`conventions/control-plane-api.md` |
 | 修改数据库 | `architecture/domain-model.md`、`conventions/database.md` |
-| 修改前端 | `product/ux/README.md`、对应页面规范、`conventions/web-product-ux.md` |
-| 修改中文文案或国际化 | `conventions/language-and-localization.md` |
+| 设计或审计前端 UX | `product/ux/README.md`、对应页面规范、`conventions/web-product-ux.md`、`.agents/skills/design-product-ux/SKILL.md`、`.agents/skills/audit-product-ux/SKILL.md` |
+| 修改中文 UI 文案或国际化 | `conventions/language-and-localization.md`、`.agents/skills/review-ui-copy/SKILL.md` |
 | 修改 TypeScript 注释或抑制指令 | `conventions/typescript-comments.md`、`.agents/skills/typescript-comments/SKILL.md` |
 | 创建或拆分 Commit | `conventions/git-commits.md`、`.agents/skills/git-commit/SKILL.md` |
-| 修改版本或准备发布 | `conventions/versioning-and-release.md`、`.agents/skills/version-release/SKILL.md` |
+| 准备本地版本 | `conventions/versioning-and-release.md`、`.agents/skills/prepare-version/SKILL.md` |
+| 执行远端发布 | `conventions/versioning-and-release.md`、`.agents/skills/publish-release/SKILL.md` |
 | 修改测试或质量 Gate | `conventions/testing-and-acceptance.md`、`conventions/quality-gates-and-evidence.md`、`conventions/change-scope-and-evidence.md` |
 | 修改运行时关系或生命周期 | `conventions/runtime-invariants.md`、`conventions/defensive-patterns.md` |
 | 阶段收口或删除熵 | `conventions/simplification-and-entropy-control.md`、`.agents/skills/simplification-audit/SKILL.md` |

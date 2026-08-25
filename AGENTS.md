@@ -28,11 +28,12 @@
 | 数据面代理或 Streaming | `apps/gateway/src/data-plane/AGENTS.md`、`docs/architecture/data-plane-protocol-proxy.md`、`docs/conventions/data-plane-streaming.md` |
 | Routing / Credential | `docs/architecture/routing-engine.md`、相关 Feature 和 Decision Note |
 | 数据库 / Migration | `docs/architecture/domain-model.md`、`docs/conventions/database.md` |
-| 前端 / UX | `apps/web/AGENTS.md`、`docs/product/ux/README.md`、`docs/conventions/web-product-ux.md`、`docs/references/official-toolchain-baseline.md` |
-| 中文文案或国际化 | `docs/conventions/language-and-localization.md` |
+| 前端 / UX | `apps/web/AGENTS.md`、`docs/product/ux/README.md`、`docs/conventions/web-product-ux.md`、`docs/references/official-toolchain-baseline.md`；设计用 `.agents/skills/design-product-ux/SKILL.md`，只读审计用 `.agents/skills/audit-product-ux/SKILL.md` |
+| 中文 UI 文案或国际化 | `docs/conventions/language-and-localization.md`、`.agents/skills/review-ui-copy/SKILL.md` |
 | TypeScript 注释或抑制指令 | `docs/conventions/typescript-comments.md`、`.agents/skills/typescript-comments/SKILL.md` |
 | 创建或拆分 Commit | `docs/conventions/git-commits.md`、`.agents/skills/git-commit/SKILL.md` |
-| 版本准备或远端发布 | `docs/conventions/versioning-and-release.md`、`.agents/skills/version-release/SKILL.md` |
+| 本地版本准备 | `docs/conventions/versioning-and-release.md`、`.agents/skills/prepare-version/SKILL.md` |
+| 远端版本发布 | `docs/conventions/versioning-and-release.md`、`.agents/skills/publish-release/SKILL.md` |
 | 架构边界 | `docs/architecture/repository-layout-and-dependency-boundaries.md` |
 | 工具初始化或升级 | `docs/references/official-toolchain-baseline.md`、`.agents/skills/update-shadcn/SKILL.md` |
 | CI、构建或 Agent 资产 | `docs/conventions/vibecoding-and-agent-governance.md`、`docs/conventions/quality-gates-and-evidence.md`、`docs/conventions/change-scope-and-evidence.md` |
@@ -40,7 +41,8 @@
 | 阶段收口或删熵 | `docs/conventions/simplification-and-entropy-control.md`、`.agents/skills/simplification-audit/SKILL.md` |
 | 真实入口缺陷复盘 | `docs/postmortems/README.md`、`.agents/skills/postmortem/SKILL.md` |
 | 非平凡工作 | `.agents/skills/execution-plan/SKILL.md`、`ai/change-evidence-matrix.md` |
-| 完成或推送前 | `.agents/skills/pre-push-checks/SKILL.md` |
+| 完成或 Ready 前 | `.agents/skills/verify-before-push/SKILL.md` |
+| 推送分支与远端核对 | `.agents/skills/push-branch-safely/SKILL.md` |
 
 不要无差别读取整个 `docs/`。按任务路由读取，然后用当前源码、测试、Migration、OpenAPI 和 package scripts 核对事实。
 

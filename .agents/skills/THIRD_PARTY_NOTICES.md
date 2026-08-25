@@ -1,12 +1,12 @@
 # Third-Party Notices for Agent Skills
 
-部分工作流参考或改写自 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)，整理时核对的上游 Commit 为：
+Some workflows reference or adapt material from [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). The upstream commit reviewed during adaptation was:
 
 ```text
 b150a551b8d465e31e418e1b2eaf5e79bbb7d28e
 ```
 
-参考的上游 Skill：
+Referenced upstream Skills:
 
 - `.agents/skills/dsh-code-review/`
 - `.agents/skills/dsh-doc-standards/`
@@ -16,7 +16,7 @@ b150a551b8d465e31e418e1b2eaf5e79bbb7d28e
 - `.agents/skills/dsh-find-simplifications/`
 - `.agents/skills/record-browser-gif/`
 
-`record-ui-evidence/scripts/encode_gif.py` 是上游编码脚本的本地化衍生版本。其余 Skill 已围绕 AI API Gateway 的中文事实来源、协议透明性、Request/Attempt、Secret、Playwright Mock Provider 和项目 Gate 体系重写。
+`record-ui-evidence/scripts/encode_gif.py` is a localized derivative of the upstream encoding script. All other adapted Skills were rewritten around AI API Gateway's Chinese source-of-truth policy, protocol transparency, Request/Attempt model, Secret handling, Playwright Mock Provider, and project Gate system.
 
 ## DeepSeek Harness MIT License
 

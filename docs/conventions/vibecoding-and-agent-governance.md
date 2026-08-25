@@ -197,10 +197,11 @@ Decision Note
 - 不存在已删除目录的旧命令；
 - 当前 `AGENTS.md` 与局部规则没有直接冲突；
 - 规范中列出的 Quality Gate 能被根脚本解析。
+- 项目手写 Skill 不引用或调用另一个项目 Skill，只读取自身资源和普通项目事实来源。
 
 AI 指令本身也是代码库资产，必须进入 CI。
 
-项目 Skill 至少包含 TypeScript 注释、受控 Git Commit 与版本发布能力。`.ts/.tsx` 注释由 `typescript-comments` 唯一拥有；Commit 与发布 Skill 必须保留 Index 和远端写入授权边界。`skills-lock.json` 管理的第三方 Skill 仍检查链接，但其通用 `pnpm` 示例不按项目根脚本解释。
+项目 Skill 至少包含 TypeScript 注释、受控 Git Commit、本地版本准备与远端发布能力。`.ts/.tsx` 注释由 `typescript-comments` 唯一拥有；Commit、Push、版本准备与发布必须分别保留 Index 和远端写入授权边界。`skills-lock.json` 管理的第三方 Skill 仍检查链接，但不执行项目 Skill 独立性规则，其通用 `pnpm` 示例也不按项目根脚本解释。
 
 ## 9. Golden Path 优先
 

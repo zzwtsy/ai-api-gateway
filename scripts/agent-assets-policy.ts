@@ -36,13 +36,15 @@ const requiredAgentAssets = Object.freeze([
   ".agents/skills/execution-plan/SKILL.md",
   ".agents/skills/add-control-feature/SKILL.md",
   ".agents/skills/change-data-plane/SKILL.md",
-  ".agents/skills/pre-push-checks/SKILL.md",
+  ".agents/skills/verify-before-push/SKILL.md",
+  ".agents/skills/push-branch-safely/SKILL.md",
   ".agents/skills/simplification-audit/SKILL.md",
   ".agents/skills/postmortem/SKILL.md",
   ".agents/skills/update-shadcn/SKILL.md",
   ".agents/skills/typescript-comments/SKILL.md",
   ".agents/skills/git-commit/SKILL.md",
-  ".agents/skills/version-release/SKILL.md",
+  ".agents/skills/prepare-version/SKILL.md",
+  ".agents/skills/publish-release/SKILL.md",
   "scripts/change-scope.ts",
   "scripts/select-evidence.ts",
   "scripts/gates/gate-runner.ts",
@@ -76,6 +78,7 @@ export async function collectAgentAssetViolations(repositoryRoot: string, option
   const manifest = JSON.parse(await readFile(path.join(repositoryRoot, "package.json"), "utf8"));
   const scripts = new Set(Object.keys(manifest.scripts ?? {}));
   const thirdPartySkills = await readThirdPartySkills(repositoryRoot);
+  const projectSkills = await readProjectSkills(repositoryRoot, thirdPartySkills);
   const markdownFiles = await findMarkdown(repositoryRoot);
   for (const file of markdownFiles) {
     const source = await readFile(file, "utf8");
@@ -102,7 +105,53 @@ export async function collectAgentAssetViolations(repositoryRoot: string, option
     }
   }
 
+  const skillTextFiles = await findSkillTextFiles(path.join(repositoryRoot, ".agents/skills"));
+  for (const file of skillTextFiles) {
+    const relative = normalize(path.relative(repositoryRoot, file));
+    if (isLockedThirdPartySkill(relative, thirdPartySkills))
+      continue;
+    const source = await readFile(file, "utf8");
+    failures.push(...collectCrossSkillReferenceViolations(relative, source, projectSkills));
+  }
+
   return { failures, markdownCount: markdownFiles.length };
+}
+
+async function readProjectSkills(repositoryRoot: string, thirdPartySkills: ReadonlySet<string>): Promise<Set<string>> {
+  const skillsRoot = path.join(repositoryRoot, ".agents/skills");
+  const names = new Set<string>();
+  try {
+    for (const entry of await readdir(skillsRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory() || thirdPartySkills.has(entry.name))
+        continue;
+      try {
+        await access(path.join(skillsRoot, entry.name, "SKILL.md"));
+        names.add(entry.name);
+      } catch {
+        // Ignore empty or non-Skill directories.
+      }
+    }
+  } catch {
+    // A missing Skill root is reported by required asset checks when applicable.
+  }
+  return names;
+}
+
+function collectCrossSkillReferenceViolations(relative: string, source: string, projectSkills: ReadonlySet<string>): string[] {
+  const owner = relative.match(/^\.agents\/skills\/([^/]+)\//u)?.[1];
+  if (owner === undefined || !projectSkills.has(owner))
+    return [];
+
+  const failures: string[] = [];
+  for (const other of projectSkills) {
+    if (other === owner)
+      continue;
+    const escaped = other.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+    const reference = new RegExp(`(^|[^a-z0-9-])${escaped}(?=$|[^a-z0-9-])`, "mu");
+    if (reference.test(source))
+      failures.push(`${relative} references project skill ${other}; project skills must be independent`);
+  }
+  return failures;
 }
 
 async function readThirdPartySkills(repositoryRoot: string): Promise<Set<string>> {
@@ -131,6 +180,22 @@ async function findMarkdown(directory: string): Promise<string[]> {
       results.push(...await findMarkdown(fullPath));
     else if (entry.name.endsWith(".md"))
       results.push(fullPath);
+  }
+  return results;
+}
+
+async function findSkillTextFiles(directory: string): Promise<string[]> {
+  const results: string[] = [];
+  try {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory())
+        results.push(...await findSkillTextFiles(fullPath));
+      else if (/\.(?:json|md|mjs|py|sh|ts|tsx|ya?ml)$/u.test(entry.name))
+        results.push(fullPath);
+    }
+  } catch {
+    // The required asset checks own missing project directories.
   }
   return results;
 }

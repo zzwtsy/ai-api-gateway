@@ -52,4 +52,4 @@ pnpm release:assets -- <version> [--check]
 
 镜像推送与 Tag/Release 创建不是原子操作。失败后只允许对相同版本和 SHA 重跑；GHCR 版本标签与 SHA 标签必须共同证明镜像归属，已有 `v<version>` 也必须最终解析到相同 Commit。任一身份冲突都失败关闭，禁止自动删除、移动或重写已发布版本。
 
-版本选择、Push、合并和手动 Dispatch 是四个独立授权边界。`$version-release` 可准备版本与 Release Commit，但不得把准备授权扩展为远端写入。
+版本选择、Push、合并和手动 Dispatch 是四个独立授权边界。`$prepare-version` 只准备未提交的本地版本 Diff；Release Commit 按 Git Commit 约定单独创建；`$publish-release` 只执行用户已经明确授权的远端边界。
