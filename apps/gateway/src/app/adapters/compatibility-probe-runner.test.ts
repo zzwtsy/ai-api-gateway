@@ -69,20 +69,24 @@ async function createFixture(prober: CompatibilityProber) {
   const encrypted = cipher.encrypt("unit-provider-value", "credential-1");
   await connectionRepository.create({
     providerId: "connection-1",
-    endpointId: "endpoint-1",
-    accountId: "account-1",
     name: "测试连接",
     providerSlug: "runner-provider",
-    endpoint: {
+    endpoints: [{
+      id: "endpoint-1",
       name: "Chat",
       protocol: "openai-chat",
       baseUrl: "https://provider.example",
       requestPath: "/v1/chat/completions",
       authScheme: "bearer",
       supportsStreaming: true,
-    },
-    account: { name: "主账号", billingMode: "unknown" },
-    credential: { id: "credential-1", name: "主 Key", encrypted },
+      credentialIds: ["credential-1"],
+    }],
+    accounts: [{
+      id: "account-1",
+      name: "主账号",
+      billingMode: "unknown",
+      credentials: [{ id: "credential-1", name: "主 Key", encrypted }],
+    }],
     now: new Date("2026-08-24T12:00:00.000Z"),
   });
   const compatibilityRepository = new MemoryCompatibilityProbeRepository();

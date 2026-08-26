@@ -12,13 +12,17 @@ import { UndiciTransportRegistry } from "../data-plane/transport/undici-registry
 import { createDatabase } from "../db/client.js";
 import { CompatibilityProbeRunner } from "./adapters/compatibility-probe-runner.js";
 import { MemoryCompatibilityProbeRepository } from "./adapters/memory-compatibility-probe-repository.js";
+import { MemoryConnectionLifecycle } from "./adapters/memory-connection-lifecycle.js";
 import { MemoryConnectionRepository } from "./adapters/memory-connection-repository.js";
+import { MemoryEndpointLifecycle } from "./adapters/memory-endpoint-lifecycle.js";
 import { MemoryGatewayClientRepository } from "./adapters/memory-gateway-client-repository.js";
 import { MemoryModelBindingRepository } from "./adapters/memory-model-binding-repository.js";
 import { MemoryRequestStore } from "./adapters/memory-request-store.js";
 import { ensurePostgresBootstrapConfiguration } from "./adapters/postgres-bootstrap-configuration.js";
 import { PostgresCompatibilityProbeRepository } from "./adapters/postgres-compatibility-probe-repository.js";
+import { PostgresConnectionLifecycle } from "./adapters/postgres-connection-lifecycle.js";
 import { PostgresConnectionRepository } from "./adapters/postgres-connection-repository.js";
+import { PostgresEndpointLifecycle } from "./adapters/postgres-endpoint-lifecycle.js";
 import { PostgresGatewayClientAuthenticator } from "./adapters/postgres-gateway-client-authenticator.js";
 import { PostgresGatewayClientRepository } from "./adapters/postgres-gateway-client-repository.js";
 import { PostgresModelBindingRepository } from "./adapters/postgres-model-binding-repository.js";
@@ -43,6 +47,18 @@ function createInMemoryGraph(env: Env, logger: AppLogger) {
   const secretCipher = createSecretCipher(env);
   const connectionRepository = new MemoryConnectionRepository();
   const compatibilityProbeRepository = new MemoryCompatibilityProbeRepository();
+  const modelBindingRepository = new MemoryModelBindingRepository(async endpointId =>
+    (await connectionRepository.list()).some(connection => connection.endpoints.some(endpoint => endpoint.id === endpointId)));
+  const endpointLifecycle = new MemoryEndpointLifecycle(
+    connectionRepository,
+    modelBindingRepository,
+    compatibilityProbeRepository,
+  );
+  const connectionLifecycle = new MemoryConnectionLifecycle(
+    connectionRepository,
+    modelBindingRepository,
+    compatibilityProbeRepository,
+  );
   const transportRegistry = new UndiciTransportRegistry(env);
   const compatibilityProbeCoordinator = new CompatibilityProbeRunner(
     connectionRepository,
@@ -59,13 +75,14 @@ function createInMemoryGraph(env: Env, logger: AppLogger) {
     secretCipher,
     controlAuth: unavailableControlAuth,
     connectionRepository,
+    connectionLifecycle,
+    endpointLifecycle,
     credentialProber: new TransportCredentialProber(transportRegistry, env.UPSTREAM_HEADERS_TIMEOUT_MS),
     modelCatalogDiscoverer: new TransportModelCatalogDiscoverer(transportRegistry, env.UPSTREAM_HEADERS_TIMEOUT_MS),
     compatibilityProbeRepository,
     compatibilityProbeCoordinator,
     gatewayClientRepository: new MemoryGatewayClientRepository(),
-    modelBindingRepository: new MemoryModelBindingRepository(async endpointId =>
-      (await connectionRepository.list()).some(connection => connection.endpoints.some(endpoint => endpoint.id === endpointId))),
+    modelBindingRepository,
     requestStore: new MemoryRequestStore(),
     ...createStaticProxyDependencies(env),
     transportRegistry,
@@ -92,6 +109,9 @@ export function createRuntimeResources(env: Env, logger: AppLogger): RuntimeReso
   const secretCipher = createSecretCipher(env);
   const connectionRepository = new PostgresConnectionRepository(database.db);
   const compatibilityProbeRepository = new PostgresCompatibilityProbeRepository(database.db);
+  const modelBindingRepository = new PostgresModelBindingRepository(database.db);
+  const endpointLifecycle = new PostgresEndpointLifecycle(database.db, connectionRepository);
+  const connectionLifecycle = new PostgresConnectionLifecycle(database.db);
   const compatibilityProbeCoordinator = new CompatibilityProbeRunner(
     connectionRepository,
     compatibilityProbeRepository,
@@ -107,12 +127,14 @@ export function createRuntimeResources(env: Env, logger: AppLogger): RuntimeReso
     secretCipher,
     controlAuth: createBetterAuth(database.pool, env),
     connectionRepository,
+    connectionLifecycle,
+    endpointLifecycle,
     credentialProber: new TransportCredentialProber(transportRegistry, env.UPSTREAM_HEADERS_TIMEOUT_MS),
     modelCatalogDiscoverer: new TransportModelCatalogDiscoverer(transportRegistry, env.UPSTREAM_HEADERS_TIMEOUT_MS),
     compatibilityProbeRepository,
     compatibilityProbeCoordinator,
     gatewayClientRepository: new PostgresGatewayClientRepository(database.db),
-    modelBindingRepository: new PostgresModelBindingRepository(database.db),
+    modelBindingRepository,
     requestStore: new PostgresRequestStore(database.db),
     gatewayClientAuthenticator: new PostgresGatewayClientAuthenticator(database.db, env.GATEWAY_KEY_PEPPER),
     providerCredentialResolver: new PostgresProviderCredentialResolver(database.db, secretCipher),

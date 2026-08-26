@@ -185,6 +185,25 @@ export class PostgresCompatibilityProbeRepository implements CompatibilityProbeR
     )).returning();
     return row === undefined ? null : toRun(row);
   }
+
+  public async invalidateForEndpoint(endpointId: string, now: Date): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      await tx.delete(compatibilityFacts).where(sql`${compatibilityFacts.profileId} in (
+        select ${compatibilityProfiles.id} from ${compatibilityProfiles}
+        where ${compatibilityProfiles.endpointId} = ${endpointId}
+      )`);
+      await tx.update(compatibilityProfiles).set({
+        status: "unverified",
+        lastProbeAt: null,
+        summary: null,
+        updatedAt: now,
+      }).where(eq(compatibilityProfiles.endpointId, endpointId));
+    });
+  }
+
+  public async deleteForEndpoint(endpointId: string): Promise<void> {
+    await this.db.delete(compatibilityProfiles).where(eq(compatibilityProfiles.endpointId, endpointId));
+  }
 }
 
 function activeRunWhere(command: CreateCompatibilityProbeRunCommand) {

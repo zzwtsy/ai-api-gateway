@@ -4,6 +4,14 @@ export type ConnectionProtocol = "openai-chat" | "openai-responses" | "anthropic
 export type BillingMode = "metered" | "subscription" | "free" | "custom" | "unknown";
 export type CredentialStatus = "unverified" | "healthy" | "auth_failed" | "unavailable" | "disabled";
 
+export const connectionCreationLimits = {
+  maxEndpoints: 32,
+  maxAccounts: 32,
+  maxCredentialsPerAccount: 64,
+  maxCredentialBindingsPerEndpoint: 64,
+  maxCredentials: 256,
+} as const;
+
 export interface EndpointRecord {
   readonly id: string;
   readonly name: string;
@@ -49,36 +57,86 @@ export interface ConnectionRecord {
   readonly updatedAt: Date;
 }
 
+type ConnectionDeletionBlockReason = "active_probe";
+
+export interface ConnectionDeletionImpact {
+  readonly endpointCount: number;
+  readonly accountCount: number;
+  readonly credentialCount: number;
+  readonly credentialBindingCount: number;
+  readonly modelBindingCount: number;
+  readonly compatibilityProfileCount: number;
+  readonly compatibilityFactCount: number;
+  readonly completedProbeRunCount: number;
+  readonly activeProbeRunCount: number;
+  readonly blocked: boolean;
+  readonly blockedReason: ConnectionDeletionBlockReason | null;
+}
+
+export interface ConnectionDeletionResult {
+  readonly connectionId: string;
+}
+
+export interface ConnectionLifecycle {
+  getDeletionImpact: (connectionId: string) => Promise<ConnectionDeletionImpact | null>;
+  deleteConnection: (connectionId: string) => Promise<ConnectionDeletionResult | null>;
+}
+
 export interface CreateConnectionInput {
   readonly name: string;
   readonly providerSlug: string;
-  readonly endpoint: {
+  readonly endpoints: readonly {
+    readonly ref: string;
     readonly name: string;
     readonly protocol: ConnectionProtocol;
     readonly baseUrl: string;
     readonly requestPath: string;
     readonly authScheme: "bearer" | "x-api-key";
     readonly supportsStreaming: boolean;
-  };
-  readonly account: {
+    readonly credentialRefs: readonly string[];
+  }[];
+  readonly accounts: readonly {
+    readonly ref: string;
     readonly name: string;
     readonly billingMode: BillingMode;
-  };
-  readonly credential: {
-    readonly name: string;
-    readonly secret: string;
-  };
+    readonly credentials: readonly {
+      readonly ref: string;
+      readonly name: string;
+      readonly secret: string;
+    }[];
+  }[];
 }
 
-export interface CreateConnectionCommand extends Omit<CreateConnectionInput, "credential"> {
+interface CreateConnectionEndpointCommand {
+  readonly id: string;
+  readonly name: string;
+  readonly protocol: ConnectionProtocol;
+  readonly baseUrl: string;
+  readonly requestPath: string;
+  readonly authScheme: "bearer" | "x-api-key";
+  readonly supportsStreaming: boolean;
+  readonly credentialIds: readonly string[];
+}
+
+export interface CreateConnectionCredentialCommand {
+  readonly id: string;
+  readonly name: string;
+  readonly encrypted: EncryptedSecret;
+}
+
+interface CreateConnectionAccountCommand {
+  readonly id: string;
+  readonly name: string;
+  readonly billingMode: BillingMode;
+  readonly credentials: readonly CreateConnectionCredentialCommand[];
+}
+
+export interface CreateConnectionCommand {
   readonly providerId: string;
-  readonly endpointId: string;
-  readonly accountId: string;
-  readonly credential: {
-    readonly id: string;
-    readonly name: string;
-    readonly encrypted: EncryptedSecret;
-  };
+  readonly name: string;
+  readonly providerSlug: string;
+  readonly endpoints: readonly CreateConnectionEndpointCommand[];
+  readonly accounts: readonly CreateConnectionAccountCommand[];
   readonly now: Date;
 }
 
@@ -92,10 +150,32 @@ export interface AddEndpointInput {
   readonly credentialIds: readonly string[];
 }
 
-export interface AddEndpointCommand extends AddEndpointInput {
+export interface AddEndpointsCommand {
   readonly connectionId: string;
+  readonly endpoints: readonly (AddEndpointInput & { readonly endpointId: string })[];
+  readonly now: Date;
+}
+
+export interface UpdateEndpointCommand extends AddEndpointInput {
   readonly endpointId: string;
   readonly now: Date;
+}
+
+export interface EndpointDeletionImpact {
+  readonly credentialBindingCount: number;
+  readonly modelBindingCount: number;
+  readonly compatibilityProfileCount: number;
+  readonly compatibilityFactCount: number;
+  readonly completedProbeRunCount: number;
+  readonly activeProbeRunCount: number;
+  readonly blocked: boolean;
+}
+
+export interface EndpointLifecycle {
+  addEndpoints: (command: AddEndpointsCommand) => Promise<ConnectionRecord | null>;
+  updateEndpoint: (command: UpdateEndpointCommand) => Promise<ConnectionRecord | null>;
+  getDeletionImpact: (endpointId: string) => Promise<EndpointDeletionImpact | null>;
+  deleteEndpoint: (endpointId: string, now: Date) => Promise<ConnectionRecord | null>;
 }
 
 export interface RotateCredentialCommand {
@@ -158,8 +238,9 @@ export interface RecordCredentialProbeCommand {
 export interface ConnectionRepository {
   list: () => Promise<readonly ConnectionRecord[]>;
   getById: (id: string) => Promise<ConnectionRecord | null>;
+  hasCredentialFingerprint: (fingerprint: string) => Promise<boolean>;
   create: (command: CreateConnectionCommand) => Promise<ConnectionRecord>;
-  addEndpoint: (command: AddEndpointCommand) => Promise<ConnectionRecord | null>;
+  addEndpoints: (command: AddEndpointsCommand) => Promise<ConnectionRecord | null>;
   rotateCredential: (command: RotateCredentialCommand) => Promise<ConnectionRecord | null>;
   disableCredential: (credentialId: string, now: Date) => Promise<ConnectionRecord | null>;
   getCredentialProbeTarget: (credentialId: string, endpointId: string) => Promise<CredentialProbeTarget | null>;
@@ -286,6 +367,8 @@ export interface CompatibilityProbeRepository {
     readonly now: Date;
   }) => Promise<CompatibilityProbeRunRecord | null>;
   failRun: (runId: string, errorMessage: string, now: Date) => Promise<CompatibilityProbeRunRecord | null>;
+  invalidateForEndpoint: (endpointId: string, now: Date) => Promise<void>;
+  deleteForEndpoint: (endpointId: string) => Promise<void>;
 }
 
 export interface CompatibilityProbeCoordinator {

@@ -1,22 +1,26 @@
 import { createRoute, z } from "@hono/zod-openapi";
 
 import { requireControlSession } from "../../auth/require-control-session.js";
-import { jsonErrorResponse, jsonSuccessResponse } from "../../http/openapi/components.js";
+import { jsonErrorResponse, jsonErrorResponses, jsonSuccessResponse } from "../../http/openapi/components.js";
 import { controlSessionSecurity } from "../../http/openapi/security.js";
 import {
   AddConnectionEndpointBodySchema,
   CompatibilityProbeRunSchema,
   ConnectionCompatibilitySchema,
+  ConnectionDeletionImpactSchema,
+  ConnectionDeletionResultSchema,
   ConnectionIdParamSchema,
   ConnectionSchema,
   CreateConnectionBodySchema,
   CredentialIdParamSchema,
   CredentialProbeResultSchema,
   DiscoverUpstreamModelsBodySchema,
+  EndpointDeletionImpactSchema,
   EndpointIdParamSchema,
   ProbeCredentialBodySchema,
   RotateCredentialBodySchema,
   StartCompatibilityProbeBodySchema,
+  UpdateEndpointBodySchema,
   UpstreamModelCatalogSchema,
 } from "./schemas.js";
 
@@ -56,6 +60,41 @@ export const getConnectionRoute = createRoute({
   },
 });
 
+export const getConnectionDeletionImpactRoute = createRoute({
+  method: "get",
+  path: "/connections/{connectionId}/deletion-impact",
+  tags: ["Connections"],
+  operationId: "getConnectionDeletionImpact",
+  summary: "获取连接删除影响",
+  description: "返回删除连接将清理的 Endpoint、账号、Credential、模型绑定和兼容性结果数量，并标记是否可以删除。",
+  middleware: [requireControlSession()] as const,
+  security: controlSessionSecurity,
+  request: { params: ConnectionIdParamSchema },
+  responses: {
+    200: jsonSuccessResponse(ConnectionDeletionImpactSchema, "连接删除影响"),
+    ...authenticatedErrors,
+    404: jsonErrorResponse("连接不存在", "CONNECTION_NOT_FOUND"),
+  },
+});
+
+export const deleteConnectionRoute = createRoute({
+  method: "delete",
+  path: "/connections/{connectionId}",
+  tags: ["Connections"],
+  operationId: "deleteConnection",
+  summary: "删除连接",
+  description: "删除连接及其配置级联数据；历史 Request 与 Attempt 保留，进行中的兼容性测试会阻止删除。",
+  middleware: [requireControlSession()] as const,
+  security: controlSessionSecurity,
+  request: { params: ConnectionIdParamSchema },
+  responses: {
+    200: jsonSuccessResponse(ConnectionDeletionResultSchema, "连接已删除"),
+    ...authenticatedErrors,
+    404: jsonErrorResponse("连接不存在", "CONNECTION_NOT_FOUND"),
+    409: jsonErrorResponse("连接存在进行中的兼容性测试，暂不能删除", "CONNECTION_ACTIVE_PROBE"),
+  },
+});
+
 export const createConnectionRoute = createRoute({
   method: "post",
   path: "/connections",
@@ -76,6 +115,7 @@ export const createConnectionRoute = createRoute({
   responses: {
     201: jsonSuccessResponse(ConnectionSchema, "连接已创建"),
     ...authenticatedErrors,
+    422: jsonErrorResponse("连接批量配置校验失败", "COMMON_VALIDATION_FAILED"),
     409: jsonErrorResponse("连接名称或 Endpoint 已存在", "CONNECTION_CONFLICT"),
   },
 });
@@ -84,9 +124,9 @@ export const addConnectionEndpointRoute = createRoute({
   method: "post",
   path: "/connections/{connectionId}/endpoints",
   tags: ["Connections"],
-  operationId: "addConnectionEndpoint",
+  operationId: "addConnectionEndpoints",
   summary: "添加上游 Endpoint",
-  description: "为已有 Provider 添加一个协议明确的 Endpoint，并绑定同一 Provider 下的可用 Credential。",
+  description: "为已有 Provider 原子添加一个或多个协议明确的 Endpoint，并绑定同一 Provider 下的可用 Credential。",
   middleware: [requireControlSession()] as const,
   security: controlSessionSecurity,
   request: {
@@ -96,8 +136,66 @@ export const addConnectionEndpointRoute = createRoute({
   responses: {
     201: jsonSuccessResponse(ConnectionSchema, "Endpoint 已添加"),
     ...authenticatedErrors,
+    422: jsonErrorResponse("Endpoint 批量配置校验失败", "COMMON_VALIDATION_FAILED"),
     404: jsonErrorResponse("连接或绑定的 Credential 不存在", "ENDPOINT_TARGET_NOT_FOUND"),
     409: jsonErrorResponse("Endpoint 名称或协议地址已存在", "CONNECTION_CONFLICT"),
+  },
+});
+
+export const updateEndpointRoute = createRoute({
+  method: "patch",
+  path: "/endpoints/{endpointId}",
+  tags: ["Connections"],
+  operationId: "updateEndpoint",
+  summary: "修改上游 Endpoint",
+  description: "完整替换 Endpoint 的协议入口与 Credential 绑定；配置变化会清除兼容性事实并重置模型绑定状态。",
+  middleware: [requireControlSession()] as const,
+  security: controlSessionSecurity,
+  request: {
+    params: EndpointIdParamSchema,
+    body: { required: true, content: { "application/json": { schema: UpdateEndpointBodySchema } } },
+  },
+  responses: {
+    200: jsonSuccessResponse(ConnectionSchema, "Endpoint 已修改"),
+    ...authenticatedErrors,
+    422: jsonErrorResponse("Endpoint 配置校验失败", "COMMON_VALIDATION_FAILED"),
+    404: jsonErrorResponses("Endpoint 不存在，或绑定的上游 Credential 不存在", ["ENDPOINT_NOT_FOUND", "ENDPOINT_TARGET_NOT_FOUND"]),
+    409: jsonErrorResponses("Endpoint 配置冲突，或存在进行中的兼容性测试", ["CONNECTION_CONFLICT", "ENDPOINT_ACTIVE_PROBE"]),
+  },
+});
+
+export const getEndpointDeletionImpactRoute = createRoute({
+  method: "get",
+  path: "/endpoints/{endpointId}/deletion-impact",
+  tags: ["Connections"],
+  operationId: "getEndpointDeletionImpact",
+  summary: "获取 Endpoint 删除影响",
+  description: "返回删除 Endpoint 将级联清理的配置、模型绑定和兼容性结果数量，并标记是否有进行中的测试。",
+  middleware: [requireControlSession()] as const,
+  security: controlSessionSecurity,
+  request: { params: EndpointIdParamSchema },
+  responses: {
+    200: jsonSuccessResponse(EndpointDeletionImpactSchema, "Endpoint 删除影响"),
+    ...authenticatedErrors,
+    404: jsonErrorResponse("Endpoint 不存在", "ENDPOINT_NOT_FOUND"),
+  },
+});
+
+export const deleteEndpointRoute = createRoute({
+  method: "delete",
+  path: "/endpoints/{endpointId}",
+  tags: ["Connections"],
+  operationId: "deleteEndpoint",
+  summary: "删除上游 Endpoint",
+  description: "删除 Endpoint 及其配置级联数据；历史 Request 与 Attempt 保留，进行中的兼容性测试会阻止删除。",
+  middleware: [requireControlSession()] as const,
+  security: controlSessionSecurity,
+  request: { params: EndpointIdParamSchema },
+  responses: {
+    200: jsonSuccessResponse(ConnectionSchema, "Endpoint 已删除"),
+    ...authenticatedErrors,
+    404: jsonErrorResponse("Endpoint 不存在", "ENDPOINT_NOT_FOUND"),
+    409: jsonErrorResponse("Endpoint 存在进行中的兼容性测试，暂不能删除", "ENDPOINT_ACTIVE_PROBE"),
   },
 });
 
@@ -225,8 +323,13 @@ export const getConnectionCompatibilityRoute = createRoute({
 
 export type ListConnectionsRoute = typeof listConnectionsRoute;
 export type GetConnectionRoute = typeof getConnectionRoute;
+export type GetConnectionDeletionImpactRoute = typeof getConnectionDeletionImpactRoute;
+export type DeleteConnectionRoute = typeof deleteConnectionRoute;
 export type CreateConnectionRoute = typeof createConnectionRoute;
 export type AddConnectionEndpointRoute = typeof addConnectionEndpointRoute;
+export type UpdateEndpointRoute = typeof updateEndpointRoute;
+export type GetEndpointDeletionImpactRoute = typeof getEndpointDeletionImpactRoute;
+export type DeleteEndpointRoute = typeof deleteEndpointRoute;
 export type RotateProviderCredentialRoute = typeof rotateProviderCredentialRoute;
 export type DisableProviderCredentialRoute = typeof disableProviderCredentialRoute;
 export type ProbeProviderCredentialRoute = typeof probeProviderCredentialRoute;

@@ -7,8 +7,10 @@ import type { GatewayClientRepository } from "./features/clients/contracts.js";
 import type {
   CompatibilityProbeCoordinator,
   CompatibilityProbeRepository,
+  ConnectionLifecycle,
   ConnectionRepository,
   CredentialProber,
+  EndpointLifecycle,
   ModelCatalogDiscoverer,
 } from "./features/connections/contracts.js";
 import type { ModelBindingRepository } from "./features/models/contracts.js";
@@ -19,6 +21,8 @@ export interface ControlPlaneDependencies {
   readonly secretCipher: SecretCipher;
   readonly controlAuth: ControlAuth;
   readonly connectionRepository: ConnectionRepository;
+  readonly connectionLifecycle: ConnectionLifecycle;
+  readonly endpointLifecycle: EndpointLifecycle;
   readonly credentialProber: CredentialProber;
   readonly modelCatalogDiscoverer: ModelCatalogDiscoverer;
   readonly compatibilityProbeRepository: CompatibilityProbeRepository;

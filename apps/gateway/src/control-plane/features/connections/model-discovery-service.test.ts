@@ -1,10 +1,10 @@
 import { Buffer } from "node:buffer";
 import { expect, it } from "vitest";
 
+import { createConnectionServiceTestContext } from "../../../../tests/support/connection-service-test-context.js";
 import { MemoryConnectionRepository } from "../../../app/adapters/memory-connection-repository.js";
 import { SecretCipher } from "../../../core/crypto/secret-cipher.js";
 import { ModelDiscoveryService } from "./model-discovery-service.js";
-import { ConnectionService } from "./service.js";
 
 const now = new Date("2026-08-24T00:00:00.000Z");
 const cipher = new SecretCipher({
@@ -14,16 +14,28 @@ const cipher = new SecretCipher({
 });
 
 it("decrypts only the selected bound Credential and returns safe model IDs", async () => {
-  const repository = new MemoryConnectionRepository();
-  const connectionService = new ConnectionService(repository, cipher, { now: () => now }, {
+  const { repository, service: connectionService } = createConnectionServiceTestContext(cipher, { now: () => now }, {
     probe: async () => ({ classification: "healthy", statusCode: 200 }),
   });
   const connection = await connectionService.create({
     name: "测试连接",
     providerSlug: "test-provider",
-    endpoint: { name: "Chat", protocol: "openai-chat", baseUrl: "https://provider.example", requestPath: "/v1/chat/completions", authScheme: "bearer", supportsStreaming: true },
-    account: { name: "主账号", billingMode: "metered" },
-    credential: { name: "主 Key", secret: "provider-secret" },
+    endpoints: [{
+      ref: "endpoint-chat",
+      name: "Chat",
+      protocol: "openai-chat",
+      baseUrl: "https://provider.example",
+      requestPath: "/v1/chat/completions",
+      authScheme: "bearer",
+      supportsStreaming: true,
+      credentialRefs: ["credential-main"],
+    }],
+    accounts: [{
+      ref: "account-main",
+      name: "主账号",
+      billingMode: "metered",
+      credentials: [{ ref: "credential-main", name: "主 Key", secret: "provider-secret" }],
+    }],
   });
   let observedSecret: string | null = null;
   const service = new ModelDiscoveryService(repository, cipher, {
@@ -58,16 +70,28 @@ it("rejects an Endpoint and Credential that are not bound", async () => {
 });
 
 it("maps an invalid upstream catalog to a stable control-plane error", async () => {
-  const repository = new MemoryConnectionRepository();
-  const connectionService = new ConnectionService(repository, cipher, { now: () => now }, {
+  const { repository, service: connectionService } = createConnectionServiceTestContext(cipher, { now: () => now }, {
     probe: async () => ({ classification: "healthy", statusCode: 200 }),
   });
   const connection = await connectionService.create({
     name: "测试连接",
     providerSlug: "test-provider",
-    endpoint: { name: "Chat", protocol: "openai-chat", baseUrl: "https://provider.example", requestPath: "/v1/chat/completions", authScheme: "bearer", supportsStreaming: true },
-    account: { name: "主账号", billingMode: "metered" },
-    credential: { name: "主 Key", secret: "provider-secret" },
+    endpoints: [{
+      ref: "endpoint-chat",
+      name: "Chat",
+      protocol: "openai-chat",
+      baseUrl: "https://provider.example",
+      requestPath: "/v1/chat/completions",
+      authScheme: "bearer",
+      supportsStreaming: true,
+      credentialRefs: ["credential-main"],
+    }],
+    accounts: [{
+      ref: "account-main",
+      name: "主账号",
+      billingMode: "metered",
+      credentials: [{ ref: "credential-main", name: "主 Key", secret: "provider-secret" }],
+    }],
   });
   const service = new ModelDiscoveryService(repository, cipher, {
     discover: async () => ({ outcome: "failed", classification: "invalid_response", statusCode: 200 }),

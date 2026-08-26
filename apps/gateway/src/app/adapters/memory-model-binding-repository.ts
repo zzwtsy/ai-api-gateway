@@ -12,4 +12,19 @@ export class MemoryModelBindingRepository implements ModelBindingRepository {
     this.#items.set(record.id, record);
     return record;
   }
+
+  public async resetForEndpoint(endpointId: string, now: Date): Promise<void> {
+    for (const [id, item] of this.#items) {
+      if (item.endpointId === endpointId) {
+        this.#items.set(id, { ...item, status: "unverified", updatedAt: now });
+      }
+    }
+  }
+
+  public async deleteForEndpoint(endpointId: string): Promise<void> {
+    for (const [id, item] of this.#items) {
+      if (item.endpointId === endpointId)
+        this.#items.delete(id);
+    }
+  }
 }

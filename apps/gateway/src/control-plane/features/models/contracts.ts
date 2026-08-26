@@ -12,4 +12,6 @@ export interface ModelBindingRepository {
   list: () => Promise<readonly ProviderModelBindingRecord[]>;
   endpointExists: (endpointId: string) => Promise<boolean>;
   create: (record: ProviderModelBindingRecord) => Promise<ProviderModelBindingRecord>;
+  resetForEndpoint: (endpointId: string, now: Date) => Promise<void>;
+  deleteForEndpoint: (endpointId: string) => Promise<void>;
 }

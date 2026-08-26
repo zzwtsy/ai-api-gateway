@@ -1,9 +1,22 @@
 import type { SecretCipher } from "../../../core/crypto/secret-cipher.js";
 import type { Clock } from "../../../core/time/clock.js";
-import type { AddEndpointInput, ConnectionRepository, CreateConnectionInput, CredentialProber } from "./contracts.js";
+import type {
+  AddEndpointInput,
+  ConnectionLifecycle,
+  ConnectionRepository,
+  CreateConnectionInput,
+  CredentialProber,
+  EndpointDeletionImpact,
+  EndpointLifecycle,
+} from "./contracts.js";
 import { randomUUID } from "node:crypto";
-
 import { AppError } from "../../../core/errors/app-error.js";
+
+import {
+  validateAddEndpointInputs,
+  validateCreateInput,
+  validateExistingConflicts,
+} from "./validation.js";
 
 export class ConnectionService {
   public constructor(
@@ -11,6 +24,8 @@ export class ConnectionService {
     private readonly secretCipher: SecretCipher,
     private readonly clock: Clock,
     private readonly credentialProber: CredentialProber,
+    private readonly endpointLifecycle: EndpointLifecycle,
+    private readonly connectionLifecycle: ConnectionLifecycle,
   ) {}
 
   public list() {
@@ -25,40 +40,115 @@ export class ConnectionService {
     return item;
   }
 
-  public create(input: CreateConnectionInput) {
-    const credentialId = randomUUID();
+  public async getConnectionDeletionImpact(connectionId: string) {
+    const impact = await this.connectionLifecycle.getDeletionImpact(connectionId);
+    if (impact === null)
+      throw new AppError("CONNECTION_NOT_FOUND");
+    return impact;
+  }
+
+  public async deleteConnection(connectionId: string) {
+    const result = await this.connectionLifecycle.deleteConnection(connectionId);
+    if (result === null)
+      throw new AppError("CONNECTION_NOT_FOUND");
+    return result;
+  }
+
+  public async create(input: CreateConnectionInput) {
+    validateCreateInput(input);
+    const existing = await this.repository.list();
+    validateExistingConflicts(input, existing);
+
+    const endpointIds = new Map<string, string>();
+    for (const endpoint of input.endpoints) {
+      endpointIds.set(endpoint.ref, randomUUID());
+    }
+    const credentialIds = new Map<string, string>();
+    const encryptedCredentials = new Map<string, {
+      readonly id: string;
+      readonly name: string;
+      readonly encrypted: ReturnType<SecretCipher["encrypt"]>;
+    }>();
+    for (const account of input.accounts) {
+      for (const credential of account.credentials) {
+        const id = randomUUID();
+        credentialIds.set(credential.ref, id);
+        encryptedCredentials.set(credential.ref, {
+          id,
+          name: credential.name,
+          encrypted: this.secretCipher.encrypt(credential.secret, id),
+        });
+      }
+    }
+    const fingerprints = new Set<string>();
+    for (const credential of encryptedCredentials.values()) {
+      if (fingerprints.has(credential.encrypted.fingerprint))
+        throw new AppError("CREDENTIAL_CONFLICT");
+      fingerprints.add(credential.encrypted.fingerprint);
+      if (await this.repository.hasCredentialFingerprint(credential.encrypted.fingerprint))
+        throw new AppError("CREDENTIAL_CONFLICT");
+    }
+
+    const now = this.clock.now();
     return this.repository.create({
-      ...input,
       providerId: randomUUID(),
-      endpointId: randomUUID(),
-      accountId: randomUUID(),
-      credential: {
-        id: credentialId,
-        name: input.credential.name,
-        encrypted: this.secretCipher.encrypt(input.credential.secret, credentialId),
-      },
-      now: this.clock.now(),
+      name: input.name,
+      providerSlug: input.providerSlug,
+      endpoints: input.endpoints.map(endpoint => ({
+        id: endpointIds.get(endpoint.ref)!,
+        name: endpoint.name,
+        protocol: endpoint.protocol,
+        baseUrl: endpoint.baseUrl,
+        requestPath: endpoint.requestPath,
+        authScheme: endpoint.authScheme,
+        supportsStreaming: endpoint.supportsStreaming,
+        credentialIds: endpoint.credentialRefs.map(ref => credentialIds.get(ref)!),
+      })),
+      accounts: input.accounts.map(account => ({
+        id: randomUUID(),
+        name: account.name,
+        billingMode: account.billingMode,
+        credentials: account.credentials.map(credential => encryptedCredentials.get(credential.ref)!),
+      })),
+      now,
     });
   }
 
-  public async addEndpoint(connectionId: string, input: AddEndpointInput) {
+  public async addEndpoints(connectionId: string, inputs: readonly AddEndpointInput[]) {
     const connection = await this.repository.getById(connectionId);
     if (connection === null)
       throw new AppError("ENDPOINT_TARGET_NOT_FOUND");
-    const availableCredentialIds = new Set(connection.accounts
-      .flatMap(account => account.credentials)
-      .filter(credential => credential.status !== "disabled")
-      .map(credential => credential.id));
-    if (input.credentialIds.some(credentialId => !availableCredentialIds.has(credentialId)))
+    validateAddEndpointInputs(connection, inputs, await this.repository.list());
+    const now = this.clock.now();
+    const commands = inputs.map(input => ({ ...input, endpointId: randomUUID() }));
+    const item = await this.endpointLifecycle.addEndpoints({ connectionId, endpoints: commands, now });
+    if (item === null)
       throw new AppError("ENDPOINT_TARGET_NOT_FOUND");
-    const item = await this.repository.addEndpoint({
+    return item;
+  }
+
+  public async updateEndpoint(endpointId: string, input: AddEndpointInput) {
+    const item = await this.endpointLifecycle.updateEndpoint({
       ...input,
-      connectionId,
-      endpointId: randomUUID(),
+      endpointId,
       now: this.clock.now(),
     });
     if (item === null)
-      throw new AppError("ENDPOINT_TARGET_NOT_FOUND");
+      throw new AppError("ENDPOINT_NOT_FOUND");
+    return item;
+  }
+
+  public async getEndpointDeletionImpact(endpointId: string): Promise<EndpointDeletionImpact> {
+    const impact = await this.endpointLifecycle.getDeletionImpact(endpointId);
+    if (impact === null)
+      throw new AppError("ENDPOINT_NOT_FOUND");
+    return impact;
+  }
+
+  public async deleteEndpoint(endpointId: string) {
+    const item = await this.endpointLifecycle.deleteEndpoint(endpointId, this.clock.now());
+    if (item === null)
+      throw new AppError("ENDPOINT_NOT_FOUND");
     return item;
   }
 

@@ -38,6 +38,18 @@ function createSuccessEnvelopeSchema<TSchema extends ZodType>(schema: TSchema) {
   });
 }
 
+function errorExample(code: ErrorCode) {
+  const definition = errorRegistry[code];
+  return {
+    success: false,
+    code,
+    message: definition.message,
+    data: null,
+    error: { type: errorTypeForCode(code) },
+    meta: { requestId: "req_example" },
+  };
+}
+
 export function jsonSuccessResponse<TSchema extends ZodType>(schema: TSchema, description: string) {
   return {
     description,
@@ -50,20 +62,30 @@ export function jsonSuccessResponse<TSchema extends ZodType>(schema: TSchema, de
 }
 
 export function jsonErrorResponse(description: string, code: ErrorCode) {
-  const definition = errorRegistry[code];
   return {
     description,
     content: {
       "application/json": {
         schema: ErrorEnvelopeSchema,
-        example: {
-          success: false,
-          code,
-          message: definition.message,
-          data: null,
-          error: { type: errorTypeForCode(code) },
-          meta: { requestId: "req_example" },
-        },
+        example: errorExample(code),
+      },
+    },
+  };
+}
+
+export function jsonErrorResponses(
+  description: string,
+  codes: readonly [ErrorCode, ...ErrorCode[]],
+) {
+  return {
+    description,
+    content: {
+      "application/json": {
+        schema: ErrorEnvelopeSchema,
+        examples: Object.fromEntries(codes.map(code => [code, {
+          summary: errorRegistry[code].message,
+          value: errorExample(code),
+        }])),
       },
     },
   };

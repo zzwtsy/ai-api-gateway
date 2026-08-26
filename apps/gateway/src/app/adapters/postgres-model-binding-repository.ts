@@ -28,6 +28,17 @@ export class PostgresModelBindingRepository implements ModelBindingRepository {
       throw error;
     }
   }
+
+  public async resetForEndpoint(endpointId: string, now: Date): Promise<void> {
+    await this.db.update(providerModelBindings).set({
+      status: "unverified",
+      updatedAt: now,
+    }).where(eq(providerModelBindings.endpointId, endpointId));
+  }
+
+  public async deleteForEndpoint(endpointId: string): Promise<void> {
+    await this.db.delete(providerModelBindings).where(eq(providerModelBindings.endpointId, endpointId));
+  }
 }
 function isUniqueViolation(error: unknown): boolean {
   if (typeof error !== "object" || error === null)

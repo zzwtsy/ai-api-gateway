@@ -1,5 +1,5 @@
 import type {
-  AddEndpointCommand,
+  AddEndpointsCommand,
   ConnectionRecord,
   ConnectionRepository,
   CreateConnectionCommand,
@@ -7,9 +7,18 @@ import type {
   CredentialRecord,
   RecordCredentialProbeCommand,
   RotateCredentialCommand,
+  UpdateEndpointCommand,
 } from "../../control-plane/features/connections/contracts.js";
-
 import { AppError } from "../../core/errors/app-error.js";
+
+import {
+  endpointAddress,
+  hasConnectionConflict,
+  normalizeBaseUrl,
+  normalizeCreateConnectionEndpoints,
+  validateCreateConnectionCommand,
+  validateCredentialFingerprints,
+} from "./connection-create-validation.js";
 
 export class MemoryConnectionRepository implements ConnectionRepository {
   readonly #items = new Map<string, ConnectionRecord>();
@@ -24,100 +33,190 @@ export class MemoryConnectionRepository implements ConnectionRepository {
     return this.#items.get(id) ?? null;
   }
 
+  public async hasCredentialFingerprint(fingerprint: string): Promise<boolean> {
+    return [...this.#credentialFingerprints.values()].includes(fingerprint);
+  }
+
   public async create(command: CreateConnectionCommand): Promise<ConnectionRecord> {
-    const normalizedBaseUrl = normalizeBaseUrl(command.endpoint.baseUrl);
-    const hasConflict = [...this.#items.values()].some(item =>
-      item.name === command.name
-      || item.providerSlug === command.providerSlug
-      || item.endpoints.some(endpoint =>
-        endpoint.protocol === command.endpoint.protocol
-        && endpoint.baseUrl === normalizedBaseUrl
-        && endpoint.requestPath === command.endpoint.requestPath,
-      ),
-    );
-    if (hasConflict || [...this.#credentialFingerprints.values()].includes(command.credential.encrypted.fingerprint)) {
+    const normalizedEndpoints = normalizeCreateConnectionEndpoints(command);
+    const credentials = command.accounts.flatMap(account => account.credentials);
+    validateCreateConnectionCommand(command, normalizedEndpoints);
+    await validateCredentialFingerprints(credentials, fingerprint => this.hasCredentialFingerprint(fingerprint));
+    const endpointAddresses = new Set(normalizedEndpoints.map(endpoint => endpointAddress(endpoint)));
+    if (hasConnectionConflict(this.#items.values(), command, endpointAddresses)) {
       throw new AppError("CONNECTION_CONFLICT");
     }
+
     const record: ConnectionRecord = {
       id: command.providerId,
       name: command.name,
       providerSlug: command.providerSlug,
       presetKind: "custom",
       status: "active",
-      endpoints: [{
-        id: command.endpointId,
-        name: command.endpoint.name,
-        protocol: command.endpoint.protocol,
-        baseUrl: normalizedBaseUrl,
-        requestPath: command.endpoint.requestPath,
-        authScheme: command.endpoint.authScheme,
-        supportsStreaming: command.endpoint.supportsStreaming,
+      endpoints: normalizedEndpoints.map(endpoint => ({
+        id: endpoint.id,
+        name: endpoint.name,
+        protocol: endpoint.protocol,
+        baseUrl: endpoint.baseUrl,
+        requestPath: endpoint.requestPath,
+        authScheme: endpoint.authScheme,
+        supportsStreaming: endpoint.supportsStreaming,
         status: "active",
-      }],
-      accounts: [{
-        id: command.accountId,
-        name: command.account.name,
-        billingMode: command.account.billingMode,
+      })),
+      accounts: command.accounts.map(account => ({
+        id: account.id,
+        name: account.name,
+        billingMode: account.billingMode,
         status: "active",
-        credentials: [{
-          id: command.credential.id,
-          name: command.credential.name,
-          maskedDisplay: command.credential.encrypted.maskedDisplay,
+        credentials: account.credentials.map(credential => ({
+          id: credential.id,
+          name: credential.name,
+          maskedDisplay: credential.encrypted.maskedDisplay,
           status: "unverified",
-          endpointIds: [command.endpointId],
+          endpointIds: normalizedEndpoints
+            .filter(endpoint => endpoint.credentialIds.includes(credential.id))
+            .map(endpoint => endpoint.id),
           lastSuccessAt: null,
           lastFailureAt: null,
           createdAt: command.now,
           updatedAt: command.now,
           rotatedAt: null,
           disabledAt: null,
-        }],
-      }],
+        })),
+      })),
       createdAt: command.now,
       updatedAt: command.now,
     };
     this.#items.set(record.id, record);
-    this.#credentialFingerprints.set(command.credential.id, command.credential.encrypted.fingerprint);
-    this.#credentialSecrets.set(command.credential.id, {
-      encryptedSecret: command.credential.encrypted.encryptedSecret,
-      secretKeyId: command.credential.encrypted.secretKeyId,
-    });
+    this.#storeCredentials(credentials);
     return record;
   }
 
-  public async addEndpoint(command: AddEndpointCommand): Promise<ConnectionRecord | null> {
+  public async addEndpoints(command: AddEndpointsCommand): Promise<ConnectionRecord | null> {
     const connection = this.#items.get(command.connectionId);
     if (connection === undefined)
       return null;
-    const normalizedBaseUrl = normalizeBaseUrl(command.baseUrl);
-    const conflict = [...this.#items.values()].some(item => item.endpoints.some(endpoint =>
-      (item.id === command.connectionId && endpoint.name === command.name)
-      || (endpoint.protocol === command.protocol
-        && endpoint.baseUrl === normalizedBaseUrl
-        && endpoint.requestPath === command.requestPath),
-    ));
-    if (conflict)
-      throw new AppError("CONNECTION_CONFLICT");
-    const credentialIds = new Set(command.credentialIds);
+    const endpointNames = new Set(connection.endpoints.map(endpoint => endpoint.name));
+    const endpointAddresses = new Set([...this.#items.values()].flatMap(item => item.endpoints).map(endpoint => endpointAddress(endpoint)));
+    const normalizedEndpoints = command.endpoints.map(endpoint => ({ ...endpoint, baseUrl: normalizeBaseUrl(endpoint.baseUrl) }));
+    for (const endpoint of normalizedEndpoints) {
+      if (endpointNames.has(endpoint.name) || endpointAddresses.has(endpointAddress(endpoint)))
+        throw new AppError("CONNECTION_CONFLICT");
+      endpointNames.add(endpoint.name);
+      endpointAddresses.add(endpointAddress(endpoint));
+      if (new Set(endpoint.credentialIds).size !== endpoint.credentialIds.length || endpoint.credentialIds.length === 0)
+        throw new AppError("COMMON_VALIDATION_FAILED");
+      const credentials = connection.accounts.flatMap(account => account.credentials);
+      if (endpoint.credentialIds.some((id) => {
+        const credential = credentials.find(item => item.id === id);
+        return credential === undefined || credential.status === "disabled";
+      })) {
+        throw new AppError("ENDPOINT_TARGET_NOT_FOUND");
+      }
+    }
     const updated: ConnectionRecord = {
       ...connection,
-      endpoints: [...connection.endpoints, {
-        id: command.endpointId,
-        name: command.name,
-        protocol: command.protocol,
-        baseUrl: normalizedBaseUrl,
-        requestPath: command.requestPath,
-        authScheme: command.authScheme,
-        supportsStreaming: command.supportsStreaming,
-        status: "active",
-      }],
+      endpoints: [...connection.endpoints, ...normalizedEndpoints.map(endpoint => ({
+        id: endpoint.endpointId,
+        name: endpoint.name,
+        protocol: endpoint.protocol,
+        baseUrl: endpoint.baseUrl,
+        requestPath: endpoint.requestPath,
+        authScheme: endpoint.authScheme,
+        supportsStreaming: endpoint.supportsStreaming,
+        status: "active" as const,
+      }))],
       accounts: connection.accounts.map(account => ({
         ...account,
-        credentials: account.credentials.map(credential => credentialIds.has(credential.id)
-          ? { ...credential, endpointIds: [...credential.endpointIds, command.endpointId] }
+        credentials: account.credentials.map(credential => normalizedEndpoints.some(endpoint => endpoint.credentialIds.includes(credential.id))
+          ? { ...credential, endpointIds: [...credential.endpointIds, ...normalizedEndpoints.filter(endpoint => endpoint.credentialIds.includes(credential.id)).map(endpoint => endpoint.endpointId)] }
           : credential),
       })),
       updatedAt: command.now,
+    };
+    this.#items.set(updated.id, updated);
+    return updated;
+  }
+
+  public async deleteConnection(connectionId: string): Promise<ConnectionRecord | null> {
+    const connection = this.#items.get(connectionId);
+    if (connection === undefined)
+      return null;
+    this.#items.delete(connectionId);
+    for (const credential of connection.accounts.flatMap(account => account.credentials)) {
+      this.#credentialFingerprints.delete(credential.id);
+      this.#credentialSecrets.delete(credential.id);
+    }
+    return connection;
+  }
+
+  public async updateEndpoint(command: UpdateEndpointCommand): Promise<ConnectionRecord | null> {
+    const owner = this.#findEndpointOwner(command.endpointId);
+    if (owner === null)
+      return null;
+    const normalizedBaseUrl = normalizeBaseUrl(command.baseUrl);
+    const endpointNames = new Set(owner.connection.endpoints
+      .filter(endpoint => endpoint.id !== command.endpointId)
+      .map(endpoint => endpoint.name));
+    const addresses = new Set([...this.#items.values()]
+      .flatMap(item => item.endpoints)
+      .filter(endpoint => endpoint.id !== command.endpointId)
+      .map(endpoint => endpointAddress(endpoint)));
+    if (endpointNames.has(command.name) || addresses.has(endpointAddress({ ...command, baseUrl: normalizedBaseUrl })))
+      throw new AppError("CONNECTION_CONFLICT");
+    if (new Set(command.credentialIds).size !== command.credentialIds.length || command.credentialIds.length === 0)
+      throw new AppError("COMMON_VALIDATION_FAILED");
+    const credentials = owner.connection.accounts.flatMap(account => account.credentials);
+    if (command.credentialIds.some((id) => {
+      const credential = credentials.find(item => item.id === id);
+      return credential === undefined || credential.status === "disabled";
+    })) {
+      throw new AppError("ENDPOINT_TARGET_NOT_FOUND");
+    }
+    const selected = new Set(command.credentialIds);
+    const updated: ConnectionRecord = {
+      ...owner.connection,
+      endpoints: owner.connection.endpoints.map(endpoint => endpoint.id === command.endpointId
+        ? {
+            ...endpoint,
+            name: command.name,
+            protocol: command.protocol,
+            baseUrl: normalizedBaseUrl,
+            requestPath: command.requestPath,
+            authScheme: command.authScheme,
+            supportsStreaming: command.supportsStreaming,
+          }
+        : endpoint),
+      accounts: owner.connection.accounts.map(account => ({
+        ...account,
+        credentials: account.credentials.map(credential => ({
+          ...credential,
+          endpointIds: selected.has(credential.id)
+            ? [...credential.endpointIds.filter(id => id !== command.endpointId), command.endpointId]
+            : credential.endpointIds.filter(id => id !== command.endpointId),
+        })),
+      })),
+      updatedAt: command.now,
+    };
+    this.#items.set(updated.id, updated);
+    return updated;
+  }
+
+  public async deleteEndpoint(endpointId: string, now: Date): Promise<ConnectionRecord | null> {
+    const owner = this.#findEndpointOwner(endpointId);
+    if (owner === null)
+      return null;
+    const updated: ConnectionRecord = {
+      ...owner.connection,
+      endpoints: owner.connection.endpoints.filter(endpoint => endpoint.id !== endpointId),
+      accounts: owner.connection.accounts.map(account => ({
+        ...account,
+        credentials: account.credentials.map(credential => ({
+          ...credential,
+          endpointIds: credential.endpointIds.filter(id => id !== endpointId),
+        })),
+      })),
+      updatedAt: now,
     };
     this.#items.set(updated.id, updated);
     return updated;
@@ -207,14 +306,25 @@ export class MemoryConnectionRepository implements ConnectionRepository {
     }
     return null;
   }
-}
 
-function normalizeBaseUrl(value: string): string {
-  const url = new URL(value);
-  url.pathname = url.pathname.replace(/\/$/, "");
-  url.search = "";
-  url.hash = "";
-  return url.toString().replace(/\/$/, "");
+  #findEndpointOwner(endpointId: string): { connection: ConnectionRecord; endpoint: ConnectionRecord["endpoints"][number] } | null {
+    for (const connection of this.#items.values()) {
+      const endpoint = connection.endpoints.find(item => item.id === endpointId);
+      if (endpoint !== undefined)
+        return { connection, endpoint };
+    }
+    return null;
+  }
+
+  #storeCredentials(credentials: readonly CreateConnectionCommand["accounts"][number]["credentials"][number][]): void {
+    for (const credential of credentials) {
+      this.#credentialFingerprints.set(credential.id, credential.encrypted.fingerprint);
+      this.#credentialSecrets.set(credential.id, {
+        encryptedSecret: credential.encrypted.encryptedSecret,
+        secretKeyId: credential.encrypted.secretKeyId,
+      });
+    }
+  }
 }
 
 function replaceCredential(

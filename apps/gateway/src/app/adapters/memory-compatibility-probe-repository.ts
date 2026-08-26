@@ -131,6 +131,49 @@ export class MemoryCompatibilityProbeRepository implements CompatibilityProbeRep
     this.#runs.set(runId, updated);
     return updated;
   }
+
+  public async invalidateForEndpoint(endpointId: string, now: Date): Promise<void> {
+    const profileIds = new Set(
+      [...this.#profiles.values()]
+        .filter(profile => profile.endpointId === endpointId)
+        .map(profile => profile.id),
+    );
+    for (const [id, fact] of this.#facts) {
+      if (profileIds.has(fact.profileId))
+        this.#facts.delete(id);
+    }
+    for (const [id, profile] of this.#profiles) {
+      if (profileIds.has(id)) {
+        this.#profiles.set(id, {
+          ...profile,
+          status: "unverified",
+          lastProbeAt: null,
+          summary: null,
+        });
+      }
+    }
+    void now;
+  }
+
+  public async deleteForEndpoint(endpointId: string): Promise<void> {
+    const profileIds = new Set(
+      [...this.#profiles.values()]
+        .filter(profile => profile.endpointId === endpointId)
+        .map(profile => profile.id),
+    );
+    for (const [id, run] of this.#runs) {
+      if (run.endpointId === endpointId || profileIds.has(run.profileId))
+        this.#runs.delete(id);
+    }
+    for (const [id, fact] of this.#facts) {
+      if (profileIds.has(fact.profileId))
+        this.#facts.delete(id);
+    }
+    for (const id of this.#profiles.keys()) {
+      if (profileIds.has(id))
+        this.#profiles.delete(id);
+    }
+  }
 }
 
 function factKey(fact: CompatibilityFactRecord): string {

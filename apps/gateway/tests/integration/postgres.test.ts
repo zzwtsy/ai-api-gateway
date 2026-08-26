@@ -2,6 +2,7 @@ import type { DatabaseHandle } from "../../src/db/client.js";
 import { Buffer } from "node:buffer";
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ensurePostgresBootstrapConfiguration } from "../../src/app/adapters/postgres-bootstrap-configuration.js";
 import { PostgresCompatibilityProbeRepository } from "../../src/app/adapters/postgres-compatibility-probe-repository.js";
@@ -14,7 +15,14 @@ import { createLogger } from "../../src/core/logging/logger.js";
 import { systemClock } from "../../src/core/time/clock.js";
 import { createDatabase } from "../../src/db/client.js";
 import { runMigrations } from "../../src/db/run-migrations.js";
-import { harnessProfiles } from "../../src/db/schema/index.js";
+import {
+  endpointCredentials,
+  harnessProfiles,
+  providerAccounts,
+  providerCredentials,
+  providers,
+  upstreamEndpoints,
+} from "../../src/db/schema/index.js";
 
 let container: Awaited<ReturnType<PostgreSqlContainer["start"]>> | undefined;
 let database: DatabaseHandle | undefined;
@@ -77,29 +85,33 @@ describe("PostgreSQL adapters", () => {
     const now = systemClock.now();
     const created = await repository.create({
       providerId: "provider-integration",
-      endpointId: "endpoint-integration",
-      accountId: "account-integration",
       name: "Integration provider",
       providerSlug: "openai-compatible",
-      endpoint: {
+      endpoints: [{
+        id: "endpoint-integration",
         name: "Chat",
         protocol: "openai-chat",
         baseUrl: "https://provider.example/v1/",
         requestPath: "/chat/completions",
         authScheme: "bearer",
         supportsStreaming: true,
-      },
-      account: { name: "Primary", billingMode: "metered" },
-      credential: {
-        id: "credential-integration",
-        name: "Primary Key",
-        encrypted: {
-          encryptedSecret: "v1.test.test.test",
-          secretKeyId: "test-v1",
-          fingerprint: "fingerprint-integration",
-          maskedDisplay: "••••test",
-        },
-      },
+        credentialIds: ["credential-integration"],
+      }],
+      accounts: [{
+        id: "account-integration",
+        name: "Primary",
+        billingMode: "metered",
+        credentials: [{
+          id: "credential-integration",
+          name: "Primary Key",
+          encrypted: {
+            encryptedSecret: "v1.test.test.test",
+            secretKeyId: "test-v1",
+            fingerprint: "fingerprint-integration",
+            maskedDisplay: "••••test",
+          },
+        }],
+      }],
       now,
     });
 
@@ -107,6 +119,87 @@ describe("PostgreSQL adapters", () => {
       name: "Integration provider",
       endpoints: [{ baseUrl: "https://provider.example/v1" }],
     });
+  });
+
+  it("rolls back a mid-transaction credential conflict without changing the first aggregate", async () => {
+    const database = requireDatabase();
+    const repository = new PostgresConnectionRepository(database.db);
+    const now = new Date("2026-08-24T11:00:00.000Z");
+    const first = await repository.create({
+      providerId: "provider-integration-rollback-first",
+      name: "Rollback first provider",
+      providerSlug: "rollback-first-provider",
+      endpoints: [{
+        id: "endpoint-integration-rollback-first",
+        name: "Chat",
+        protocol: "openai-chat",
+        baseUrl: "https://rollback-first.example",
+        requestPath: "/v1/chat/completions",
+        authScheme: "bearer",
+        supportsStreaming: true,
+        credentialIds: ["credential-integration-rollback-first"],
+      }],
+      accounts: [{
+        id: "account-integration-rollback-first",
+        name: "Primary",
+        billingMode: "metered",
+        credentials: [{
+          id: "credential-integration-rollback-first",
+          name: "Primary Key",
+          encrypted: {
+            encryptedSecret: "v1.rollback.first.value",
+            secretKeyId: "integration-v1",
+            fingerprint: "fingerprint-integration-rollback",
+            maskedDisplay: "••••back",
+          },
+        }],
+      }],
+      now,
+    });
+    const firstSnapshot = await repository.getById(first.id);
+
+    await expect(repository.create({
+      providerId: "provider-integration-rollback-second",
+      name: "Rollback second provider",
+      providerSlug: "rollback-second-provider",
+      endpoints: [{
+        id: "endpoint-integration-rollback-second",
+        name: "Responses",
+        protocol: "openai-responses",
+        baseUrl: "https://rollback-second.example",
+        requestPath: "/v1/responses",
+        authScheme: "bearer",
+        supportsStreaming: true,
+        credentialIds: ["credential-integration-rollback-second"],
+      }],
+      accounts: [{
+        id: "account-integration-rollback-second",
+        name: "Primary",
+        billingMode: "metered",
+        credentials: [{
+          id: "credential-integration-rollback-second",
+          name: "Primary Key",
+          encrypted: {
+            encryptedSecret: "v1.rollback.second.value",
+            secretKeyId: "integration-v1",
+            fingerprint: "fingerprint-integration-rollback",
+            maskedDisplay: "••••cond",
+          },
+        }],
+      }],
+      now,
+    })).rejects.toMatchObject({ code: "CREDENTIAL_CONFLICT" });
+
+    await expect(repository.getById(first.id)).resolves.toEqual(firstSnapshot);
+    await expect(repository.getById("provider-integration-rollback-second")).resolves.toBeNull();
+    const secondRows = await Promise.all([
+      database.db.select({ id: providers.id }).from(providers).where(eq(providers.id, "provider-integration-rollback-second")),
+      database.db.select({ id: upstreamEndpoints.id }).from(upstreamEndpoints).where(eq(upstreamEndpoints.id, "endpoint-integration-rollback-second")),
+      database.db.select({ id: providerAccounts.id }).from(providerAccounts).where(eq(providerAccounts.id, "account-integration-rollback-second")),
+      database.db.select({ id: providerCredentials.id }).from(providerCredentials).where(eq(providerCredentials.id, "credential-integration-rollback-second")),
+      database.db.select({ endpointId: endpointCredentials.endpointId }).from(endpointCredentials).where(eq(endpointCredentials.endpointId, "endpoint-integration-rollback-second")),
+    ]);
+    expect(secondRows).toEqual([[], [], [], [], []]);
   });
 
   it("persists compatibility progress and model-scoped facts transactionally", async () => {
@@ -121,29 +214,33 @@ describe("PostgreSQL adapters", () => {
     const now = new Date("2026-08-24T12:00:00.000Z");
     await connections.create({
       providerId: "provider-compatibility-integration",
-      endpointId: "endpoint-compatibility-integration",
-      accountId: "account-compatibility-integration",
       name: "Compatibility integration provider",
       providerSlug: "compatibility-integration",
-      endpoint: {
+      endpoints: [{
+        id: "endpoint-compatibility-integration",
         name: "Chat",
         protocol: "openai-chat",
         baseUrl: "https://compatibility.example",
         requestPath: "/v1/chat/completions",
         authScheme: "bearer",
         supportsStreaming: true,
-      },
-      account: { name: "Primary", billingMode: "metered" },
-      credential: {
-        id: "credential-compatibility-integration",
-        name: "Primary Key",
-        encrypted: {
-          encryptedSecret: "v1.integration.value",
-          secretKeyId: "integration-v1",
-          fingerprint: "fingerprint-compatibility-integration",
-          maskedDisplay: "••••test",
-        },
-      },
+        credentialIds: ["credential-compatibility-integration"],
+      }],
+      accounts: [{
+        id: "account-compatibility-integration",
+        name: "Primary",
+        billingMode: "metered",
+        credentials: [{
+          id: "credential-compatibility-integration",
+          name: "Primary Key",
+          encrypted: {
+            encryptedSecret: "v1.integration.value",
+            secretKeyId: "integration-v1",
+            fingerprint: "fingerprint-compatibility-integration",
+            maskedDisplay: "••••test",
+          },
+        }],
+      }],
       now,
     });
     const repository = new PostgresCompatibilityProbeRepository(database.db);

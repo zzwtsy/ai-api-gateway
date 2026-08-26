@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { connectionCreationLimits } from "./contracts.js";
 
 const ConnectionProtocolSchema = z.enum([
   "openai-chat",
@@ -28,11 +29,13 @@ const BillingModeSchema = z.enum([
   "unknown",
 ]).openapi("BillingMode");
 
+const connectionRefSchema = z.string().trim().min(1).max(100).regex(/^[A-Z0-9][\w.:-]*$/i);
+
 const EndpointSchema = z.object({
   id: z.string().openapi({ description: "Endpoint ID" }),
   name: z.string().openapi({ description: "Endpoint 名称" }),
   protocol: ConnectionProtocolSchema,
-  baseUrl: z.string().url().openapi({ description: "上游 Base URL" }),
+  baseUrl: z.url().openapi({ description: "上游 Base URL" }),
   requestPath: z.string().openapi({ description: "上游请求路径" }),
   authScheme: z.enum(["bearer", "x-api-key"]),
   supportsStreaming: z.boolean(),
@@ -80,6 +83,24 @@ export const ConnectionIdParamSchema = z.object({
   }),
 });
 
+export const ConnectionDeletionImpactSchema = z.object({
+  endpointCount: z.number().int().nonnegative(),
+  accountCount: z.number().int().nonnegative(),
+  credentialCount: z.number().int().nonnegative(),
+  credentialBindingCount: z.number().int().nonnegative(),
+  modelBindingCount: z.number().int().nonnegative(),
+  compatibilityProfileCount: z.number().int().nonnegative(),
+  compatibilityFactCount: z.number().int().nonnegative(),
+  completedProbeRunCount: z.number().int().nonnegative(),
+  activeProbeRunCount: z.number().int().nonnegative(),
+  blocked: z.boolean(),
+  blockedReason: z.enum(["active_probe"]).nullable(),
+}).openapi("ConnectionDeletionImpact");
+
+export const ConnectionDeletionResultSchema = z.object({
+  connectionId: z.string(),
+}).openapi("ConnectionDeletionResult");
+
 export const CredentialIdParamSchema = z.object({
   credentialId: z.string().min(1).openapi({
     param: { name: "credentialId", in: "path" },
@@ -94,36 +115,63 @@ export const EndpointIdParamSchema = z.object({
   }),
 });
 
-export const CreateConnectionBodySchema = z.object({
-  name: z.string().trim().min(1).max(100),
-  providerSlug: z.string().trim().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  endpoint: z.object({
-    name: z.string().trim().min(1).max(100),
-    protocol: ConnectionProtocolSchema,
-    baseUrl: z.string().url(),
-    requestPath: z.string().trim().regex(/^\/[\w.~!$&'()*+,;=:@%/-]*$/),
-    authScheme: z.enum(["bearer", "x-api-key"]),
-    supportsStreaming: z.boolean().default(true),
-  }),
-  account: z.object({
-    name: z.string().trim().min(1).max(100),
-    billingMode: BillingModeSchema.default("unknown"),
-  }),
-  credential: z.object({
-    name: z.string().trim().min(1).max(100),
-    secret: z.string().min(1).max(16_384),
-  }),
-}).openapi("CreateConnectionBody");
-
-export const AddConnectionEndpointBodySchema = z.object({
+const EndpointInputSchema = z.object({
   name: z.string().trim().min(1).max(100),
   protocol: ConnectionProtocolSchema,
-  baseUrl: z.string().url(),
+  baseUrl: z.url(),
   requestPath: z.string().trim().regex(/^\/[\w.~!$&'()*+,;=:@%/-]*$/),
   authScheme: z.enum(["bearer", "x-api-key"]),
   supportsStreaming: z.boolean().default(true),
-  credentialIds: z.array(z.string().min(1)).min(1),
-}).openapi("AddConnectionEndpointBody");
+  credentialIds: z.array(z.string().min(1))
+    .min(1)
+    .max(connectionCreationLimits.maxCredentialBindingsPerEndpoint),
+}).openapi("EndpointInput");
+
+export const CreateConnectionBodySchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  providerSlug: z.string().trim().min(1).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  endpoints: z.array(z.object({
+    ref: connectionRefSchema.openapi({ description: "仅在本次请求内使用的 Endpoint 引用" }),
+    name: z.string().trim().min(1).max(100),
+    protocol: ConnectionProtocolSchema,
+    baseUrl: z.url(),
+    requestPath: z.string().trim().regex(/^\/[\w.~!$&'()*+,;=:@%/-]*$/),
+    authScheme: z.enum(["bearer", "x-api-key"]),
+    supportsStreaming: z.boolean().default(true),
+    credentialRefs: z.array(connectionRefSchema)
+      .min(1)
+      .max(connectionCreationLimits.maxCredentialBindingsPerEndpoint)
+      .openapi({ description: "本次请求内绑定的 Credential 引用" }),
+  })).min(1).max(connectionCreationLimits.maxEndpoints),
+  accounts: z.array(z.object({
+    ref: connectionRefSchema.openapi({ description: "仅在本次请求内使用的 Account 引用" }),
+    name: z.string().trim().min(1).max(100),
+    billingMode: BillingModeSchema.default("unknown"),
+    credentials: z.array(z.object({
+      ref: connectionRefSchema.openapi({ description: "仅在本次请求内使用的 Credential 引用" }),
+      name: z.string().trim().min(1).max(100),
+      secret: z.string().min(1).max(16_384),
+    })).min(1).max(connectionCreationLimits.maxCredentialsPerAccount),
+  })).min(1).max(connectionCreationLimits.maxAccounts),
+}).openapi("CreateConnectionBody");
+
+export const AddConnectionEndpointBodySchema = z.object({
+  endpoints: z.array(EndpointInputSchema)
+    .min(1)
+    .max(connectionCreationLimits.maxEndpoints),
+}).openapi("AddConnectionEndpointsBody");
+
+export const UpdateEndpointBodySchema = EndpointInputSchema.openapi("UpdateEndpointBody");
+
+export const EndpointDeletionImpactSchema = z.object({
+  credentialBindingCount: z.number().int().nonnegative(),
+  modelBindingCount: z.number().int().nonnegative(),
+  compatibilityProfileCount: z.number().int().nonnegative(),
+  compatibilityFactCount: z.number().int().nonnegative(),
+  completedProbeRunCount: z.number().int().nonnegative(),
+  activeProbeRunCount: z.number().int().nonnegative(),
+  blocked: z.boolean(),
+}).openapi("EndpointDeletionImpact");
 
 export const RotateCredentialBodySchema = z.object({
   secret: z.string().min(1).max(16_384),

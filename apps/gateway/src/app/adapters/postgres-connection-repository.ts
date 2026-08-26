@@ -1,6 +1,6 @@
 import type {
   AccountRecord,
-  AddEndpointCommand,
+  AddEndpointsCommand,
   BillingMode,
   ConnectionProtocol,
   ConnectionRecord,
@@ -15,8 +15,8 @@ import type {
 } from "../../control-plane/features/connections/contracts.js";
 import type { Database } from "../../db/client.js";
 import { and, asc, eq } from "drizzle-orm";
-
 import { AppError } from "../../core/errors/app-error.js";
+
 import {
   endpointCredentials,
   providerAccounts,
@@ -24,6 +24,13 @@ import {
   providers,
   upstreamEndpoints,
 } from "../../db/schema/index.js";
+import {
+  isFingerprintViolation,
+  isUniqueViolation,
+  normalizeCreateConnectionEndpoints,
+  validateCreateConnectionCommand,
+} from "./connection-create-validation.js";
+import { addEndpointBatch } from "./postgres-connection-endpoint-operations.js";
 
 export class PostgresConnectionRepository implements ConnectionRepository {
   public constructor(private readonly db: Database) {}
@@ -106,10 +113,20 @@ export class PostgresConnectionRepository implements ConnectionRepository {
     return (await this.list()).find(connection => connection.id === id) ?? null;
   }
 
+  public async hasCredentialFingerprint(fingerprint: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: providerCredentials.id })
+      .from(providerCredentials)
+      .where(eq(providerCredentials.fingerprint, fingerprint))
+      .limit(1);
+    return row !== undefined;
+  }
+
   public async create(command: CreateConnectionCommand): Promise<ConnectionRecord> {
+    const normalizedEndpoints = normalizeCreateConnectionEndpoints(command);
+    validateCreateConnectionCommand(command, normalizedEndpoints);
     try {
       await this.db.transaction(async (tx) => {
-        const baseUrl = normalizeBaseUrl(command.endpoint.baseUrl);
         await tx.insert(providers).values({
           id: command.providerId,
           slug: command.providerSlug,
@@ -119,49 +136,54 @@ export class PostgresConnectionRepository implements ConnectionRepository {
           createdAt: command.now,
           updatedAt: command.now,
         });
-        await tx.insert(upstreamEndpoints).values({
-          id: command.endpointId,
+        await tx.insert(upstreamEndpoints).values(normalizedEndpoints.map(endpoint => ({
+          id: endpoint.id,
           providerId: command.providerId,
-          name: command.endpoint.name,
-          protocol: command.endpoint.protocol,
-          baseUrl,
-          requestPath: command.endpoint.requestPath,
-          authScheme: command.endpoint.authScheme,
-          supportsStreaming: command.endpoint.supportsStreaming,
+          name: endpoint.name,
+          protocol: endpoint.protocol,
+          baseUrl: endpoint.baseUrl,
+          requestPath: endpoint.requestPath,
+          authScheme: endpoint.authScheme,
+          supportsStreaming: endpoint.supportsStreaming,
           status: "active",
           createdAt: command.now,
           updatedAt: command.now,
-        });
-        await tx.insert(providerAccounts).values({
-          id: command.accountId,
+        })));
+        await tx.insert(providerAccounts).values(command.accounts.map(account => ({
+          id: account.id,
           providerId: command.providerId,
-          name: command.account.name,
-          billingMode: command.account.billingMode,
+          name: account.name,
+          billingMode: account.billingMode,
           status: "active",
           createdAt: command.now,
           updatedAt: command.now,
-        });
-        await tx.insert(providerCredentials).values({
-          id: command.credential.id,
-          accountId: command.accountId,
-          name: command.credential.name,
-          encryptedSecret: command.credential.encrypted.encryptedSecret,
-          secretKeyId: command.credential.encrypted.secretKeyId,
-          fingerprint: command.credential.encrypted.fingerprint,
-          maskedDisplay: command.credential.encrypted.maskedDisplay,
+        })));
+        await tx.insert(providerCredentials).values(command.accounts.flatMap(account => account.credentials.map(credential => ({
+          id: credential.id,
+          accountId: account.id,
+          name: credential.name,
+          encryptedSecret: credential.encrypted.encryptedSecret,
+          secretKeyId: credential.encrypted.secretKeyId,
+          fingerprint: credential.encrypted.fingerprint,
+          maskedDisplay: credential.encrypted.maskedDisplay,
           status: "unverified",
           createdAt: command.now,
           updatedAt: command.now,
-        });
-        await tx.insert(endpointCredentials).values({
-          endpointId: command.endpointId,
-          credentialId: command.credential.id,
-          enabled: true,
-          priority: 100,
-          createdAt: command.now,
-        });
+        }))));
+        await tx.insert(endpointCredentials).values(normalizedEndpoints.flatMap(endpoint =>
+          endpoint.credentialIds.map(credentialId => ({
+            endpointId: endpoint.id,
+            credentialId,
+            enabled: true,
+            priority: 100,
+            createdAt: command.now,
+          })),
+        ));
       });
     } catch (error) {
+      if (isFingerprintViolation(error)) {
+        throw new AppError("CREDENTIAL_CONFLICT", undefined, { cause: error });
+      }
       if (isUniqueViolation(error)) {
         throw new AppError("CONNECTION_CONFLICT", undefined, { cause: error });
       }
@@ -170,39 +192,11 @@ export class PostgresConnectionRepository implements ConnectionRepository {
     return this.requiredConnection(command.providerId);
   }
 
-  public async addEndpoint(command: AddEndpointCommand): Promise<ConnectionRecord | null> {
-    if (await this.getById(command.connectionId) === null)
+  public async addEndpoints(command: AddEndpointsCommand): Promise<ConnectionRecord | null> {
+    const providerId = await addEndpointBatch(this.db, command);
+    if (providerId === null)
       return null;
-    try {
-      await this.db.transaction(async (tx) => {
-        await tx.insert(upstreamEndpoints).values({
-          id: command.endpointId,
-          providerId: command.connectionId,
-          name: command.name,
-          protocol: command.protocol,
-          baseUrl: normalizeBaseUrl(command.baseUrl),
-          requestPath: command.requestPath,
-          authScheme: command.authScheme,
-          supportsStreaming: command.supportsStreaming,
-          status: "active",
-          createdAt: command.now,
-          updatedAt: command.now,
-        });
-        await tx.insert(endpointCredentials).values(command.credentialIds.map(credentialId => ({
-          endpointId: command.endpointId,
-          credentialId,
-          enabled: true,
-          priority: 100,
-          createdAt: command.now,
-        })));
-        await tx.update(providers).set({ updatedAt: command.now }).where(eq(providers.id, command.connectionId));
-      });
-    } catch (error) {
-      if (isUniqueViolation(error))
-        throw new AppError("CONNECTION_CONFLICT", undefined, { cause: error });
-      throw error;
-    }
-    return this.requiredConnection(command.connectionId);
+    return this.requiredConnection(providerId);
   }
 
   public async rotateCredential(command: RotateCredentialCommand): Promise<ConnectionRecord | null> {
@@ -319,22 +313,4 @@ export class PostgresConnectionRepository implements ConnectionRepository {
     }
     return connection;
   }
-}
-
-function normalizeBaseUrl(value: string): string {
-  const url = new URL(value);
-  url.pathname = url.pathname.replace(/\/$/, "");
-  url.search = "";
-  url.hash = "";
-  return url.toString().replace(/\/$/, "");
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  if (typeof error !== "object" || error === null) {
-    return false;
-  }
-  if ("code" in error && error.code === "23505") {
-    return true;
-  }
-  return "cause" in error && isUniqueViolation(error.cause);
 }

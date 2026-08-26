@@ -5,14 +5,19 @@ import type { CompatibilityProbeRunRecord, ConnectionRecord } from "./contracts.
 import type {
   AddConnectionEndpointRoute,
   CreateConnectionRoute,
+  DeleteConnectionRoute,
+  DeleteEndpointRoute,
   DisableProviderCredentialRoute,
   DiscoverUpstreamModelsRoute,
   GetConnectionCompatibilityRoute,
+  GetConnectionDeletionImpactRoute,
   GetConnectionRoute,
+  GetEndpointDeletionImpactRoute,
   ListConnectionsRoute,
   ProbeEndpointRoute,
   ProbeProviderCredentialRoute,
   RotateProviderCredentialRoute,
+  UpdateEndpointRoute,
 } from "./routes.js";
 import type {
   CompatibilityProbeRunView,
@@ -44,10 +49,37 @@ export const createConnectionHandler: AppRouteHandler<CreateConnectionRoute> = a
   return successResponse(c, toView(item), { status: 201 });
 };
 
+export const getConnectionDeletionImpactHandler: AppRouteHandler<GetConnectionDeletionImpactRoute> = async (c) => {
+  const { connectionId } = c.req.valid("param");
+  return successResponse(c, await createService(c.get("controlDependencies")).getConnectionDeletionImpact(connectionId));
+};
+
+export const deleteConnectionHandler: AppRouteHandler<DeleteConnectionRoute> = async (c) => {
+  const { connectionId } = c.req.valid("param");
+  return successResponse(c, await createService(c.get("controlDependencies")).deleteConnection(connectionId));
+};
+
 export const addConnectionEndpointHandler: AppRouteHandler<AddConnectionEndpointRoute> = async (c) => {
   const { connectionId } = c.req.valid("param");
-  const item = await createService(c.get("controlDependencies")).addEndpoint(connectionId, c.req.valid("json"));
+  const item = await createService(c.get("controlDependencies")).addEndpoints(connectionId, c.req.valid("json").endpoints);
   return successResponse(c, toView(item), { status: 201 });
+};
+
+export const updateEndpointHandler: AppRouteHandler<UpdateEndpointRoute> = async (c) => {
+  const { endpointId } = c.req.valid("param");
+  const item = await createService(c.get("controlDependencies")).updateEndpoint(endpointId, c.req.valid("json"));
+  return successResponse(c, toView(item));
+};
+
+export const getEndpointDeletionImpactHandler: AppRouteHandler<GetEndpointDeletionImpactRoute> = async (c) => {
+  const { endpointId } = c.req.valid("param");
+  return successResponse(c, await createService(c.get("controlDependencies")).getEndpointDeletionImpact(endpointId));
+};
+
+export const deleteEndpointHandler: AppRouteHandler<DeleteEndpointRoute> = async (c) => {
+  const { endpointId } = c.req.valid("param");
+  const item = await createService(c.get("controlDependencies")).deleteEndpoint(endpointId);
+  return successResponse(c, toView(item));
 };
 
 export const rotateProviderCredentialHandler: AppRouteHandler<RotateProviderCredentialRoute> = async (c) => {
@@ -131,7 +163,14 @@ function toView(item: ConnectionRecord): ConnectionView {
 }
 
 function createService(dependencies: ControlPlaneDependencies): ConnectionService {
-  return new ConnectionService(dependencies.connectionRepository, dependencies.secretCipher, dependencies.clock, dependencies.credentialProber);
+  return new ConnectionService(
+    dependencies.connectionRepository,
+    dependencies.secretCipher,
+    dependencies.clock,
+    dependencies.credentialProber,
+    dependencies.endpointLifecycle,
+    dependencies.connectionLifecycle,
+  );
 }
 
 function createCompatibilityService(dependencies: ControlPlaneDependencies): CompatibilityProbeService {

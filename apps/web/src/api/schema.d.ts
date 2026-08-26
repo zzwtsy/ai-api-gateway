@@ -141,6 +141,30 @@ export interface paths {
         get: operations["getConnectionById"];
         put?: never;
         post?: never;
+        /**
+         * 删除连接
+         * @description 删除连接及其配置级联数据；历史 Request 与 Attempt 保留，进行中的兼容性测试会阻止删除。
+         */
+        delete: operations["deleteConnection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/api/v1/connections/{connectionId}/deletion-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 获取连接删除影响
+         * @description 返回删除连接将清理的 Endpoint、账号、Credential、模型绑定和兼容性结果数量，并标记是否可以删除。
+         */
+        get: operations["getConnectionDeletionImpact"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -158,9 +182,53 @@ export interface paths {
         put?: never;
         /**
          * 添加上游 Endpoint
-         * @description 为已有 Provider 添加一个协议明确的 Endpoint，并绑定同一 Provider 下的可用 Credential。
+         * @description 为已有 Provider 原子添加一个或多个协议明确的 Endpoint，并绑定同一 Provider 下的可用 Credential。
          */
-        post: operations["addConnectionEndpoint"];
+        post: operations["addConnectionEndpoints"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/api/v1/endpoints/{endpointId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 删除上游 Endpoint
+         * @description 删除 Endpoint 及其配置级联数据；历史 Request 与 Attempt 保留，进行中的兼容性测试会阻止删除。
+         */
+        delete: operations["deleteEndpoint"];
+        options?: never;
+        head?: never;
+        /**
+         * 修改上游 Endpoint
+         * @description 完整替换 Endpoint 的协议入口与 Credential 绑定；配置变化会清除兼容性事实并重置模型绑定状态。
+         */
+        patch: operations["updateEndpoint"];
+        trace?: never;
+    };
+    "/admin/api/v1/endpoints/{endpointId}/deletion-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 获取 Endpoint 删除影响
+         * @description 返回删除 Endpoint 将级联清理的配置、模型绑定和兼容性结果数量，并标记是否有进行中的测试。
+         */
+        get: operations["getEndpointDeletionImpact"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -379,7 +447,7 @@ export interface components {
             meta: components["schemas"]["ResponseMeta"];
         };
         /** @enum {string} */
-        ErrorCode: "COMMON_OK" | "COMMON_CREATED" | "COMMON_VALIDATION_FAILED" | "COMMON_UNAUTHORIZED" | "COMMON_NOT_FOUND" | "COMMON_CONFLICT" | "COMMON_INTERNAL_ERROR" | "CONNECTION_NOT_FOUND" | "CONNECTION_CONFLICT" | "CREDENTIAL_NOT_FOUND" | "CREDENTIAL_CONFLICT" | "CREDENTIAL_PROBE_TARGET_NOT_FOUND" | "CREDENTIAL_DISABLED" | "ENDPOINT_DISABLED" | "ENDPOINT_TARGET_NOT_FOUND" | "COMPATIBILITY_PROBE_TARGET_NOT_FOUND" | "HARNESS_PROFILE_NOT_FOUND" | "CLIENT_NOT_FOUND" | "CLIENT_KEY_NOT_FOUND" | "CLIENT_CONFLICT" | "CLIENT_PROTOCOL_NOT_ALLOWED" | "MODEL_BINDING_CONFLICT" | "MODEL_ENDPOINT_NOT_FOUND" | "MODEL_DISCOVERY_TARGET_NOT_FOUND" | "MODEL_DISCOVERY_FAILED" | "REQUEST_NOT_FOUND";
+        ErrorCode: "COMMON_OK" | "COMMON_CREATED" | "COMMON_VALIDATION_FAILED" | "COMMON_UNAUTHORIZED" | "COMMON_NOT_FOUND" | "COMMON_CONFLICT" | "COMMON_INTERNAL_ERROR" | "CONNECTION_NOT_FOUND" | "CONNECTION_CONFLICT" | "CONNECTION_ACTIVE_PROBE" | "CREDENTIAL_NOT_FOUND" | "CREDENTIAL_CONFLICT" | "CREDENTIAL_PROBE_TARGET_NOT_FOUND" | "CREDENTIAL_DISABLED" | "ENDPOINT_DISABLED" | "ENDPOINT_NOT_FOUND" | "ENDPOINT_ACTIVE_PROBE" | "ENDPOINT_TARGET_NOT_FOUND" | "COMPATIBILITY_PROBE_TARGET_NOT_FOUND" | "HARNESS_PROFILE_NOT_FOUND" | "CLIENT_NOT_FOUND" | "CLIENT_KEY_NOT_FOUND" | "CLIENT_CONFLICT" | "CLIENT_PROTOCOL_NOT_ALLOWED" | "MODEL_BINDING_CONFLICT" | "MODEL_ENDPOINT_NOT_FOUND" | "MODEL_DISCOVERY_TARGET_NOT_FOUND" | "MODEL_DISCOVERY_FAILED" | "REQUEST_NOT_FOUND";
         ErrorDetail: {
             path: string;
             message: string;
@@ -510,7 +578,9 @@ export interface components {
         CreateConnectionBody: {
             name: string;
             providerSlug: string;
-            endpoint: {
+            endpoints: {
+                /** @description 仅在本次请求内使用的 Endpoint 引用 */
+                ref: string;
                 name: string;
                 protocol: components["schemas"]["ConnectionProtocol"];
                 /** Format: uri */
@@ -520,17 +590,43 @@ export interface components {
                 authScheme: "bearer" | "x-api-key";
                 /** @default true */
                 supportsStreaming: boolean;
-            };
-            account: {
+                /** @description 本次请求内绑定的 Credential 引用 */
+                credentialRefs: string[];
+            }[];
+            accounts: {
+                /** @description 仅在本次请求内使用的 Account 引用 */
+                ref: string;
                 name: string;
                 billingMode?: components["schemas"]["BillingMode"];
-            };
-            credential: {
-                name: string;
-                secret: string;
-            };
+                credentials: {
+                    /** @description 仅在本次请求内使用的 Credential 引用 */
+                    ref: string;
+                    name: string;
+                    secret: string;
+                }[];
+            }[];
         };
-        AddConnectionEndpointBody: {
+        ConnectionDeletionImpact: {
+            endpointCount: number;
+            accountCount: number;
+            credentialCount: number;
+            credentialBindingCount: number;
+            modelBindingCount: number;
+            compatibilityProfileCount: number;
+            compatibilityFactCount: number;
+            completedProbeRunCount: number;
+            activeProbeRunCount: number;
+            blocked: boolean;
+            /** @enum {string|null} */
+            blockedReason: "active_probe" | null;
+        };
+        ConnectionDeletionResult: {
+            connectionId: string;
+        };
+        AddConnectionEndpointsBody: {
+            endpoints: components["schemas"]["EndpointInput"][];
+        };
+        EndpointInput: {
             name: string;
             protocol: components["schemas"]["ConnectionProtocol"];
             /** Format: uri */
@@ -541,6 +637,27 @@ export interface components {
             /** @default true */
             supportsStreaming: boolean;
             credentialIds: string[];
+        };
+        UpdateEndpointBody: {
+            name: string;
+            protocol: components["schemas"]["ConnectionProtocol"];
+            /** Format: uri */
+            baseUrl: string;
+            requestPath: string;
+            /** @enum {string} */
+            authScheme: "bearer" | "x-api-key";
+            /** @default true */
+            supportsStreaming: boolean;
+            credentialIds: string[];
+        };
+        EndpointDeletionImpact: {
+            credentialBindingCount: number;
+            modelBindingCount: number;
+            compatibilityProfileCount: number;
+            compatibilityFactCount: number;
+            completedProbeRunCount: number;
+            activeProbeRunCount: number;
+            blocked: boolean;
         };
         RotateProviderCredentialBody: {
             secret: string;
@@ -1251,6 +1368,29 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description 连接批量配置校验失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_VALIDATION_FAILED",
+                     *       "message": "请求校验失败",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "validation"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     getConnectionById: {
@@ -1331,7 +1471,186 @@ export interface operations {
             };
         };
     };
-    addConnectionEndpoint: {
+    deleteConnection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Provider ID */
+                connectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 连接已删除 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: true;
+                        /** @enum {string} */
+                        code: "COMMON_OK" | "COMMON_CREATED";
+                        message: string;
+                        data: components["schemas"]["ConnectionDeletionResult"];
+                        error: unknown;
+                        meta: components["schemas"]["ResponseMeta"];
+                    };
+                };
+            };
+            /** @description 未认证 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_UNAUTHORIZED",
+                     *       "message": "未认证",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description 连接不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "CONNECTION_NOT_FOUND",
+                     *       "message": "连接不存在",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description 连接存在进行中的兼容性测试，暂不能删除 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "CONNECTION_ACTIVE_PROBE",
+                     *       "message": "连接存在进行中的兼容性测试，暂不能删除",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getConnectionDeletionImpact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Provider ID */
+                connectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 连接删除影响 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: true;
+                        /** @enum {string} */
+                        code: "COMMON_OK" | "COMMON_CREATED";
+                        message: string;
+                        data: components["schemas"]["ConnectionDeletionImpact"];
+                        error: unknown;
+                        meta: components["schemas"]["ResponseMeta"];
+                    };
+                };
+            };
+            /** @description 未认证 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_UNAUTHORIZED",
+                     *       "message": "未认证",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description 连接不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "CONNECTION_NOT_FOUND",
+                     *       "message": "连接不存在",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    addConnectionEndpoints: {
         parameters: {
             query?: never;
             header?: never;
@@ -1343,7 +1662,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AddConnectionEndpointBody"];
+                "application/json": components["schemas"]["AddConnectionEndpointsBody"];
             };
         };
         responses: {
@@ -1422,6 +1741,308 @@ export interface operations {
                      *       "success": false,
                      *       "code": "CONNECTION_CONFLICT",
                      *       "message": "连接名称或 Endpoint 已存在",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 批量配置校验失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_VALIDATION_FAILED",
+                     *       "message": "请求校验失败",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "validation"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    deleteEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Endpoint ID */
+                endpointId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Endpoint 已删除 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: true;
+                        /** @enum {string} */
+                        code: "COMMON_OK" | "COMMON_CREATED";
+                        message: string;
+                        data: components["schemas"]["Connection"];
+                        error: unknown;
+                        meta: components["schemas"]["ResponseMeta"];
+                    };
+                };
+            };
+            /** @description 未认证 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_UNAUTHORIZED",
+                     *       "message": "未认证",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "ENDPOINT_NOT_FOUND",
+                     *       "message": "Endpoint 不存在",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 存在进行中的兼容性测试，暂不能删除 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "ENDPOINT_ACTIVE_PROBE",
+                     *       "message": "Endpoint 存在进行中的兼容性测试，暂不能修改或删除",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    updateEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Endpoint ID */
+                endpointId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEndpointBody"];
+            };
+        };
+        responses: {
+            /** @description Endpoint 已修改 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: true;
+                        /** @enum {string} */
+                        code: "COMMON_OK" | "COMMON_CREATED";
+                        message: string;
+                        data: components["schemas"]["Connection"];
+                        error: unknown;
+                        meta: components["schemas"]["ResponseMeta"];
+                    };
+                };
+            };
+            /** @description 未认证 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_UNAUTHORIZED",
+                     *       "message": "未认证",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 不存在，或绑定的上游 Credential 不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 配置冲突，或存在进行中的兼容性测试 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 配置校验失败 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_VALIDATION_FAILED",
+                     *       "message": "请求校验失败",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "validation"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getEndpointDeletionImpact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Endpoint ID */
+                endpointId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Endpoint 删除影响 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        success: true;
+                        /** @enum {string} */
+                        code: "COMMON_OK" | "COMMON_CREATED";
+                        message: string;
+                        data: components["schemas"]["EndpointDeletionImpact"];
+                        error: unknown;
+                        meta: components["schemas"]["ResponseMeta"];
+                    };
+                };
+            };
+            /** @description 未认证 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "COMMON_UNAUTHORIZED",
+                     *       "message": "未认证",
+                     *       "data": null,
+                     *       "error": {
+                     *         "type": "business"
+                     *       },
+                     *       "meta": {
+                     *         "requestId": "req_example"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Endpoint 不存在 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "success": false,
+                     *       "code": "ENDPOINT_NOT_FOUND",
+                     *       "message": "Endpoint 不存在",
                      *       "data": null,
                      *       "error": {
                      *         "type": "business"
