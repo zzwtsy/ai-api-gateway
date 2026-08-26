@@ -97,9 +97,14 @@ test("里程碑 A 的连接、模型与客户端流程通过真实控制面", as
   await page.getByRole("combobox", { name: "协议" }).click();
   await page.getByRole("option", { name: "OpenAI Responses" }).click();
   await expect(page.getByLabel("请求路径")).toHaveValue("/v1/responses");
-  await page.getByRole("button", { name: "添加 Endpoint" }).click();
-  await expect(page.getByRole("cell", { name: "Responses Endpoint" })).toBeVisible();
-  await expect(page.getByText("/v1/responses", { exact: false })).toBeVisible();
+  const addEndpointDialog = page.getByRole("dialog", { name: "添加 Endpoint" });
+  await addEndpointDialog.getByRole("button", { name: "添加 Endpoint" }).click();
+  await expect(addEndpointDialog).toHaveCount(0);
+  const endpointsRegion = page.getByRole("region", { name: "Endpoints" });
+  const responseRow = endpointsRegion.getByRole("row").filter({ hasText: "Responses Endpoint" });
+  await expect(responseRow).toBeVisible();
+  await expect(responseRow.getByRole("cell", { name: "Responses Endpoint", exact: true })).toBeVisible();
+  await expect(responseRow).toContainText("/v1/responses");
 
   const startProbeRoute = /\/admin\/api\/v1\/endpoints\/[^/]+\/probe$/u;
   await page.route(startProbeRoute, route => route.fulfill({

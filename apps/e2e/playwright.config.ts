@@ -32,6 +32,8 @@ export default defineConfig({
       name: "firefox",
       testMatch: [
         /accessibility\.spec\.ts/u,
+        /connection-lifecycle\.spec\.ts/u,
+        /endpoint-lifecycle\.spec\.ts/u,
         /theme-and-detail-workspaces\.spec\.ts/u,
       ],
       use: {

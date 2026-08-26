@@ -26,16 +26,22 @@ export async function createModelWorkspaceFixture(
     data: {
       name: `UX 上游 ${suffix}`,
       providerSlug: `ux-${suffix}`,
-      endpoint: {
+      endpoints: [{
+        ref: "endpoint-default",
         name: "默认 Endpoint",
         protocol: "openai-chat",
         baseUrl: `https://ux-${suffix}.invalid`,
         requestPath: "/v1/chat/completions",
         authScheme: "bearer",
         supportsStreaming: true,
-      },
-      account: { name: "主账号", billingMode: "unknown" },
-      credential: { name: "主 Key", secret: `provider-${suffix}` },
+        credentialRefs: ["credential-main"],
+      }],
+      accounts: [{
+        ref: "account-main",
+        name: "主账号",
+        billingMode: "unknown",
+        credentials: [{ ref: "credential-main", name: "主 Key", secret: `provider-${suffix}` }],
+      }],
     },
   });
   assertStatus(connectionResponse.status(), 201, "创建 UX 连接");

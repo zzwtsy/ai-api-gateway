@@ -78,16 +78,22 @@ async function createModelFixture(request: APIRequestContext): Promise<{ readonl
     data: {
       name: "视觉回归上游",
       providerSlug: `visual-regression-${suffix}`,
-      endpoint: {
+      endpoints: [{
+        ref: "endpoint-default",
         name: "默认 Endpoint",
         protocol: "openai-chat",
         baseUrl: `https://visual-regression-${suffix}.invalid`,
         requestPath: "/v1/chat/completions",
         authScheme: "bearer",
         supportsStreaming: true,
-      },
-      account: { name: "主账号", billingMode: "unknown" },
-      credential: { name: "主 Key", secret: `visual-regression-${suffix}` },
+        credentialRefs: ["credential-main"],
+      }],
+      accounts: [{
+        ref: "account-main",
+        name: "主账号",
+        billingMode: "unknown",
+        credentials: [{ ref: "credential-main", name: "主 Key", secret: `visual-regression-${suffix}` }],
+      }],
     },
   });
   expect(connectionResponse.status()).toBe(201);
