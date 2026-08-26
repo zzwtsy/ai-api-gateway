@@ -75,7 +75,7 @@ language: zh-CN
 │   │   ├── AGENTS.md
 │   │   └── src/
 │   │       ├── routes/             # 文件路由 / 页面装配
-│   │       ├── features/           # 垂直业务切片
+│   │       ├── features/           # 垂直业务切片；内部子切片按需归属原 Feature
 │   │       ├── components/ui/      # shadcn Registry-owned
 │   │       ├── components/layout/
 │   │       ├── components/product/
@@ -237,7 +237,7 @@ db
 4. 一个 Control Feature 不得直接导入另一个 Control Feature；
 5. 跨 Feature 协作通过 Application Composition、Core Port 或 Catalog；
 6. Protocol Adapter 不得直接执行任意控制面数据库查询；
-7. Web Feature 不得直接导入另一个 Web Feature；页面 Route 负责组合；
+7. Web Feature 不得直接导入另一个 Web Feature；页面 Route 负责组合。Feature 内部可以按业务任务或生命周期切分子目录，但子切片仍属于原 Feature，不形成新的跨 Feature 依赖层；具体组织规则见 [前端实现契约](../product/ux/14-implementation-contract.md)；
 8. `components/ui` 是 shadcn Registry-owned 源码区，只允许基线登记的组件文件；测试、业务组件、Wrapper、Hook、Helper 和手写新组件不得进入该目录；
 9. Web 路由固定使用 TanStack Router 文件路由；`routeTree.gen.ts` 是生成物，禁止手工维护；
 10. `src/api/` 只容纳 OpenAPI 生成物；请求运行时归 `lib/api-runtime`，服务端状态统一归 TanStack Query。

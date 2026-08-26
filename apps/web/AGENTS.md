@@ -1,6 +1,7 @@
 # Web 控制面规则
 
 - `src/routes/` 是页面装配层；Feature 不直接依赖另一个 Feature，跨 Feature 组合放在 Route 或 `routes/-*` 忽略目录；
+- Feature 内部按业务任务、稳定生命周期或独立状态边界按需切片；`components/`、`hooks/`、`lib/` 不是强制目录，子切片仍属于原 Feature，Route 使用 Feature 根目录的稳定入口；
 - 路由固定使用 TanStack Router 文件路由；`src/routeTree.gen.ts` 由 Router Plugin 生成，禁止手工修改；
 - `docs/product/ux/page-contracts.json` 描述产品目标页面全集，`src/routes/-page-manifest.ts` 只登记已交付导航页面；已交付页面的 ID、Path、中文标签、导航分组和生成路由必须通过 `pnpm verify:web-contracts` 保持一致；
 - 服务端状态放在 TanStack Query；同一个 `QueryClient` 注入 Router Context，Loader 预取使用 `ensureQueryData` 复用 Query Cache；可分享筛选和选中 ID 放在 Router Search Params；

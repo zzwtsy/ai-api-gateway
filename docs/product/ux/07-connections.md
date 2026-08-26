@@ -24,7 +24,7 @@ language: zh-CN
 
 1280px 及以上使用双列，左侧目录约 300px，右侧详情填满剩余空间；1024px 窄工作面按目录、详情上下排列，避免压缩详情表格。Provider 切换不离开页面，详情 Tab 保持在 URL 中。
 
-选中连接使用 `connectionId`，非默认详情 Tab 使用 `tab`，默认概览省略 `tab`。缺失或无效连接 ID 规范化到首项，无效 Tab 规范化到概览；刷新、返回和分享必须恢复同一上下文。
+选中连接使用 `connectionId`，非默认详情 Tab 使用 `tab`，默认概览省略 `tab`。缺失或无效连接 ID 规范化到首项，无效 Tab 规范化到概览；刷新、返回和分享必须恢复同一上下文。删除成功后选择目录中的下一个连接，没有剩余连接时清除 `connectionId` 并回到“添加连接”入口。
 
 ## 3. Provider 列表
 
@@ -35,6 +35,7 @@ language: zh-CN
 显示 Provider 名称、类型、Endpoint 数、最近使用和状态。右侧操作：
 
 - 测试连接；
+- 删除连接；
 - 更多菜单。
 
 “添加账号”是页面主操作，位于 Page Header；具体 Provider 上下文中也可在账号 Tab 提供次级入口。
@@ -61,7 +62,13 @@ language: zh-CN
 
 每个 Endpoint 显示协议、Base URL、请求路径、流式支持和状态。不同协议 Endpoint 必须分开，不能只展示一个通用 Base URL。
 
-“添加 Endpoint”使用居中 Dialog，默认继承当前 Provider 的 Base URL 和鉴权方式，协议切换联动推荐请求路径，用户手工修改路径后不再覆盖。提交时必须显式绑定当前 Provider 下至少一个未禁用 Credential；没有可用 Credential 时禁用入口并解释原因。
+“添加 Endpoint”使用居中 Dialog，默认继承当前 Provider 的 Base URL 和鉴权方式，支持在同一次提交中添加多行；每行独立配置协议、请求路径和 Credential 绑定。协议切换联动推荐请求路径，用户手工修改路径后不再覆盖。提交时必须显式绑定当前 Provider 下至少一个未禁用 Credential；没有可用 Credential 时禁用入口并解释原因。批量新增以原子结果呈现，不显示部分成功。
+
+“编辑”使用同一套完整 Endpoint 字段，包括名称、协议、Base URL、请求路径、鉴权方式、流式支持和 Credential 绑定。只修改名称不会使已有 Compatibility 或 Model Binding 失效；其他实质配置变化会清理兼容性事实并重置模型绑定，进行中的 Probe 会阻止保存。
+
+“删除”先加载真实影响摘要，再显示明确的不可撤销确认，包括 Credential 绑定、Model Binding、Compatibility Profile/Fact、已完成 Probe 和进行中 Probe 数量。影响加载失败提供“重新加载”；存在进行中 Probe 时阻断确认。确认后删除 Endpoint 配置和其全部 Compatibility/Model 数据，历史 Request 与 Attempt 保留，不假设存在 Endpoint Routing 引用。取消或 Escape 返回原删除行入口，成功删除后焦点回到稳定的“添加 Endpoint”入口；最后一个 Endpoint 删除后只在 Endpoints Tab 显示局部空状态。
+
+添加与编辑 Dialog 均使用固定 Header/Footer 和唯一滚动 Body；1024×768 工作面内 Header、Footer 与主动作保持可达，内容超高时只滚动 Body。
 
 ### 5.3 账号
 
@@ -104,4 +111,10 @@ Header、Query、有限 Body Patch、Timeout、Proxy 等低频设置。默认折
 
 ## 7. 删除与禁用
 
-删除 Account、Credential 或 Endpoint 前，必须列出引用它的路由和影响。若仍被已发布路由引用，默认阻断删除，只允许先禁用或迁移引用。Credential 禁用属于高影响即时操作，必须使用确认 Dialog，确认前不得调用写 API。
+删除 Account 或 Credential 前，必须列出引用它的路由和影响。若仍被已发布路由引用，默认阻断删除，只允许先禁用或迁移引用。Credential 禁用属于高影响即时操作，必须使用确认 Dialog，确认前不得调用写 API。
+
+Endpoint 的删除影响与确认规则见 Endpoints Tab；当前实现不声明 Endpoint Routing 引用。
+
+连接删除属于不可逆的配置级操作。确认前先加载真实影响摘要，列出 Endpoint、账号、Credential、绑定、模型和兼容性数据数量；历史 Request 与 Attempt 明确保留。进行中的 Compatibility Probe 由服务端阻断，影响加载失败或 DELETE 失败时保留 Dialog 并提供重试；Bootstrap 连接与普通连接一样允许删除。成功后焦点回到下一个目录项，若删除最后一个连接则回到“添加连接”。
+
+连接详情通过 `connectionId` 和 `tab=endpoints` 保持 Endpoint 上下文；刷新与浏览器 Back 后仍恢复同一连接和 Endpoints Tab。

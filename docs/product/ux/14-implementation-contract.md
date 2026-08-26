@@ -58,6 +58,24 @@ src/
 
 `App` 只负责全局 Provider 与 Router 装配，不承载页面实现。`QueryClient` 是单例，并注入 TanStack Router Context，使 Route Loader 可以复用 Feature 的 OpenAPI Query Options 执行 `ensureQueryData`/Prefetch，而不是建立第二套 Loader Cache。路由必须使用 `@tanstack/router-plugin/vite` 文件路由，Route 文件保持薄：URL、Search Params、Loader、Layout 与 Feature 页面装配留在 `routes/`；业务 UI/Query/Form 留在 Feature。跨 Feature 页面组合放在 Route 或 `routes/-*` 忽略目录，不能通过一个 Feature 反向导入另一个 Feature。
 
+### 2.1 Feature 内部切片
+
+`features/<feature>/` 是业务所有权和跨 Feature 隔离边界。它不要求所有文件平铺，也不要求套用完整的 FSD 目录；Feature 内部可以按用户任务、稳定生命周期或独立状态边界继续切片，但这些子切片仍属于原 Feature，不能借此建立新的全局分层或绕过跨 Feature 隔离。
+
+内部切片遵循以下规则：
+
+- 页面入口和页面级编排通常保留在 Feature 根目录，例如 `<feature>-page.tsx`；页面只组合本 Feature 的查询、表单和局部组件，不把路由 Search Schema 搬入 Feature。
+- 只有多个文件共同拥有一项局部 UI、交互流程或状态时，才建立 `components/`、`hooks/` 或面向业务任务的子目录。单个文件不因文件名属于某一技术类别而单独创建目录。
+- 优先按业务任务或生命周期命名子目录，例如 `detail/`、`create/`、`compatibility/`；不要先按 `components/`、`hooks/`、`utils/` 建立一套空的层级。技术目录仅用于确实跨多个任务共享、且仍只属于本 Feature 的代码。
+- Feature View Model、Schema、Option Set、Preset 和纯格式化逻辑保持为无 React、TanStack Query 或浏览器依赖的 TypeScript 模块；是否放入 `lib/` 是组织选择，不改变其依赖要求。
+- 测试与被测代码就近放置：纯函数测试和组件测试与拥有者同目录；跨多个局部任务的 Feature 工作流测试放在 Feature 根目录。不得建立与生产目录脱节的测试镜像层。
+- Feature 根目录保留 Route 或 `routes/-*` 需要使用的稳定入口模块；嵌套子切片的实现文件属于内部组织细节。确需向 Route 暴露嵌套能力时，使用根目录的窄适配模块，不建立导出全部内部文件的万能 barrel。
+- 子切片之间不建立对彼此私有实现的隐式依赖；需要共享时提升到 Feature 根目录。跨 Feature 协作仍由 Route 或 `routes/-*` 组合；若共享代码拥有第二个真实 Feature Consumer，再按依赖方向提升到 `components/product` 或合适的全局基础层。
+
+不以文件数量单独触发拆分。以下情况应评估内部切片：同一 Feature 同时包含两个以上独立用户任务或生命周期；不同任务拥有不同的 Query、表单或副作用边界；或修改一个任务时必须频繁阅读、触碰另一个任务的实现。`complexity <= 15`、生产文件 `<= 350` 行和函数 `<= 150` 行是质量门槛，不是为了满足目录形状而机械拆文件的理由。
+
+当前没有强制的二级目录清单；平铺文件和按任务建立子目录都可以，只要所有权、依赖方向、状态边界和测试归属清晰。`features/<feature>/` 仍是静态架构门禁识别的完整 Feature 单元，内部切片不会获得独立的跨 Feature 依赖权限。
+
 `page-contracts.json` 拥有产品目标页面全集；`routes/-page-manifest.ts` 只拥有当前已交付且进入导航的页面集合。App Shell 从 Manifest 派生导航、分组、当前标题和 Active 状态。静态合同 Gate 校验已交付页面的 ID、Path、中文标签、导航分组、生成路由和已落地布局 Token；计划页面可以只存在于产品合同中，不得提前进入已交付导航。
 
 目标页面区域生命周期由 `page-contracts.json` 表达；必需状态的 Scenario ID 必须关联真实 Component 或 Playwright 测试源码。该 Gate 只证明结构与关联存在，不执行场景，也不代替浏览器证据。

@@ -274,7 +274,18 @@ UI 默认按账号聚合，可下钻到 Credential。不要在 Dashboard 直接�
 
 ## 13. 当前实现边界
 
-控制面把 Provider、默认 Endpoint、Account、Credential 与 EndpointCredential 作为一次原子创建；`addConnectionEndpoint` 可在现有 Provider 下原子创建额外协议 Endpoint，并只绑定同一 Provider 下未禁用的 Credential。列表和详情返回聚合视图，只包含 Credential Mask、状态和绑定 Endpoint。Provider Secret 以 AES-256-GCM 密文持久化，轮换替换同一 Credential 的密文并恢复为 `unverified`，禁用后不再参与数据面解析。
+控制面把 Provider、默认 Endpoint、Account、Credential 与 EndpointCredential 作为一次原子创建；连接和 Endpoint 后续生命周期由以下 operationId 组成：
+
+- `getConnectionDeletionImpact` 返回连接删除将清理的 Endpoint、Account、Credential、Credential 绑定、Model Binding、Compatibility Profile/Fact 和 Probe Run 数量，并标记进行中 Probe 阻断原因。
+- `deleteConnection` 在没有进行中 Compatibility Probe 时删除 Provider 聚合及其配置级联数据；Bootstrap 连接与普通连接使用相同的删除规则，历史 Request 与 Attempt 保留。PostgreSQL 先删除 Compatibility Profile，解除 Probe Run 对 Credential 的 `RESTRICT` 约束，再删除 Provider；Memory 与 PostgreSQL 对外保持相同的阻断和清理语义。
+- `addConnectionEndpoints` 在现有 Provider 下原子批量添加一个或多个 Endpoint。每一行可以独立选择协议、地址、请求路径、鉴权方式、流式支持和同一 Provider 下的可用 Credential；批次校验或冲突时全批次失败，不留下部分 Endpoint 或绑定。
+- `updateEndpoint` 对一个 Endpoint 执行完整 PATCH。只修改名称时保留 Compatibility Profile/Fact 与 Model Binding 状态；协议、地址、路径、鉴权方式、流式设置或 Credential 绑定发生实质变化时，清理该 Endpoint 的 Compatibility Fact，将 Profile 设为 `unverified`，并将 Model Binding 重置为 `unverified`。存在 `queued` 或 `running` 的 Compatibility Probe Run 时，实质 PATCH 在变更前被阻止。
+- `getEndpointDeletionImpact` 返回真实的 Credential 绑定、Model Binding、Compatibility Profile/Fact、已完成 Probe Run、进行中 Probe Run 数量，并以 `blocked` 标记是否阻止删除。
+- `deleteEndpoint` 在没有进行中 Probe 时删除 Endpoint 配置、Credential 绑定、Model Binding 以及该 Endpoint 的全部 Compatibility Profile、Fact 和 Probe Run（包括已完成 Run）；进行中的 Probe 阻止删除。历史 Request 与 Attempt 不属于 Endpoint 配置级联数据，继续保留。
+
+这些 operationId 由控制面 Route 生成 OpenAPI 合同，Web API 类型从该合同生成；Feature 文档不重复维护字段 Schema。Memory 与 PostgreSQL 使用同一 `ConnectionLifecycle`、`EndpointLifecycle` 行为边界；Memory 在校验完整批次后提交聚合更新，PostgreSQL 的连接、批量新增、更新和删除使用事务与行锁保证配置及依赖状态的原子性。
+
+列表和详情返回聚合视图，只包含 Credential Mask、状态和绑定 Endpoint。Provider Secret 以 AES-256-GCM 密文持久化，轮换替换同一 Credential 的密文并恢复为 `unverified`，禁用后不再参与数据面解析。
 
 `probeProviderCredential` 必须由用户显式提交 Endpoint 和真实模型 ID，并在界面说明可能产生费用。它发送一次最小非流式请求，区分成功、鉴权失败、限流、上游拒绝和不可用，只持久化安全状态与成功/失败时间。
 
@@ -286,4 +297,4 @@ CompatibilityProfile 绑定 Endpoint 与 Harness Profile；CompatibilityFact 同
 
 当前不执行定时 Probe、厂商私有模型目录解析、模型别名穷举、429 冷却或多 Credential 调度。
 
-PostgreSQL 启动时只在 `BOOTSTRAP_PROVIDER_CREDENTIAL_ID` 不存在时，把环境变量 Secret 加密后创建 Bootstrap Provider、Account 和 Credential。已有 Credential 的密文、状态和轮换结果不会被启动配置覆盖；Bootstrap Endpoint 仍由静态 `RoutingSnapshot` 的环境变量拥有，等待动态 Snapshot 切片接管。
+PostgreSQL 启动时只在 `BOOTSTRAP_PROVIDER_CREDENTIAL_ID` 不存在时，把环境变量 Secret 加密后创建 Bootstrap Provider、Account 和 Credential。已有 Credential 的密文、状态和轮换结果不会被启动配置覆盖；Bootstrap 连接允许通过 `deleteConnection` 删除，但删除后重新启动时，现有初始化机制仍会在该 Credential ID 缺失时按环境变量重新创建 Bootstrap Provider、Account 和 Credential。Bootstrap Endpoint 仍由静态 `RoutingSnapshot` 的环境变量拥有，等待动态 Snapshot 切片接管。

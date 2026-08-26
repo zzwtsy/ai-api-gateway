@@ -27,6 +27,7 @@ language: zh-CN
 - 可分享筛选和选中 ID 放入 Router Search Params；
 - 表单使用 React Hook Form + Zod；
 - 页面负责组合 Feature，Feature 不直接依赖另一个 Feature；
+- Feature 内部按业务任务或生命周期按需切片，保持原 Feature 的所有权边界；不为单个文件机械建立 `components/`、`hooks/` 或 `lib/`，详细规则见[前端实现契约](../product/ux/14-implementation-contract.md)；
 - 完整 Key 不进入 Local Storage、Session Storage、URL 或 Analytics；
 - 未知费用、Usage 和兼容性使用明确状态，不能显示为零或正常；
 - 中文是默认界面语言，术语按 [语言与本地化](language-and-localization.md) 处理。

@@ -37,7 +37,7 @@ project_version: 0.1.0-alpha.3
 ## 已实现的控制面
 
 - 健康检查；
-- Connection 聚合列表、详情、创建、额外协议 Endpoint 创建、Credential 轮换、禁用和显式最小 Probe；
+- Connection 聚合列表、详情、创建、受控删除、额外协议 Endpoint 创建、Credential 轮换、禁用和显式最小 Probe；删除会清理配置级数据但保留 Request/Attempt 历史，并阻止删除进行中的 Compatibility Probe；
 - Endpoint 完整兼容性 Probe 的异步 Run、进度查询，以及按 Endpoint、Harness Profile 和模型保存的兼容性事实；
 - Harness Profile 与 Gateway Client 列表、创建、Key 轮换和撤销；
 - Endpoint 级最小 Provider Model Binding 列表、创建和显式 OpenAI-compatible 上游模型发现；
