@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { ConnectionModelBindingsState } from "./connection-detail";
-import type { ConnectionDetailTab } from "./connection-detail-tabs";
+import type { ConnectionDetailTab } from "../connection-detail-tabs";
+import type { ConnectionModelBindingsState } from "../types";
 import type { components } from "@/api/schema";
 
 import { render, screen } from "@testing-library/react";
@@ -8,7 +8,11 @@ import userEvent from "@testing-library/user-event";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ConnectionDetail } from "./connection-detail";
-import { connectionFixture as connection } from "./connection-detail.test-fixtures";
+import {
+  connectionFixture as connection,
+  modelBindingFixture,
+  probeRunFixture,
+} from "./connection-detail.test-fixtures";
 
 const hookMocks = vi.hoisted(() => ({
   addEndpoint: vi.fn(),
@@ -19,7 +23,9 @@ const hookMocks = vi.hoisted(() => ({
   resetCompatibility: vi.fn(),
   refetchCompatibility: vi.fn(),
   useConnectionCompatibility: vi.fn(),
+  useConnectionDeletionImpact: vi.fn(),
   useAddConnectionEndpoint: vi.fn(),
+  useDeleteConnection: vi.fn(),
   useDisableProviderCredential: vi.fn(),
   useProbeProviderCredential: vi.fn(),
   useRotateProviderCredential: vi.fn(),
@@ -31,9 +37,10 @@ vi.mock("@tanstack/react-router", () => ({
     <a className={className} href="/models">{children}</a>
   ),
 }));
-vi.mock("./hooks", () => hookMocks);
+vi.mock("../hooks", () => hookMocks);
 
 const onTabChange = vi.fn();
+const onConnectionDeleted = vi.fn();
 let startCompatibilityData: { data: components["schemas"]["CompatibilityProbeRun"] } | undefined;
 const emptyModelBindings: ConnectionModelBindingsState = {
   data: [],
@@ -53,6 +60,7 @@ beforeEach(() => {
   hookMocks.resetCompatibility.mockReset();
   hookMocks.refetchCompatibility.mockReset();
   onTabChange.mockReset();
+  onConnectionDeleted.mockReset();
   hookMocks.useAddConnectionEndpoint.mockReturnValue({
     add: hookMocks.addEndpoint,
     error: null,
@@ -84,6 +92,32 @@ beforeEach(() => {
     isPending: false,
     isRefetchError: false,
     refetch: hookMocks.refetchCompatibility,
+  });
+  hookMocks.useConnectionDeletionImpact.mockReturnValue({
+    data: {
+      endpointCount: 1,
+      accountCount: 1,
+      credentialCount: 1,
+      credentialBindingCount: 1,
+      modelBindingCount: 0,
+      compatibilityProfileCount: 0,
+      compatibilityFactCount: 0,
+      completedProbeRunCount: 0,
+      activeProbeRunCount: 0,
+      blocked: false,
+      blockedReason: null,
+    },
+    error: null,
+    isError: false,
+    isFetching: false,
+    isPending: false,
+    refetch: vi.fn(),
+  });
+  hookMocks.useDeleteConnection.mockReturnValue({
+    error: null,
+    isError: false,
+    isPending: false,
+    remove: vi.fn(),
   });
   hookMocks.useStartCompatibilityProbe.mockImplementation(() => ({
     data: startCompatibilityData,
@@ -158,15 +192,6 @@ describe("connection detail credential actions", () => {
 });
 
 describe("connection detail views", () => {
-  it("renders only known configuration facts in the overview", () => {
-    renderConnectionDetail("overview");
-
-    expect(screen.getByText("“启用”不代表兼容")).toBeVisible();
-    expect(screen.getByText(/请在“兼容性”中测试流式、Usage 和字段支持/u)).toBeVisible();
-    expect(screen.queryByRole("button", { name: "完整兼容性测试" })).not.toBeInTheDocument();
-    expect(screen.queryByText("sk-••••abcd")).not.toBeInTheDocument();
-  });
-
   it("reports a supported tab change through the controlled contract", async () => {
     const user = userEvent.setup();
     renderConnectionDetail("overview");
@@ -193,13 +218,15 @@ describe("connection detail views", () => {
     await user.click(screen.getByRole("button", { name: "添加 Endpoint" }));
 
     expect(hookMocks.addEndpoint).toHaveBeenCalledWith("provider_01", {
-      name: "Responses Endpoint",
-      protocol: "openai-responses",
-      baseUrl: "https://api.example.com",
-      requestPath: "/v1/responses",
-      authScheme: "bearer",
-      supportsStreaming: true,
-      credentialIds: ["credential_01"],
+      endpoints: [{
+        name: "Responses Endpoint",
+        protocol: "openai-responses",
+        baseUrl: "https://api.example.com",
+        requestPath: "/v1/responses",
+        authScheme: "bearer",
+        supportsStreaming: true,
+        credentialIds: ["credential_01"],
+      }],
     });
     expect(screen.queryByRole("heading", { name: "添加 Endpoint" })).not.toBeInTheDocument();
   });
@@ -218,7 +245,9 @@ describe("connection detail views", () => {
     render(
       <ConnectionDetail
         connection={disabledConnection}
+        getConnectionDeletionFocus={() => null}
         modelBindings={emptyModelBindings}
+        onConnectionDeleted={onConnectionDeleted}
         onTabChange={onTabChange}
         tab="endpoints"
       />,
@@ -325,50 +354,32 @@ describe("connection detail views", () => {
   });
 });
 
+describe("connection endpoint empty state", () => {
+  it("keeps the add action when the last Endpoint is gone", () => {
+    renderConnectionDetail("endpoints", emptyModelBindings, {
+      ...connection,
+      endpoints: [],
+    });
+
+    expect(screen.getByText("当前连接没有 Endpoint")).toBeVisible();
+    expect(screen.getByRole("button", { name: "添加 Endpoint" })).toBeVisible();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+});
+
 function renderConnectionDetail(
   tab: ConnectionDetailTab,
   modelBindings: ConnectionModelBindingsState = emptyModelBindings,
+  selectedConnection = connection,
 ) {
   return render(
     <ConnectionDetail
-      connection={connection}
+      connection={selectedConnection}
+      getConnectionDeletionFocus={() => null}
       modelBindings={modelBindings}
+      onConnectionDeleted={onConnectionDeleted}
       onTabChange={onTabChange}
       tab={tab}
     />,
   );
-}
-
-function modelBindingFixture(id: string, endpointId: string, name: string) {
-  return {
-    id,
-    endpointId,
-    upstreamModelId: `${id}-upstream`,
-    name,
-    status: "unverified" as const,
-    createdAt: "2026-08-24T08:00:00.000Z",
-    updatedAt: "2026-08-24T08:00:00.000Z",
-  };
-}
-
-function probeRunFixture(status: "running" | "succeeded"): components["schemas"]["CompatibilityProbeRun"] {
-  return {
-    id: "run-1",
-    profileId: "compatibility-profile-1",
-    connectionId: "provider_01",
-    endpointId: "endpoint_01",
-    credentialId: "credential_01",
-    harnessProfileId: "profile-generic-openai-chat",
-    model: "deepseek-chat",
-    checks: ["basic", "stream"],
-    status,
-    totalChecks: 2,
-    completedChecks: status === "succeeded" ? 2 : 1,
-    currentCheck: status === "succeeded" ? null : "stream",
-    errorMessage: null,
-    createdAt: "2026-08-24T12:00:00.000Z",
-    startedAt: "2026-08-24T12:00:00.000Z",
-    completedAt: status === "succeeded" ? "2026-08-24T12:00:01.000Z" : null,
-    updatedAt: "2026-08-24T12:00:00.500Z",
-  };
 }

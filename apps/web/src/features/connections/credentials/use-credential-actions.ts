@@ -6,7 +6,7 @@ import {
   useDisableProviderCredential,
   useProbeProviderCredential,
   useRotateProviderCredential,
-} from "./hooks";
+} from "../hooks";
 
 type Connection = components["schemas"]["Connection"];
 type Credential = components["schemas"]["ProviderCredential"];

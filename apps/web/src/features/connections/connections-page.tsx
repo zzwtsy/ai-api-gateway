@@ -1,10 +1,9 @@
-import type { ConnectionModelBindingsState } from "./connection-detail";
 import type { ConnectionDetailTab } from "./connection-detail-tabs";
+import type { ConnectionModelBindingsState } from "./types";
 
 import { PlugZapIcon, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { DataErrorState } from "@/components/product/data-error-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,12 +26,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
-import { describeApiError } from "@/lib/api-runtime/client";
-import { cn } from "@/lib/utils";
 
-import { ConnectionDetail } from "./connection-detail";
-import { CreateConnectionForm } from "./create-connection-form";
+import { CreateConnectionForm } from "./create/create-connection-form";
+import { ConnectionDetail } from "./detail/connection-detail";
+import { ConnectionDirectory } from "./directory/connection-directory";
+import { useConnectionDeletionLifecycle } from "./directory/use-connection-deletion-lifecycle";
 import { useConnections } from "./hooks";
 
 export function ConnectionsPage({
@@ -55,20 +53,18 @@ export function ConnectionsPage({
   const query = useConnections();
   const selectedConnection = query.data?.find(connection => connection.id === connectionId)
     ?? query.data?.[0];
-
-  useEffect(() => {
-    if (query.data === undefined)
-      return;
-    const canonicalConnectionId = selectedConnection?.id;
-    if (canonicalConnectionId !== connectionId)
-      onConnectionIdChange(canonicalConnectionId, { replace: true });
-  }, [connectionId, onConnectionIdChange, query.data, selectedConnection?.id]);
+  const deletion = useConnectionDeletionLifecycle({
+    connectionId,
+    connections: query.data,
+    onConnectionIdChange,
+    selectedConnectionId: selectedConnection?.id,
+  });
 
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button />}>
+          <DialogTrigger render={<Button ref={deletion.addConnectionTriggerRef} />}>
             <Plus data-icon="inline-start" />
             添加连接
           </DialogTrigger>
@@ -104,7 +100,7 @@ export function ConnectionsPage({
             </Card>
           )
         : (
-            <div className="grid min-h-[560px] gap-6 xl:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
+            <div className="grid min-h-140 gap-6 xl:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]">
               <Card className="flex flex-col">
                 <CardHeader className="border-b">
                   <div className="flex items-center justify-between">
@@ -119,6 +115,7 @@ export function ConnectionsPage({
                     loading={query.isPending}
                     onRetry={query.refetch}
                     onSelect={onConnectionIdChange}
+                    registerButton={deletion.registerDirectoryButton}
                     selectedConnectionId={selectedConnection?.id ?? null}
                     stale={query.isRefetchError && query.data !== undefined}
                   />
@@ -130,7 +127,9 @@ export function ConnectionsPage({
                   <ConnectionDetail
                     key={selectedConnection.id}
                     connection={selectedConnection}
+                    getConnectionDeletionFocus={deletion.getConnectionDeletionFocus}
                     modelBindings={modelBindings}
+                    onConnectionDeleted={deletion.handleConnectionDeleted}
                     onTabChange={onConnectionTabChange}
                     tab={connectionTab}
                   />
@@ -138,76 +137,6 @@ export function ConnectionsPage({
               </div>
             </div>
           )}
-    </div>
-  );
-}
-
-function ConnectionDirectory({
-  connections,
-  error,
-  loading,
-  onRetry,
-  onSelect,
-  selectedConnectionId,
-  stale,
-}: {
-  readonly connections: ReturnType<typeof useConnections>["data"];
-  readonly error: unknown;
-  readonly loading: boolean;
-  readonly onRetry: () => Promise<unknown>;
-  readonly onSelect: (connectionId: string) => void;
-  readonly selectedConnectionId: string | null;
-  readonly stale: boolean;
-}) {
-  if (connections === undefined && error !== null) {
-    return (
-      <div className="p-4">
-        <DataErrorState
-          title="无法加载连接"
-          description={describeApiError(error, "连接目录暂时不可用。")}
-          onRetry={onRetry}
-        />
-      </div>
-    );
-  }
-  if (loading || connections === undefined) {
-    return <div className="p-4"><Skeleton className="h-52" /></div>;
-  }
-  if (connections.length === 0) {
-    return null;
-  }
-  return (
-    <div className="flex flex-col">
-      {stale && (
-        <div className="p-3">
-          <DataErrorState
-            tone="warning"
-            title="连接目录可能已过期"
-            description={describeApiError(error, "后台刷新失败，当前仍显示上次成功加载的数据。")}
-            onRetry={onRetry}
-          />
-        </div>
-      )}
-      <div className="flex flex-col gap-1 p-2" aria-label="Provider 列表">
-        {connections.map((item) => {
-          const isSelected = selectedConnectionId === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              aria-pressed={isSelected}
-              className={cn(
-                "w-full truncate rounded-lg px-3 py-2.5 text-left text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
-                isSelected && "bg-muted text-foreground",
-              )}
-              title={item.name}
-              onClick={() => onSelect(item.id)}
-            >
-              {item.name}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

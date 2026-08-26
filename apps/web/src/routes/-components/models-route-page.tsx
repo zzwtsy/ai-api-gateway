@@ -1,4 +1,4 @@
-import type { EndpointOption } from "@/features/models/models-page";
+import type { EndpointOption } from "@/features/models/models-types";
 
 import { useConnections } from "@/features/connections/hooks";
 import { ModelsPage } from "@/features/models/models-page";

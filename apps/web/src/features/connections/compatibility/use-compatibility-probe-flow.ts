@@ -1,4 +1,4 @@
-import type { ConnectionDetailTab } from "./connection-detail-tabs";
+import type { ConnectionDetailTab } from "../connection-detail-tabs";
 import type { components } from "@/api/schema";
 
 import { useState } from "react";
@@ -6,7 +6,7 @@ import { useState } from "react";
 import {
   useConnectionCompatibility,
   useStartCompatibilityProbe,
-} from "./hooks";
+} from "../hooks";
 
 type Connection = components["schemas"]["Connection"];
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { EndpointOption } from "./models-types";
 import { Box, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -30,16 +31,6 @@ import { describeApiError } from "@/lib/api-runtime/client";
 import { CreateModelBindingForm } from "./create-model-binding-form";
 import { useModelBindings } from "./hooks";
 import { ModelBindingDetail } from "./model-binding-detail";
-
-export interface EndpointOption {
-  readonly id: string;
-  readonly label: string;
-  readonly protocol: "openai-chat" | "openai-responses" | "anthropic-messages";
-  readonly credentials: readonly {
-    readonly id: string;
-    readonly label: string;
-  }[];
-}
 
 export function ModelsPage({
   endpointError,

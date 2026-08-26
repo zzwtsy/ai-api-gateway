@@ -7,13 +7,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ConnectionsPage } from "./connections-page";
 
 const hookMocks = vi.hoisted(() => ({
-  addEndpoint: vi.fn(),
-  createConnection: vi.fn(),
   refetchCompatibility: vi.fn(),
   resetCompatibility: vi.fn(),
   startCompatibility: vi.fn(),
+  useConnectionDeletionImpact: vi.fn(),
   useConnectionCompatibility: vi.fn(),
   useAddConnectionEndpoint: vi.fn(),
+  useDeleteConnection: vi.fn(),
   useDisableProviderCredential: vi.fn(),
   useProbeProviderCredential: vi.fn(),
   useConnections: vi.fn(),
@@ -29,11 +29,9 @@ const onConnectionTabChange = vi.fn();
 const retryModelBindings = vi.fn();
 
 beforeEach(() => {
-  hookMocks.addEndpoint.mockReset();
   onConnectionIdChange.mockReset();
   onConnectionTabChange.mockReset();
   retryModelBindings.mockReset();
-  hookMocks.createConnection.mockReset();
   hookMocks.refetchCompatibility.mockReset();
   hookMocks.resetCompatibility.mockReset();
   hookMocks.startCompatibility.mockReset();
@@ -47,35 +45,20 @@ beforeEach(() => {
     refetch: vi.fn(),
   });
   hookMocks.useCreateConnection.mockReturnValue({
-    create: hookMocks.createConnection,
+    create: vi.fn(),
     error: null,
     isError: false,
     isPending: false,
   });
   hookMocks.useAddConnectionEndpoint.mockReturnValue({
-    add: hookMocks.addEndpoint,
+    add: vi.fn(),
     error: null,
     isError: false,
     isPending: false,
   });
-  hookMocks.useRotateProviderCredential.mockReturnValue({
-    error: null,
-    isError: false,
-    isPending: false,
-    rotate: vi.fn(),
-  });
-  hookMocks.useDisableProviderCredential.mockReturnValue({
-    error: null,
-    isError: false,
-    isPending: false,
-    disable: vi.fn(),
-  });
-  hookMocks.useProbeProviderCredential.mockReturnValue({
-    error: null,
-    isError: false,
-    isPending: false,
-    probe: vi.fn(),
-  });
+  hookMocks.useRotateProviderCredential.mockReturnValue({ error: null, isError: false, isPending: false, rotate: vi.fn() });
+  hookMocks.useDisableProviderCredential.mockReturnValue({ error: null, isError: false, isPending: false, disable: vi.fn() });
+  hookMocks.useProbeProviderCredential.mockReturnValue({ error: null, isError: false, isPending: false, probe: vi.fn() });
   hookMocks.useConnectionCompatibility.mockReturnValue({
     data: { profiles: [], facts: [], runs: [] },
     error: null,
@@ -90,6 +73,32 @@ beforeEach(() => {
     isPending: false,
     reset: hookMocks.resetCompatibility,
     start: hookMocks.startCompatibility,
+  });
+  hookMocks.useConnectionDeletionImpact.mockReturnValue({
+    data: {
+      endpointCount: 1,
+      accountCount: 0,
+      credentialCount: 0,
+      credentialBindingCount: 0,
+      modelBindingCount: 0,
+      compatibilityProfileCount: 0,
+      compatibilityFactCount: 0,
+      completedProbeRunCount: 0,
+      activeProbeRunCount: 0,
+      blocked: false,
+      blockedReason: null,
+    },
+    error: null,
+    isError: false,
+    isFetching: false,
+    isPending: false,
+    refetch: vi.fn(),
+  });
+  hookMocks.useDeleteConnection.mockReturnValue({
+    error: null,
+    isError: false,
+    isPending: false,
+    remove: vi.fn(),
   });
 });
 
@@ -139,26 +148,7 @@ describe("connections page states", () => {
 describe("connection URL selection", () => {
   it("keeps the cached directory visible when a background refresh fails", () => {
     hookMocks.useConnections.mockReturnValue({
-      data: [{
-        id: "conn_01",
-        name: "主连接",
-        providerSlug: "deepseek",
-        presetKind: "custom",
-        status: "active",
-        endpoints: [{
-          id: "endpoint_01",
-          name: "默认 Endpoint",
-          protocol: "openai-chat",
-          baseUrl: "https://api.example.com",
-          requestPath: "/v1/chat/completions",
-          authScheme: "bearer",
-          supportsStreaming: true,
-          status: "active",
-        }],
-        accounts: [],
-        createdAt: "2026-08-23T08:00:00.000Z",
-        updatedAt: "2026-08-23T08:00:00.000Z",
-      }],
+      data: [connectionFixture("conn_01", "主连接")],
       error: new Error("刷新失败"),
       isError: true,
       isLoading: false,
@@ -176,10 +166,7 @@ describe("connection URL selection", () => {
 
   it("uses the URL-selected connection as the detail context", () => {
     hookMocks.useConnections.mockReturnValue({
-      data: [
-        connectionFixture("conn_01", "主连接"),
-        connectionFixture("conn_02", "备用连接"),
-      ],
+      data: [connectionFixture("conn_01", "主连接"), connectionFixture("conn_02", "备用连接")],
       error: null,
       isError: false,
       isLoading: false,
@@ -215,13 +202,18 @@ describe("connection URL selection", () => {
       });
     },
   );
-});
 
-describe("connection creation dialog", () => {
-  it("validates the Provider step before revealing Endpoint settings", async () => {
+  it("selects the next Provider after deleting the current connection", async () => {
     const user = userEvent.setup();
+    const removeConnection = vi.fn().mockResolvedValue({ connectionId: "conn_01" });
+    hookMocks.useDeleteConnection.mockReturnValue({
+      error: null,
+      isError: false,
+      isPending: false,
+      remove: removeConnection,
+    });
     hookMocks.useConnections.mockReturnValue({
-      data: [],
+      data: [connectionFixture("conn_01", "主连接"), connectionFixture("conn_02", "备用连接")],
       error: null,
       isError: false,
       isLoading: false,
@@ -230,18 +222,38 @@ describe("connection creation dialog", () => {
       refetch: vi.fn(),
     });
 
-    renderConnectionsPage();
+    renderConnectionsPage("conn_01");
+    await user.click(screen.getByRole("button", { name: "删除连接" }));
+    await user.click(screen.getByRole("button", { name: "确认删除" }));
 
-    await user.click(screen.getByRole("button", { name: "添加连接" }));
-    await user.click(screen.getByRole("button", { name: "下一步：Endpoint" }));
-
-    expect(screen.getByLabelText("连接名称")).toHaveAttribute("aria-invalid", "true");
-    expect(screen.queryByLabelText("上游 Base URL")).not.toBeInTheDocument();
+    expect(removeConnection).toHaveBeenCalledWith("conn_01");
+    expect(onConnectionIdChange).toHaveBeenCalledWith("conn_02", { replace: true });
   });
 
-  it("selects the newly created connection and closes the dialog", async () => {
+  it("clears the URL and focuses Add Connection after deleting the last connection", async () => {
     const user = userEvent.setup();
-    hookMocks.createConnection.mockResolvedValue({ id: "conn_new" });
+    const removeConnection = vi.fn().mockResolvedValue({ connectionId: "conn_01" });
+    hookMocks.useDeleteConnection.mockReturnValue({
+      error: null,
+      isError: false,
+      isPending: false,
+      remove: removeConnection,
+    });
+    hookMocks.useConnections.mockReturnValue({
+      data: [connectionFixture("conn_01", "主连接")],
+      error: null,
+      isError: false,
+      isLoading: false,
+      isPending: false,
+      isRefetchError: false,
+      refetch: vi.fn(),
+    });
+
+    const view = renderConnectionsPage("conn_01");
+    await user.click(screen.getByRole("button", { name: "删除连接" }));
+    await user.click(screen.getByRole("button", { name: "确认删除" }));
+
+    expect(onConnectionIdChange).toHaveBeenCalledWith(undefined, { replace: true });
     hookMocks.useConnections.mockReturnValue({
       data: [],
       error: null,
@@ -251,83 +263,24 @@ describe("connection creation dialog", () => {
       isRefetchError: false,
       refetch: vi.fn(),
     });
-
-    renderConnectionsPage();
-
-    await user.click(screen.getByRole("button", { name: "添加连接" }));
-    await user.type(screen.getByLabelText("连接名称"), "新连接");
-    await user.type(screen.getByLabelText("Provider 标识"), "new-provider");
-    await user.type(screen.getByLabelText("Provider API Key"), "provider-secret");
-    await user.click(screen.getByRole("button", { name: "下一步：Endpoint" }));
-    await user.type(screen.getByLabelText("上游 Base URL"), "https://provider.example.com");
-    await user.click(screen.getByRole("button", { name: "创建连接" }));
-
-    await waitFor(() => {
-      expect(onConnectionIdChange).toHaveBeenLastCalledWith("conn_new");
-    });
-    expect(screen.queryByRole("heading", { name: "添加连接" })).not.toBeInTheDocument();
-  });
-
-  it("shows Select labels and updates an untouched recommended request path", async () => {
-    const user = userEvent.setup();
-    hookMocks.useConnections.mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-      isPending: false,
-      isRefetchError: false,
-      refetch: vi.fn(),
-    });
-    renderConnectionsPage();
-
-    await user.click(screen.getByRole("button", { name: "添加连接" }));
-    await completeProviderStep(user, "protocol-default");
-    const protocol = screen.getByRole("combobox", { name: "协议" });
-    const requestPath = screen.getByLabelText("请求路径");
-    expect(screen.getByLabelText("上游 Base URL")).toHaveAttribute("aria-invalid", "false");
-    expect(screen.queryByText("请输入合法的 URL")).not.toBeInTheDocument();
-    expect(protocol).toHaveTextContent("OpenAI Chat Completions");
-
-    await user.click(protocol);
-    await user.click(screen.getByRole("option", { name: "OpenAI Responses" }));
-    expect(protocol).toHaveTextContent("OpenAI Responses");
-    expect(requestPath).toHaveValue("/v1/responses");
-  });
-
-  it("preserves a manually edited request path when the protocol changes", async () => {
-    const user = userEvent.setup();
-    hookMocks.useConnections.mockReturnValue({
-      data: [],
-      error: null,
-      isError: false,
-      isLoading: false,
-      isPending: false,
-      isRefetchError: false,
-      refetch: vi.fn(),
-    });
-    renderConnectionsPage();
-
-    await user.click(screen.getByRole("button", { name: "添加连接" }));
-    await completeProviderStep(user, "protocol-custom");
-    const protocol = screen.getByRole("combobox", { name: "协议" });
-    const requestPath = screen.getByLabelText("请求路径");
-    await user.clear(requestPath);
-    await user.type(requestPath, "/custom/chat");
-    await user.click(protocol);
-    await user.click(screen.getByRole("option", { name: "Anthropic Messages" }));
-
-    expect(protocol).toHaveTextContent("Anthropic Messages");
-    expect(requestPath).toHaveValue("/custom/chat");
+    view.rerender(
+      <ConnectionsPage
+        connectionId={undefined}
+        connectionTab="overview"
+        modelBindings={{
+          data: [],
+          error: null,
+          loading: false,
+          onRetry: retryModelBindings,
+          stale: false,
+        }}
+        onConnectionIdChange={onConnectionIdChange}
+        onConnectionTabChange={onConnectionTabChange}
+      />,
+    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "添加连接" })).toHaveFocus());
   });
 });
-
-async function completeProviderStep(user: ReturnType<typeof userEvent.setup>, slug: string) {
-  await user.type(screen.getByLabelText("连接名称"), `连接 ${slug}`);
-  await user.type(screen.getByLabelText("Provider 标识"), slug);
-  await user.type(screen.getByLabelText("Provider API Key"), "provider-secret");
-  await user.click(screen.getByRole("button", { name: "下一步：Endpoint" }));
-}
 
 function renderConnectionsPage(
   connectionId: string | undefined = undefined,

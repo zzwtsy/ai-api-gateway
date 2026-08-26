@@ -1,85 +1,23 @@
-import type { ConnectionDetailTab } from "./connection-detail-tabs";
-import type { CompatibilityProbeFlow } from "./use-compatibility-probe-flow";
-import type { CredentialActions } from "./use-credential-actions";
+import type { CompatibilityProbeFlow } from "../compatibility/use-compatibility-probe-flow";
+import type { ConnectionDetailTab } from "../connection-detail-tabs";
+import type { CredentialActions } from "../credentials/use-credential-actions";
+import type { ConnectionModelBindingsState } from "../types";
 import type { components } from "@/api/schema";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { CompatibilityPanel } from "./compatibility-panel";
-import { CompatibilityProbeSheet } from "./compatibility-probe-sheet";
-import { ConnectionDetailCredentialSheets } from "./connection-detail-credential-sheets";
-import {
-  ConnectionModelDirectory,
-  ConnectionOverview,
-  CredentialDirectory,
-  EndpointDirectory,
-} from "./connection-detail-directory";
-import { isConnectionDetailTab } from "./connection-detail-tabs";
-import { CredentialProbeResult } from "./credential-action-panels";
-import { useCompatibilityProbeFlow } from "./use-compatibility-probe-flow";
-import { useCredentialActions } from "./use-credential-actions";
+import { CompatibilityPanel } from "../compatibility/compatibility-panel";
+import { isConnectionDetailTab } from "../connection-detail-tabs";
+import { CredentialProbeResult } from "../credentials/credential-action-panels";
+import { CredentialDirectory } from "../credentials/credential-directory";
+import { EndpointDirectory } from "../endpoints/endpoint-directory";
+import { ConnectionModelDirectory } from "./connection-model-directory";
+import { ConnectionOverview } from "./connection-overview";
 
 type Connection = components["schemas"]["Connection"];
 type ModelBinding = components["schemas"]["ProviderModelBinding"];
 
-export interface ConnectionModelBindingsState {
-  readonly data: readonly ModelBinding[] | undefined;
-  readonly error: unknown;
-  readonly loading: boolean;
-  readonly onRetry: () => Promise<unknown>;
-  readonly stale: boolean;
-}
-
-export function ConnectionDetail({
-  connection,
-  modelBindings,
-  onTabChange,
-  tab,
-}: {
-  readonly connection: Connection;
-  readonly modelBindings: ConnectionModelBindingsState;
-  readonly onTabChange: (tab: ConnectionDetailTab) => void;
-  readonly tab: ConnectionDetailTab;
-}) {
-  const endpointIds = new Set(connection.endpoints.map(endpoint => endpoint.id));
-  const connectionModelBindings = modelBindings.data?.filter(binding => endpointIds.has(binding.endpointId));
-  const credentialActions = useCredentialActions(connection);
-  const compatibilityFlow = useCompatibilityProbeFlow(connection, onTabChange);
-
-  return (
-    <Card aria-labelledby="connection-detail-title">
-      <CardHeader>
-        <div>
-          <CardTitle id="connection-detail-title">{connection.name}</CardTitle>
-          <CardDescription>
-            {connection.providerSlug}
-            {" · "}
-            {connection.endpoints.length}
-            {" 个 Endpoint · "}
-            {connection.accounts.length}
-            {" 个账号"}
-          </CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        <ConnectionDetailTabs
-          compatibilityFlow={compatibilityFlow}
-          connection={connection}
-          connectionModelBindings={connectionModelBindings}
-          credentialActions={credentialActions}
-          modelBindings={modelBindings}
-          onTabChange={onTabChange}
-          tab={tab}
-        />
-        <CompatibilityProbeSheet connection={connection} {...compatibilityFlow.sheet} />
-        <ConnectionDetailCredentialSheets actions={credentialActions} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function ConnectionDetailTabs({
+export function ConnectionDetailTabs({
   compatibilityFlow,
   connection,
   connectionModelBindings,
